@@ -1,0 +1,29 @@
+---
+title: "Exploratory data analysis"
+author: 
+   - name: Marcus Beck, <mbeck@tbep.org>
+institute: "Tampa Bay Estuary Program"
+date: "`r Sys.Date()`"
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    code-tools: 
+      source: https://github.com/tbep-tech/temp-manu/index.qmd
+code-fold: true
+execute:
+  echo: true
+  warning: false
+filters:
+  - lightbox
+  
+lightbox: auto
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(EnvStats)
+library(tbeptools)
+```
+
