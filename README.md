@@ -1,1 +1,3 @@
 # temp-manu
+
+Materials for the manuscript describing temperature trends in Tampa Bay
