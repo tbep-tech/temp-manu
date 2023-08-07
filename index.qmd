@@ -10,9 +10,8 @@ format:
     css: styles.css
     code-tools: 
       source: https://github.com/tbep-tech/temp-manu/index.qmd
-code-fold: true
 execute:
-  echo: true
+  echo: false
   warning: false
 filters:
   - lightbox
@@ -23,7 +22,34 @@ lightbox: auto
 ```{r}
 library(tidyverse)
 library(lubridate)
-library(EnvStats)
-library(tbeptools)
+library(here)
 ```
 
+```{r}
+knitr::include_graphics('figs/sktall.png')
+```
+
+# By month
+
+::: panel-tabset
+```{r}
+#| results: asis
+fls <- list.files(here('figs'), '_', full.names = F)
+mos <- fls %>% 
+  basename %>% 
+  gsub('^skt_|\\.png', '', .) %>% 
+  as.numeric() %>% 
+  sort() %>% 
+  month(label = T) %>% 
+  as.character()
+for(mo in seq_along(mos)){
+  cat('## ', mos[mo], '\n\n')
+  
+  chnk <- paste0('![](figs/', fls[mo], ')\n')
+  cat(chnk)
+  
+  cat('\n\n')
+  
+}
+```
+:::
