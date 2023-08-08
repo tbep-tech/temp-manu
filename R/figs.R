@@ -17,8 +17,8 @@ sktres <- epcdata %>%
   crossing(
     ., 
     tibble(
-      per = c('all', 'rec', 'cur'),
-      yrs = c('1974-2023', '2000-2016', '2016-2023')
+      per = c('all', 'rec', 'sat', 'cur'),
+      yrs = c('1974-2023', '2000-2016', '2007-2023', '2016-2023')
     )
   ) %>% 
   mutate(
@@ -85,8 +85,8 @@ toplo <- sktres %>%
       labels = c('Top', 'Mid', 'Bottom')
     ),
     yrs = factor(yrs, 
-      levels = c('1974-2023', '2000-2016', '2016-2023'), 
-      labels = c('1974-2022', '2000-2015', '2016-2022')
+      levels = c('1974-2023', '2007-2023', '2000-2016', '2016-2023'), 
+      labels = c('1974-2022', '2007-2022', '2000-2015', '2016-2022')
     )
   ) 
 
@@ -104,7 +104,7 @@ p <- ggmap(bsmap1_transparent) +
     caption = 'Outlines indicate p < 0.05'
   )
 
-png(here('figs/sktall.png'), height = 10, width = 9, family = 'serif', units = 'in', res = 300)
+png(here('figs/sktall.png'), height = 10, width = 12, family = 'serif', units = 'in', res = 300)
 p
 dev.off()
 
@@ -118,8 +118,8 @@ sktres <- epcdata %>%
   crossing(
     ., 
     tibble(
-      per = c('all', 'rec', 'cur'),
-      yrs = c('1974-2023', '2000-2016', '2016-2023')
+      per = c('all', 'rec', 'sat', 'cur'),
+      yrs = c('1974-2023', '2000-2016', '2007-2023', '2016-2023')
     )
   ) %>% 
   mutate(
@@ -192,6 +192,10 @@ sktres %>%
                  levels = c("Temp_Water_Top_degC", "Temp_Water_Mid_degC", "Temp_Water_Bottom_degC"), 
                  labels = c('Top', 'Mid', 'Bottom')
     ),
+    yrs = factor(yrs, 
+                 levels = c('1974-2023', '2007-2023', '2000-2016', '2016-2023'), 
+                 labels = c('1974-2022', '2007-2022', '2000-2015', '2016-2022')
+    ),
     mo = sprintf('%02d', mo), 
     sz = scales::rescale(abs(slos), c(3, 8))
   ) %>% 
@@ -215,7 +219,7 @@ sktres %>%
       )
     
     fl <- paste0('figs/skt_',sprintf('%02d', as.numeric(mo)), '.png')
-    png(here(fl), height = 11, width = 10, family = 'serif', units = 'in', res = 300)
+    png(here(fl), height = 11, width = 12, family = 'serif', units = 'in', res = 300)
     print(p)
     dev.off()
     
