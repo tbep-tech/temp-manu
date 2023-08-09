@@ -25,16 +25,22 @@ library(lubridate)
 library(here)
 ```
 
+# Complete record
+
+This plot shows the significant increasing or decreasing temperature trends for all long-term monitoring stations (EPCHC) in Tampa Bay, by period of record and sampling location in the water column. The periods of record are 1974-2022 (whole record), 2007-2022 ([NOAA record](https://coastwatch.noaa.gov/cw_html/cwViewer.html)), 2000-2015 (seagrass recovery), and 2016-2022 (seagrass decline). The latter two periods of record likely have low statistical power with limited sample size. Seasonal Mann-Kendall tests are used.
+
 ```{r}
 knitr::include_graphics('figs/sktall.png')
 ```
 
 # By month
 
+These plots show significant increasing or decreasing temperature trends by month for long-term monitoring stations in Tampa Bay.  The plots are organized by period of record and sampling location in the water column. Mann-Kendal tests are used.
+
 ::: panel-tabset
 ```{r}
 #| results: asis
-fls <- list.files(here('figs'), '_', full.names = F)
+fls <- list.files(here('figs'), 'skt_', full.names = F)
 mos <- fls %>% 
   basename %>% 
   gsub('^skt_|\\.png', '', .) %>% 
@@ -46,6 +52,30 @@ for(mo in seq_along(mos)){
   cat('## ', mos[mo], '\n\n')
   
   chnk <- paste0('![](figs/', fls[mo], ')\n')
+  cat(chnk)
+  
+  cat('\n\n')
+  
+}
+```
+:::
+
+# Month summary by bay segment
+
+These plots show the percent of stations by month and bay segment that had significant increasing temperature trends for the specified period of record. Tabs are organized by top, mid, and bottom water column temperature measurements.  The summaries are based on results for the monthly trend tests in the previous section. Decreasing trends are not shown.
+
+::: panel-tabset
+```{r}
+#| results: asis
+fls <- list.files(here('figs'), 'segsum_', full.names = F) %>% 
+  rev
+locs <- fls %>% 
+  basename %>% 
+  gsub('^segsum_|\\.png', '', .)
+for(loc in seq_along(locs)){
+  cat('## ', locs[loc], '\n\n')
+  
+  chnk <- paste0('![](figs/', fls[loc], ')\n')
   cat(chnk)
   
   cat('\n\n')

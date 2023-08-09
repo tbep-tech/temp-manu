@@ -224,3 +224,54 @@ sktres %>%
     dev.off()
     
   })
+
+# segment summary of monthly kendall by temp loc ----------------------------------------------
+
+sktres %>% 
+  summarise(
+    nsig = sum(pval < 0.05 & slos > 0),
+    cnt = n(),
+    nsigper = round(100 * nsig / cnt, 0),
+    .by = c('bay_segment', 'mo', 'yrs', 'var')
+  ) %>% 
+  mutate(
+    yrs = factor(yrs, 
+                 levels = c('1974-2023', '2007-2023', '2000-2016', '2016-2023'), 
+                 labels = c('1974-2022: whole record', '2007-2022: NOAA record', '2000-2015: seagrass recovery', '2016-2022: seagrass decline')
+    ),
+    mo = month(mo, label = T), 
+    bay_segment = factor(bay_segment, levels = c('LTB', 'MTB', 'HB', 'OTB')), 
+    nsigper = ifelse(nsigper == 0, '', nsigper), 
+    var = factor(var, 
+                 levels = c('Temp_Water_Top_degC', 'Temp_Water_Mid_degC', 'Temp_Water_Bottom_degC'),
+                 labels = c('Top', 'Mid', 'Bottom')
+    )
+  ) %>% 
+  group_nest(var) %>% 
+  deframe %>% 
+  iwalk(function(x, var){
+    
+    p <- ggplot(x, aes(x = mo, y = bay_segment, fill = nsig)) + 
+      geom_tile(color = 'darkgrey') +
+      geom_text(aes(label = nsigper)) +
+      scale_x_discrete(expand = c(0, 0)) + 
+      scale_y_discrete(expand = c(0, 0)) + 
+      scale_fill_distiller(palette = 'Reds', direction = 1) + 
+      facet_wrap(~ yrs, ncol = 1, scales = 'free_x') + 
+      theme(
+        strip.background = element_blank(), 
+        strip.text = element_text(hjust = 0, size = 12), 
+        legend.position = 'none'
+      ) + 
+      labs(
+        x = NULL, 
+        y = 'Bay segment'
+      )
+    
+    fl <- paste0('figs/segsum_', var, '.png')
+    png(here(fl), height = 8, width = 6, family = 'serif', units = 'in', res = 300)
+    print(p)
+    dev.off()
+    
+  })
+
