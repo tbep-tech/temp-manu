@@ -3,56 +3,48 @@ library(tbeptools)
 library(tidyverse)
 library(lubridate)
 
-tomod <- epcdata %>% 
-  select(bay_segment, station = epchc_station, date = SampleTime, value = Temp_Water_Top_degC) %>% 
+epcdata %>% 
+  select(bay_segment, station = epchc_station, date = SampleTime, temptop = Temp_Water_Top_degC, tempbot = Temp_Water_Bottom_degC) %>% 
   filter(year(date) < 2023) %>% 
   filter(year(date) > 1975) %>% 
+  pivot_longer(matches('temp'), names_to = 'param', values_to = 'value') %>% 
   mutate(
+    stationdup = station,
+    paramdup = param,
     date = as.Date(date), 
     cont_year = decimal_date(date), 
-    yr = year(date),
-    param = 'Surface temperature (C)'
+    yr = year(date), 
   ) %>% 
-  filter(bay_segment == 'OTB') %>% 
-  group_nest(bay_segment, station) %>% 
+  unite('ind', bay_segment, station, param) %>% 
+  group_nest(ind) %>% 
   mutate(
-    mod = purrr::map(data, anlz_gam, trans = 'ident'), 
-    fit = purrr::map(mod, anlz_fit), 
-    prd = purrr::map(mod, anlz_prdday)
-  )
-
-toplo <- tomod %>% 
-  select(-mod) %>% 
-  mutate(
-    cnts = purrr::map(prd, function(x){
-      
-      tibble(thr = c(10:35)) %>%
-        group_nest(thr) %>%
-        mutate(data = list(x)) %>%
-        mutate(
-          data = purrr::pmap(list(data, thr), function(data, thr){
-            
-            data %>%
-              filter(yr < 2023) %>%
-              summarise(
-                cnt = sum(value > thr),
-                .by = 'yr'
-              )
-            
-          })
-        ) %>% 
-        unnest('data')
-      
-    })
-  )
-
-
-ggplot(toplo, aes(x = yr, y = cnt, group = thr)) +
-  geom_point() + 
-  geom_smooth(method = 'lm', se = F) +
-  facet_grid(~thr) + 
-  labs(
-    y = 'Days per year with temp exceeding threshold'
-  )
+    cnt = 1:nrow(.)
+  ) %>% 
+  unite('ind', cnt, ind, sep = '-') %>% 
+  deframe() %>% 
+  iwalk(function(data, ind){
+    
+    cat(ind, '\n')
+    
+    yrcnt <- data %>% 
+      na.omit() %>% 
+      summarize(
+        cnt = n(),
+        .by = 'yr'
+      ) %>% 
+      arrange(yr) %>% 
+      mutate(flt = cnt >= 5)
+    yrmin <- yrcnt$yr[which(yrcnt$flt)[1]]
+    
+    mod <- data %>% 
+      filter(yr >= yrmin) %>% 
+      anlz_gam(trans = 'ident')
+    
+    ind <- gsub('^.*-', '', ind)
+    assign(ind, mod)
+    fl <- here(paste0('data/', ind, '.RData'))
+    save(list = ind, file = fl, compress = 'xz')
+    
+  })
 
 
