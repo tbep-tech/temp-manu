@@ -270,22 +270,137 @@ sktres %>%
       )
     
     fl <- paste0('figs/segsum_', var, '.png')
-    png(here(fl), height = 8, width = 6, family = 'serif', units = 'in', res = 300)
+    png(here(fl), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
     print(p)
     dev.off()
     
   })
 
-# temp thresholds -----------------------------------------------------------------------------
 
+# station gam -------------------------------------------------------------------------------
+
+fl <- 'OTB_66_temptop'
+load(file = here(paste0('data/', fl, '.RData')))
+
+toplo <- get(fl)
+
+p <- show_prdseries(toplo, ylab = 'Surface tempeature (\u00B0 C') + 
+  labs(subtitle ='Station 66, OTB')
+
+png(here('figs/gamex.png'), height = 3, width = 6, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# temp thresholds doy -------------------------------------------------------------------------
+
+# model file with daily temp predictions for each station, bottom/surface temp
 load(file = here('data/moddat.RData'))
 
-modsum <- moddat %>% 
-  select(-mod) %>% 
+modsum <- moddat %>%
   mutate(
     cnts = purrr::map(prd, function(x){
       
-      tibble(thr = c(10:35)) %>%
+      tibble(thr = c(20, 25, 30)) %>%
+        group_nest(thr) %>%
+        mutate(data = list(x)) %>%
+        mutate(
+          data = purrr::pmap(list(data, thr), function(data, thr){
+            
+            data %>%
+              filter(yr < 2023) %>%
+              summarise(
+                cnt = sum(value > thr),
+                frt = date[which(value >= thr)[1]],
+                lst = date[rev(which(value >= thr))[1]],
+                .by = 'yr'
+              )
+            
+          })
+        ) %>% 
+        unnest('data')
+      
+    })
+  )
+
+toplo1 <- modsum %>% 
+  filter(param %in% 'temptop') %>% 
+  select(-AIC, -GCV, -R2, -prd) %>% 
+  unnest('cnts') %>% 
+  summarise(
+    frt = median(frt, na.rm = T), 
+    lst = median(lst, na.rm = T),
+    cnt = mean(cnt),
+    .by = c('bay_segment', 'thr', 'yr', 'param')
+  ) %>% 
+  mutate(
+    frt = yday(frt), 
+    frt = as.Date(date_decimal(2020 + frt / 365)),
+    lst = yday(lst), 
+    lst = as.Date(date_decimal(2020 + lst / 365)),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    thr = paste0(thr, '\u00B0 C')
+  ) %>% 
+  pivot_longer(frt:lst, names_to = 'dts', values_to = 'doy') 
+
+toplo2 <- toplo1 %>% 
+  group_nest(bay_segment, param, thr, dts) %>% 
+  mutate(
+    reg = purrr::map(data, function(x){
+      
+      dat <- x[x$doy > 0, ]
+      mod <- lm(doy ~ yr, dat)
+      prddat <- tibble(yr = range(dat$yr, na.rm = T)) %>% 
+        mutate(
+          doy = predict(mod, newdata = .), 
+          doy = as.Date(doy, origin = '1969-12-31')
+        )
+      
+      return(prddat)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest('reg') %>% 
+  arrange(param, thr, doy, yr)
+
+p <- ggplot(toplo1, aes(x = yr, y = doy)) +
+  geom_polygon(data = toplo2, aes(x = yr, y = doy, fill = thr), alpha = 0.5) + 
+  geom_point(size = 0.5, aes(color = thr)) +
+  geom_smooth(aes(group = dts, color = thr), method = 'lm', se = F, lwd = 1) +
+  facet_grid(bay_segment ~ thr) +
+  scale_colour_manual(values = c('coral', 'red2', 'darkred')) +
+  scale_fill_manual(values = c('coral', 'red2', 'darkred')) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_date(date_breaks = '3 months', date_labels = paste('%b', '1st')) +
+  theme_bw() + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    strip.background = element_blank(), 
+    strip.text = element_text(size = 12) ,
+    axis.text = element_text(size = 9), 
+    legend.position = 'none'
+  ) +
+  labs(
+    x = NULL, 
+    y = "Day of year", 
+    title = "Seasonal duration of time above temperature thresholds", 
+    subtitle = "Day of year when first and last exceeded by year"
+  )
+
+png(here('figs/threxceed.png'), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# temp thresholds length of time --------------------------------------------------------------
+
+# model file with daily temp predictions for each station, bottom/surface temp
+load(file = here('data/moddat.RData'))
+
+modsum <- moddat %>%
+  mutate(
+    cnts = purrr::map(prd, function(x){
+      
+      tibble(thr = c(20, 25, 30)) %>%
         group_nest(thr) %>%
         mutate(data = list(x)) %>%
         mutate(
@@ -308,75 +423,46 @@ modsum <- moddat %>%
   )
 
 toplo <- modsum %>% 
-  select(-data, -prd, -fit) %>% 
-  unnest('cnts') %>% 
-  # filter(thr >= 20 & thr <= 30) %>% 
-  summarise(
-    avecnt = mean(cnt, na.rm = T), 
-    varcnt = var(cnt),
-    uprcnt = ifelse(varcnt == 0, NA, t.test(cnt)$conf.int[2]),
-    lwrcnt = ifelse(varcnt == 0, NA, t.test(cnt)$conf.int[1]),
-    .by = c('bay_segment', 'thr', 'yr')
-  )
-# filter(thr >= 20) %>% 
-mutate(
-  cnt = ifelse(cnt == 0, NA, cnt)
-)
-
-ggplot(toplo, aes(x = yr, y = thr, fill = avecnt)) + 
-  geom_tile() + 
-  facet_wrap(~station)
-ggplot(toplo, aes(x = yr, y = avecnt, group = thr)) +
-  geom_point() + 
-  geom_errorbar(aes(ymin = lwrcnt, ymax = uprcnt), width = 0.1) +
-  geom_smooth(method = 'lm', se = F) +
-  facet_grid(~thr) + 
-  labs(
-    y = 'Days per year with temp exceeding threshold'
-  )
-
-toplo1 <- modsum %>% 
-  select(-data, -prd, -fit) %>% 
+  select(-AIC, -GCV, -R2, -prd) %>% 
   unnest('cnts') %>% 
   summarise(
     frt = median(frt, na.rm = T), 
     lst = median(lst, na.rm = T),
-    cnt = mean(cnt),
-    .by = c('bay_segment', 'thr', 'yr', 'paramdup')
+    cnt = median(cnt),
+    .by = c('bay_segment', 'thr', 'yr', 'param')
   ) %>% 
   mutate(
     frt = yday(frt), 
-    lst = yday(lst)
-  ) %>% 
-  filter(thr %in% c(20, 25, 30)) %>% 
-  pivot_longer(frt:lst, names_to = 'dts', values_to = 'doy') 
+    lst = yday(lst), 
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    thr = paste0(thr, '\u00B0'),
+    param = factor(param, levels = c('temptop', 'tempbot'), labels = c('Top', 'Bottom'))
+    # cnt = lst - frt
+  ) 
 
-toplo2 <- toplo1 %>% 
-  group_nest(bay_segment, paramdup, thr, dts) %>% 
-  mutate(
-    reg = purrr::map(data, function(x){
-      
-      dat <- x[x$doy > 0, ]
-      mod <- lm(doy ~ yr, dat)
-      prddat <- tibble(yr = range(dat$yr, na.rm = T)) %>% 
-        mutate(
-          doy = predict(mod, newdata = .)
-        )
-      
-      return(prddat)
-      
-    })
-  ) %>% 
-  select(-data) %>% 
-  unnest('reg') %>% 
-  arrange(paramdup, thr, doy, yr)
+p <- ggplot(toplo, aes(x = yr, y = cnt, group = thr, color = thr)) + 
+  geom_point(size = 0.5) + 
+  geom_smooth(formula = y ~ x, method = 'lm', se = F) + 
+  facet_grid(param ~ bay_segment) + 
+  scale_colour_manual(values = c('coral', 'red2', 'darkred')) +
+  theme_bw() + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    strip.background = element_blank(),
+    strip.text = element_text(size = 12),
+    axis.text.y = element_text(size = 9), 
+    axis.text.x = element_text(size = 8),
+    legend.position = 'top'
+  ) +
+  labs(
+    x = NULL,
+    y = "Number of days", 
+    title = "Number of days above threshold over time", 
+    subtitle = "Results for top and bottom water temperatures by bay segment", 
+    color = "Threshold (C)"
+  )
 
 
-ggplot(toplo1, aes(x = yr, y = doy)) +
-  geom_point(size = 1, color = 'black') + 
-  geom_smooth(aes(group = dts), method = 'lm', se = F, color = 'black', lwd = 1) +
-  geom_polygon(data = toplo2, aes(x = yr, y = doy), fill = 'tomato1', alpha = 0.5) + 
-  # geom_segment(data = toplo, aes(x = frt, xend = lst, y = yr, yend = yr, color = cnt)) + 
-  # scale_color_gradient(low = 'lightblue', high = 'tomato1') + 
-  facet_grid(paramdup ~ thr)
-
+png(here('figs/thrcount.png'), height = 7, width = 7, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()

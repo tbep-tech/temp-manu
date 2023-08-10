@@ -30,7 +30,7 @@ library(here)
 This plot shows the significant increasing or decreasing temperature trends for all long-term monitoring stations (EPCHC) in Tampa Bay, by period of record and sampling location in the water column. The periods of record are 1974-2022 (whole record), 2007-2022 ([NOAA record](https://coastwatch.noaa.gov/cw_html/cwViewer.html)), 2000-2015 (seagrass recovery), and 2016-2022 (seagrass decline). The latter two periods of record likely have low statistical power with limited sample size. Seasonal Mann-Kendall tests are used.
 
 ```{r}
-knitr::include_graphics('figs/sktall.png')
+knitr::include_graphics(here('figs/sktall.png'))
 ```
 
 # By month
@@ -83,3 +83,14 @@ for(loc in seq_along(locs)){
 }
 ```
 :::
+
+# Threshold exceedances
+
+Temperature exceedences over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three temperature thresholds (20, 25, and 30 degrees C) were estimated.  The total number of days in each year when the daily temperature was above the same thresholds were also estimated.  The station level results were aggregated within each bay segment to produce the plots below.
+
+```{r}
+knitr::include_graphics(here('figs/gamex.png'))
+knitr::include_graphics(here('figs/threxceed.png'))
+knitr::include_graphics(here('figs/thrcount.png'))
+```
+
