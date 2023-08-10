@@ -6,6 +6,7 @@ library(ggmap)
 library(sf)
 library(patchwork)
 library(here)
+library(wqtrends)
 
 # kendall all months --------------------------------------------------------------------------
 
@@ -274,4 +275,108 @@ sktres %>%
     dev.off()
     
   })
+
+# temp thresholds -----------------------------------------------------------------------------
+
+load(file = here('data/moddat.RData'))
+
+modsum <- moddat %>% 
+  select(-mod) %>% 
+  mutate(
+    cnts = purrr::map(prd, function(x){
+      
+      tibble(thr = c(10:35)) %>%
+        group_nest(thr) %>%
+        mutate(data = list(x)) %>%
+        mutate(
+          data = purrr::pmap(list(data, thr), function(data, thr){
+            
+            data %>%
+              filter(yr < 2023) %>%
+              summarise(
+                cnt = sum(value > thr),
+                frt = date[which(value >= thr)[1]],
+                lst = date[rev(which(value >= thr))[1]],
+                .by = 'yr'
+              )
+            
+          })
+        ) %>% 
+        unnest('data')
+      
+    })
+  )
+
+toplo <- modsum %>% 
+  select(-data, -prd, -fit) %>% 
+  unnest('cnts') %>% 
+  # filter(thr >= 20 & thr <= 30) %>% 
+  summarise(
+    avecnt = mean(cnt, na.rm = T), 
+    varcnt = var(cnt),
+    uprcnt = ifelse(varcnt == 0, NA, t.test(cnt)$conf.int[2]),
+    lwrcnt = ifelse(varcnt == 0, NA, t.test(cnt)$conf.int[1]),
+    .by = c('bay_segment', 'thr', 'yr')
+  )
+# filter(thr >= 20) %>% 
+mutate(
+  cnt = ifelse(cnt == 0, NA, cnt)
+)
+
+ggplot(toplo, aes(x = yr, y = thr, fill = avecnt)) + 
+  geom_tile() + 
+  facet_wrap(~station)
+ggplot(toplo, aes(x = yr, y = avecnt, group = thr)) +
+  geom_point() + 
+  geom_errorbar(aes(ymin = lwrcnt, ymax = uprcnt), width = 0.1) +
+  geom_smooth(method = 'lm', se = F) +
+  facet_grid(~thr) + 
+  labs(
+    y = 'Days per year with temp exceeding threshold'
+  )
+
+toplo1 <- modsum %>% 
+  select(-data, -prd, -fit) %>% 
+  unnest('cnts') %>% 
+  summarise(
+    frt = median(frt, na.rm = T), 
+    lst = median(lst, na.rm = T),
+    cnt = mean(cnt),
+    .by = c('bay_segment', 'thr', 'yr', 'paramdup')
+  ) %>% 
+  mutate(
+    frt = yday(frt), 
+    lst = yday(lst)
+  ) %>% 
+  filter(thr %in% c(20, 25, 30)) %>% 
+  pivot_longer(frt:lst, names_to = 'dts', values_to = 'doy') 
+
+toplo2 <- toplo1 %>% 
+  group_nest(bay_segment, paramdup, thr, dts) %>% 
+  mutate(
+    reg = purrr::map(data, function(x){
+      
+      dat <- x[x$doy > 0, ]
+      mod <- lm(doy ~ yr, dat)
+      prddat <- tibble(yr = range(dat$yr, na.rm = T)) %>% 
+        mutate(
+          doy = predict(mod, newdata = .)
+        )
+      
+      return(prddat)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest('reg') %>% 
+  arrange(paramdup, thr, doy, yr)
+
+
+ggplot(toplo1, aes(x = yr, y = doy)) +
+  geom_point(size = 1, color = 'black') + 
+  geom_smooth(aes(group = dts), method = 'lm', se = F, color = 'black', lwd = 1) +
+  geom_polygon(data = toplo2, aes(x = yr, y = doy), fill = 'tomato1', alpha = 0.5) + 
+  # geom_segment(data = toplo, aes(x = frt, xend = lst, y = yr, yend = yr, color = cnt)) + 
+  # scale_color_gradient(low = 'lightblue', high = 'tomato1') + 
+  facet_grid(paramdup ~ thr)
 

@@ -3,6 +3,7 @@ library(tbeptools)
 library(tidyverse)
 library(lubridate)
 
+# save model files for each station, separate for bottom/surface temp
 epcdata %>% 
   select(bay_segment, station = epchc_station, date = SampleTime, temptop = Temp_Water_Top_degC, tempbot = Temp_Water_Bottom_degC) %>% 
   filter(year(date) < 2023) %>% 
@@ -46,5 +47,35 @@ epcdata %>%
     save(list = ind, file = fl, compress = 'xz')
     
   })
+
+# get daily predictions from GAM files --------------------------------------------------------
+
+fls <- list.files(here('data'), pattern = 'temp', full.names = T)
+obs <- gsub('\\.RData$', '', basename(fls))
+
+moddat <- tibble(obs = obs) %>% 
+  mutate(fit = NA, prd = NA)
+for(i in seq_along(fls)){
+  
+  cat(i, 'of', length(fls), '\n')
+  
+  fl <- fls[i]
+  ob <- obs[i]
+  
+  load(file = fl)
+  toadd <- get(ob)
+  moddat[moddat$obs == ob, 'fit'][[1]] <- list(anlz_fit(toadd))
+  moddat[moddat$obs == ob, 'prd'][[1]] <- list(anlz_prdday(toadd))
+  
+  rm(toadd)
+  rm(list = ob)
+  
+}
+
+moddat <- moddat %>% 
+  separate(obs, c('bay_segment', 'station', 'param')) %>% 
+  unnest('fit')
+
+save(moddat, file = here('data/moddat.RData'))
 
 
