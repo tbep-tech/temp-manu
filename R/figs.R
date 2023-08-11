@@ -384,7 +384,7 @@ p <- ggplot(toplo1, aes(x = yr, y = doy)) +
     x = NULL, 
     y = "Day of year", 
     title = "Seasonal duration of time above temperature thresholds", 
-    subtitle = "Day of year when first and last exceeded by year"
+    subtitle = "First and last date exceeded by year"
   )
 
 png(here('figs/threxceed.png'), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
