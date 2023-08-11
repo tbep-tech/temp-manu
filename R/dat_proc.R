@@ -2,6 +2,9 @@ library(wqtrends)
 library(tbeptools)
 library(tidyverse)
 library(lubridate)
+library(haven)
+library(here)
+library(sf)
 
 # save model files for each station, separate for bottom/surface temp
 epcdata %>% 
@@ -77,5 +80,45 @@ moddat <- moddat %>%
   unnest('fit')
 
 save(moddat, file = here('data/moddat.RData'))
+
+# fim data ------------------------------------------------------------------------------------
+
+prj <- 4326
+tbsegshedcr <- st_make_valid(tbsegshed)
+
+# import original SAS data
+phy_raw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_physical.sas7bdat')
+hydraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_hydrolab.sas7bdat')
+
+# physical data
+# select AM projects (monhtly FIM sampling)
+# zones A-E for TB proper, then clip by TB segments
+# year >= 1998, but make sure to use only 2005 to present for trawls (300/301)
+phydat <- phyraw %>% 
+  mutate(date = ymd(date)) %>% 
+  # filter(Project_1 == 'AM'| Project_2 == 'AM' | Project_3 == 'AM') %>% 
+  filter(Zone %in% c('A', 'B', 'C', 'D', 'E')) %>% 
+  filter(!is.na(Longitude) | !is.na(Latitude)) %>% 
+  st_as_sf(coords = c('Longitude', 'Latitude'), crs = prj, remove = F) %>% 
+  .[tbsegshedcr, ] %>% 
+  select(date, Reference)
+
+hyddat <- hydraw %>% 
+  filter(Beg_end %in% 'B') %>% 
+  filter(Depth == max(Depth), .by = 'Reference') %>% 
+  select(Reference, temp = Temperature, sal = Salinity)
+
+alldat <- phydat %>% 
+  inner_join(hyddat, by = 'Reference')
+
+# toplo <- alldat %>% 
+#   mutate(
+#     date = floor_date(date, unit = 'month')
+#   ) %>% 
+#   st_set_geometry(NULL) %>% 
+#   summarise(
+#     cnt = n(), 
+#     .by = date
+#   )
 
 

@@ -37,6 +37,10 @@ library(here)
 
 ## Methods
 
+* Get FIM, Pinellas, Manatee data
+* Look at salinity
+* Find upper temp, lower salinity thresholds for HW, SF, and TT.
+
 The conceptual stressor diagram @fig-concept.
 
 ## Results
