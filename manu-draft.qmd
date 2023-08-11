@@ -1,0 +1,59 @@
+---
+format: 
+  docx:
+    reference-doc: my_styles.docx
+    number-sections: true
+title: "Title"
+# bibliography: refs.bib
+# csl: limnology-and-oceanography.csl
+author: 
+  - Marcus W Beck:
+      email: mbeck@tbep.org
+      institute: [TBEP]
+      correspondence: true
+
+institute:
+  - TBEP: Tampa Bay Estuary Program, St. Petersburg, Florida 33701 USA 16802 USA
+
+filters: 
+  - templates/scholarly-metadata.lua
+  - templates/author-info-blocks.lua
+  
+execute: 
+  echo: false
+  warning: false
+  ft.keepnext: false
+  ft.align: left
+---
+
+```{r, results = 'hide'}
+library(knitr)
+library(here)
+```
+
+## Abstract {.unnumbered}
+
+## Introduction
+
+## Methods
+
+The conceptual stressor diagram @fig-concept.
+
+## Results
+
+## Discussion
+
+## Acknowledgments {.unnumbered}
+
+<!-- {{< pagebreak >}} -->
+
+## Figures {.unnumbered}
+
+![Conceptual stressor diagram](figs/concept.png){#fig-concept}
+{{< pagebreak >}}
+
+## Tables {.unnumbered}
+
+<!-- {{< pagebreak >}} -->
+
+## References {.unnumbered}
