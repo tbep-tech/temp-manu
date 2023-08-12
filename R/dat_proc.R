@@ -6,6 +6,8 @@ library(haven)
 library(here)
 library(sf)
 
+# GAMs for each station, save file ------------------------------------------------------------
+
 # save model files for each station, separate for bottom/surface temp
 epcdata %>% 
   select(bay_segment, station = epchc_station, date = SampleTime, temptop = Temp_Water_Top_degC, tempbot = Temp_Water_Bottom_degC) %>% 
@@ -84,10 +86,9 @@ save(moddat, file = here('data/moddat.RData'))
 # fim data ------------------------------------------------------------------------------------
 
 prj <- 4326
-tbsegshedcr <- st_make_valid(tbsegshed)
 
 # import original SAS data
-phy_raw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_physical.sas7bdat')
+phyraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_physical.sas7bdat')
 hydraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_hydrolab.sas7bdat')
 
 # physical data
@@ -100,25 +101,17 @@ phydat <- phyraw %>%
   filter(Zone %in% c('A', 'B', 'C', 'D', 'E')) %>% 
   filter(!is.na(Longitude) | !is.na(Latitude)) %>% 
   st_as_sf(coords = c('Longitude', 'Latitude'), crs = prj, remove = F) %>% 
-  .[tbsegshedcr, ] %>% 
+  .[tbseg, ] %>% 
   select(date, Reference)
 
 hyddat <- hydraw %>% 
   filter(Beg_end %in% 'B') %>% 
   filter(Depth == max(Depth), .by = 'Reference') %>% 
-  select(Reference, temp = Temperature, sal = Salinity)
+  select(Reference, depth = Depth, temp = Temperature, sal = Salinity)
 
-alldat <- phydat %>% 
-  inner_join(hyddat, by = 'Reference')
+fimdat <- phydat %>% 
+  inner_join(hyddat, by = 'Reference') %>% 
+  filter(year(date) > 1995) %>% # only spring/fall sampling prior to 1996
+  st_intersection(tbseg[, 'bay_segment']) 
 
-# toplo <- alldat %>% 
-#   mutate(
-#     date = floor_date(date, unit = 'month')
-#   ) %>% 
-#   st_set_geometry(NULL) %>% 
-#   summarise(
-#     cnt = n(), 
-#     .by = date
-#   )
-
-
+save(fimdat, file = here('data/fimdat.RData'), compress = 'xz')
