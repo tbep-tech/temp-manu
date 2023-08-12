@@ -27,15 +27,16 @@ library(here)
 
 # Complete record
 
-This plot shows the significant increasing or decreasing temperature trends for all long-term monitoring stations (EPCHC) in Tampa Bay, by period of record and sampling location in the water column. The periods of record are 1974-2022 (whole record), 2007-2022 ([NOAA record](https://coastwatch.noaa.gov/cw_html/cwViewer.html)), 1996-2020 (FIM record), 2000-2015 (seagrass recovery), and 2016-2022 (seagrass decline). The latter two periods of record likely have low statistical power with limited sample size. Seasonal Mann-Kendall tests are used.
+This plot shows the significant increasing or decreasing salinity or temperature trends for all long-term monitoring stations (EPCHC) in Tampa Bay for the entire period of record (1974-2022) and sampling location in the water column. Seasonal Mann-Kendall tests are used.
 
 ```{r}
+#| out-width: 70%
 knitr::include_graphics(here('figs/sktall.png'))
 ```
 
 # By month
 
-These plots show significant increasing or decreasing temperature trends by month for long-term monitoring stations in Tampa Bay.  The plots are organized by period of record and sampling location in the water column. Mann-Kendal tests are used.
+These plots show significant increasing or decreasing temperature or salinity trends by month for long-term monitoring stations in Tampa Bay.  The plots are organized by parameter and sampling location in the water column. Mann-Kendall tests are used.
 
 ::: panel-tabset
 ```{r}
@@ -51,7 +52,7 @@ mos <- fls %>%
 for(mo in seq_along(mos)){
   cat('## ', mos[mo], '\n\n')
   
-  chnk <- paste0('![](figs/', fls[mo], ')\n')
+  chnk <- paste0('![](figs/', fls[mo], '){width=70%}\n')
   cat(chnk)
   
   cat('\n\n')
@@ -62,7 +63,7 @@ for(mo in seq_along(mos)){
 
 # Month summary by bay segment
 
-These plots show the percent of stations by month and bay segment that had significant increasing temperature trends for the specified period of record. Tabs are organized by top, mid, and bottom water column temperature measurements.  The summaries are based on results for the monthly trend tests in the previous section. Decreasing trends are not shown.
+These plots show the percent of stations by month and bay segment that had significant decreasing salinity trends or increasing temperature trends. Tabs are organized by top and bottom water column measurements.  The summaries are based on results for the monthly trend tests in the previous section. Increasing trends for salinity and decreasing trends for temperature are not shown.
 
 ::: panel-tabset
 ```{r}

@@ -8,34 +8,25 @@ library(patchwork)
 library(here)
 library(wqtrends)
 
+yrsel <- c(1974, 2022)
+
 # kendall all months --------------------------------------------------------------------------
 
 sktres <- epcdata %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
-         mo, matches('Temp_Water_Top|Temp_Water_Bottom')) %>% 
-  pivot_longer(matches('Temp'), names_to = 'var', values_to = 'val') %>% 
+         mo, matches('Top|Bottom')) %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
   nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat')) %>% 
-  crossing(
-    ., 
-    tibble(
-      per = c('all', 'fim', 'sat', 'rec', 'cur'),
-      yrs = c('1974-2023', '1996-2021', '2007-2023', '2000-2016', '2016-2023')
-    )
-  ) %>% 
   mutate(
-    skt = purrr::pmap(list(station, var, yrs, data), function(station, var, yrs, data){
+    skt = purrr::pmap(list(station, var, data), function(station, var, data){
       
-      cat(station, var, yrs, '\n')
-      
-      yrsel <- strsplit(yrs, '-') %>% 
-        .[[1]] %>% 
-        as.numeric()
+      cat(station, var, '\n')
       
       # yr selection
       tomod <- data %>% 
         arrange(yr, mo) %>% 
-        na.omit() %>% 
-        filter(yr >= yrsel[1] & yr < yrsel[2])
+        na.omit()
       
       # run tests
       ests <- kendallSeasonalTrendTest(val ~ mo + yr, data = tomod)
@@ -64,7 +55,11 @@ bsmap1_transparent <- matrix(adjustcolor(bsmap1,
                              nrow = nrow(bsmap1))
 attributes(bsmap1_transparent) <- mapatt
 
-leglab <- "\u00B0C / year"
+leglab <- expression(paste(yr^{-1}))
+colrng <- range(sktres$slos) %>% 
+  abs %>% 
+  max
+colrng <- c(-1 * colrng, colrng)
 
 pthm <- theme_bw(base_family = 'serif', base_size = 14) +
   theme(
@@ -81,31 +76,26 @@ toplo <- sktres %>%
     pvalcol = ifelse(pval < 0.05, T, F),
     coefsgn = sign(slos),
     coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
-    var = factor(var, 
-      levels = c("Temp_Water_Top_degC", "Temp_Water_Bottom_degC"), 
-      labels = c('Top', 'Bottom')
-    ),
-    yrs = factor(yrs, 
-      levels = c('1974-2023', '2007-2023', '1996-2021', '2000-2016', '2016-2023'), 
-      labels = c('1974-2022', '2007-2022', '1996-2020', '2000-2015', '2016-2022')
-    )
+    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
+    var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
   ) 
 
 p <- ggmap(bsmap1_transparent) +
   geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
-  facet_grid(var ~ yrs) +
-  # scale_fill_gradient2(leglab, low = 'green', mid = 'grey',  high = 'tomato1', midpoint = 0) +
-  scale_fill_gradientn(leglab, limits = c(-0.25, 0.25), colors = c('green', 'grey', 'tomato1')) +
+  facet_grid(loc ~ var) +
+  # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
+  scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
   scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = F, drop = FALSE) +
   coord_map() +
   scale_shape_manual(values = c(24, 25), guide = 'none', drop = FALSE) +
   pthm +
-  scale_size(range = c(3, 8), guide = F) +
+  scale_size(range = c(2, 6), guide = F) +
   labs(
     caption = 'Outlines indicate p < 0.05'
   )
 
-png(here('figs/sktall.png'), height = 7, width = 13, family = 'serif', units = 'in', res = 300)
+png(here('figs/sktall.png'), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
 p
 dev.off()
 
@@ -113,30 +103,19 @@ dev.off()
 
 ktres <- epcdata %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
-         mo, matches('Temp')) %>% 
-  pivot_longer(matches('Temp_Water_Top|Temp_Water_Bottom'), names_to = 'var', values_to = 'val') %>% 
+         mo, matches('Top|Bottom')) %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
   nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat', 'mo')) %>% 
-  crossing(
-    ., 
-    tibble(
-      per = c('all', 'fim', 'sat', 'rec', 'cur'),
-      yrs = c('1974-2023', '1996-2021', '2007-2023', '2000-2016', '2016-2023')
-    )
-  ) %>% 
   mutate(
-    skt = purrr::pmap(list(station, var, yrs, mo, data), function(station, var, yrs, mo, data){
+    kt = purrr::pmap(list(station, var, mo, data), function(station, var, mo, data){
       
-      cat(station, var, yrs, mo, '\n')
-      
-      yrsel <- strsplit(yrs, '-') %>% 
-        .[[1]] %>% 
-        as.numeric()
+      cat(station, var, mo, '\n')
       
       # yr selection
       tomod <- data %>% 
         arrange(yr) %>% 
-        na.omit() %>% 
-        filter(yr >= yrsel[1] & yr < yrsel[2])
+        na.omit()
       
       out <- tibble(
         pval = NA,
@@ -158,7 +137,7 @@ ktres <- epcdata %>%
     })
   ) %>% 
   select(-data) %>% 
-  unnest(skt)
+  unnest(kt)
 
 # basemap
 dat_ext <- unname(st_bbox(st_buffer(tbseg, dist = 2000)))
@@ -171,7 +150,11 @@ bsmap1_transparent <- matrix(adjustcolor(bsmap1,
                              nrow = nrow(bsmap1))
 attributes(bsmap1_transparent) <- mapatt
 
-leglab <- "\u00B0C / year"
+leglab <- expression(paste(yr^{-1}))
+colrng <- range(ktres$slos) %>% 
+  abs %>% 
+  max
+colrng <- c(-1 * colrng, colrng)
 
 pthm <- theme_bw(base_family = 'serif', base_size = 14) +
   theme(
@@ -184,21 +167,15 @@ pthm <- theme_bw(base_family = 'serif', base_size = 14) +
   )
 
 ktres %>%
-  filter(slos < 1.5) %>% 
   mutate(
     pvalcol = ifelse(pval < 0.05, T, F),
     coefsgn = sign(slos),
     coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
-    var = factor(var, 
-                 levels = c("Temp_Water_Top_degC", "Temp_Water_Mid_degC", "Temp_Water_Bottom_degC"), 
-                 labels = c('Top', 'Mid', 'Bottom')
-    ),
-    yrs = factor(yrs, 
-                 levels = c('1974-2023', '2007-2023', '1996-2021', '2000-2016', '2016-2023'), 
-                 labels = c('1974-2022', '2007-2022', '1996-2020', '2000-2015', '2016-2022')
-    ),
     mo = sprintf('%02d', mo), 
-    sz = scales::rescale(abs(slos), c(3, 8))
+    sz = scales::rescale(abs(slos), c(2, 6)),
+    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
+    var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
   ) %>% 
   group_nest(mo) %>% 
   deframe() %>% 
@@ -207,9 +184,9 @@ ktres %>%
     p <- ggmap(bsmap1_transparent) +
       geom_point(data = x, aes(x = lon, y = lat, fill = slos, shape = coefsgn, color = pvalcol), stroke = 1, 
                  size = x$sz) +
-      facet_grid(var ~ yrs) +
-      scale_fill_gradientn(leglab, limits = c(-1.5, 1.5), colors = c('green', 'grey', 'tomato1')) +
-      # scale_fill_gradient2(leglab, low = 'green', mid = 'grey',  high = 'tomato1', midpoint = 0) +
+      facet_grid(loc ~ var) +
+      scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
+      # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
       scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = F, drop = FALSE) +
       coord_map() +
       scale_shape_manual(values = c(24, 25), guide = 'none', drop = FALSE) +
@@ -220,7 +197,7 @@ ktres %>%
       )
     
     fl <- paste0('figs/skt_',sprintf('%02d', as.numeric(mo)), '.png')
-    png(here(fl), height = 7, width = 13, family = 'serif', units = 'in', res = 300)
+    png(here(fl), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
     print(p)
     dev.off()
     
@@ -229,36 +206,43 @@ ktres %>%
 # segment summary of monthly kendall by temp loc ----------------------------------------------
 
 ktres %>% 
-  summarise(
-    nsig = sum(pval < 0.05 & slos > 0),
-    cnt = n(),
-    nsigper = round(100 * nsig / cnt, 0),
-    .by = c('bay_segment', 'mo', 'yrs', 'var')
-  ) %>% 
   mutate(
-    yrs = factor(yrs, 
-                 levels = c('1974-2023', '2007-2023', '1996-2021', '2000-2016', '2016-2023'), 
-                 labels = c('1974-2022: whole record', '2007-2022: NOAA record', '1996-2020: FIM record', '2000-2015: seagrass recovery', '2016-2022: seagrass decline')
-    ),
     mo = month(mo, label = T), 
     bay_segment = factor(bay_segment, levels = c('LTB', 'MTB', 'HB', 'OTB')), 
-    nsigper = ifelse(nsigper == 0, '', nsigper), 
-    var = factor(var, 
-                 levels = c('Temp_Water_Top_degC', 'Temp_Water_Bottom_degC'),
-                 labels = c('Top', 'Bottom')
-    )
+    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
+    varsimp = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
+  ) %>%
+  nest(.by = c('bay_segment', 'mo', 'varsimp', 'var', 'loc')) %>% 
+  mutate(
+    sum = purrr::pmap(list(varsimp, data), function(varsimp, data){
+
+      data %>% 
+        summarise(
+          nsig = case_when(
+            varsimp == 'Sal' ~ -1 * sum(pval < 0.05 & slos < 0),
+            varsimp == 'Temp' ~ sum(pval < 0.05 & slos > 0)
+          ),
+          cnt = n(),
+          nsigper = round(100 * nsig / cnt, 0),
+          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper)))
+        )
+      
+    })
   ) %>% 
-  group_nest(var) %>% 
+  select(-data) %>% 
+  unnest('sum') %>% 
+  group_nest(loc) %>% 
   deframe %>% 
-  iwalk(function(x, var){
-    
-    p <- ggplot(x, aes(x = mo, y = bay_segment, fill = nsig)) + 
+  iwalk(function(x, loc){
+
+    p <- ggplot(x, aes(x = mo, y = bay_segment, fill = nsigper)) + 
       geom_tile(color = 'darkgrey') +
-      geom_text(aes(label = nsigper)) +
+      geom_text(aes(label = perlab)) +
       scale_x_discrete(expand = c(0, 0)) + 
       scale_y_discrete(expand = c(0, 0)) + 
-      scale_fill_distiller(palette = 'Reds', direction = 1) + 
-      facet_wrap(~ yrs, ncol = 1, scales = 'free_x') + 
+      scale_fill_gradientn(leglab, limits = c(-100, 100), colors = c('blue', 'grey', 'tomato1')) +
+      facet_wrap(~ varsimp, ncol = 1, scales = 'free_x') + 
       theme(
         strip.background = element_blank(), 
         strip.text = element_text(hjust = 0, size = 12), 
@@ -269,8 +253,8 @@ ktres %>%
         y = 'Bay segment'
       )
     
-    fl <- paste0('figs/segsum_', var, '.png')
-    png(here(fl), height = 8, width = 6, family = 'serif', units = 'in', res = 300)
+    fl <- paste0('figs/segsum_', loc, '.png')
+    png(here(fl), height = 4, width = 6, family = 'serif', units = 'in', res = 300)
     print(p)
     dev.off()
     
