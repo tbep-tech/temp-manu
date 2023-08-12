@@ -105,8 +105,8 @@ phydat <- phyraw %>%
   select(date, Reference)
 
 hyddat <- hydraw %>% 
-  filter(Beg_end %in% 'B') %>% 
-  filter(Depth == max(Depth), .by = 'Reference') %>% 
+  filter(Beg_end %in% 'B') %>% # each location has a beginning and end log, take one 
+  filter(Depth == max(Depth), .by = 'Reference') %>% # some have depth profile, take bottom
   select(Reference, depth = Depth, temp = Temperature, sal = Salinity)
 
 fimdat <- phydat %>% 

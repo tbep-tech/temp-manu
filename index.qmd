@@ -27,7 +27,7 @@ library(here)
 
 # Complete record
 
-This plot shows the significant increasing or decreasing temperature trends for all long-term monitoring stations (EPCHC) in Tampa Bay, by period of record and sampling location in the water column. The periods of record are 1974-2022 (whole record), 2007-2022 ([NOAA record](https://coastwatch.noaa.gov/cw_html/cwViewer.html)), 2000-2015 (seagrass recovery), and 2016-2022 (seagrass decline). The latter two periods of record likely have low statistical power with limited sample size. Seasonal Mann-Kendall tests are used.
+This plot shows the significant increasing or decreasing temperature trends for all long-term monitoring stations (EPCHC) in Tampa Bay, by period of record and sampling location in the water column. The periods of record are 1974-2022 (whole record), 2007-2022 ([NOAA record](https://coastwatch.noaa.gov/cw_html/cwViewer.html)), 1996-2020 (FIM record), 2000-2015 (seagrass recovery), and 2016-2022 (seagrass decline). The latter two periods of record likely have low statistical power with limited sample size. Seasonal Mann-Kendall tests are used.
 
 ```{r}
 knitr::include_graphics(here('figs/sktall.png'))
@@ -67,6 +67,7 @@ These plots show the percent of stations by month and bay segment that had signi
 ::: panel-tabset
 ```{r}
 #| results: asis
+#| out-width: 80%
 fls <- list.files(here('figs'), 'segsum_', full.names = F) %>% 
   rev
 locs <- fls %>% 
