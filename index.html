@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Marcus Beck, mbeck@tbep.org">
-<meta name="dcterms.date" content="2023-08-12">
+<meta name="dcterms.date" content="2023-08-14">
 
 <title>Exploratory data analysis</title>
 <style>
@@ -75,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 12, 2023</p>
+      <p class="date">August 14, 2023</p>
     </div>
   </div>
   
@@ -217,27 +217,60 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="threshold-exceedances" class="level1">
 <h1>Threshold exceedances</h1>
-<p>Temperature exceedences over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three temperature thresholds (20, 25, and 30 degrees C) were estimated. The total number of days in each year when the daily temperature was above the same thresholds were also estimated. The station level results were aggregated within each bay segment to produce the plots below.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true" href="">Temperature</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false" href="">Salinity</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<p>Temperature exceedences over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three temperature thresholds (29, 30, and 31 degrees C) were estimated. The total number of days in each year when the daily temperature was above the same thresholds were also estimated. The station level results were aggregated within each bay segment to produce the plots below.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="figs/gamex.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="figs/gamex.png" class="img-fluid figure-img" width="900"></a></p>
+<p><a href="figs/tempgamex.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="figs/tempgamex.png" class="img-fluid figure-img" width="900"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="figs/threxceed.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="figs/threxceed.png" class="img-fluid figure-img" width="900"></a></p>
+<p><a href="figs/tempexceed.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="figs/tempexceed.png" class="img-fluid figure-img" width="900"></a></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="figs/thrcount.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="figs/thrcount.png" class="img-fluid figure-img" width="1050"></a></p>
+<p><a href="figs/tempcount.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18"><img src="figs/tempcount.png" class="img-fluid figure-img" width="1050"></a></p>
 </figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<p>Salinity exceedences below thresholds over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three salinity thresholds (20, 25, and 30 psu) were estimated. The total number of days in each year when the daily salinity was below the same thresholds were also estimated. The station level results were aggregated within each bay segment to produce the plots below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="figs/saligamex.png" class="lightbox" data-gallery="quarto-lightbox-gallery-19"><img src="figs/saligamex.png" class="img-fluid figure-img" width="900"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="figs/saliexceed.png" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="figs/saliexceed.png" class="img-fluid figure-img" width="900"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="figs/salicount.png" class="lightbox" data-gallery="quarto-lightbox-gallery-21"><img src="figs/salicount.png" class="img-fluid figure-img" width="1050"></a></p>
+</figure>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -614,7 +647,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"loop":true,"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom","loop":true});</script>
 
 
 

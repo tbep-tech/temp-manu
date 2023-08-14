@@ -92,14 +92,22 @@ for(loc in seq_along(locs)){
 
 ## Temperature
 
-Temperature exceedences over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three temperature thresholds (20, 25, and 30 degrees C) were estimated.  The total number of days in each year when the daily temperature was above the same thresholds were also estimated.  The station level results were aggregated within each bay segment to produce the plots below.
+Temperature exceedences over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three temperature thresholds (29, 30, and 31 degrees C) were estimated.  The total number of days in each year when the daily temperature was above the same thresholds were also estimated.  The station level results were aggregated within each bay segment to produce the plots below.
 
 ```{r}
-knitr::include_graphics(here('figs/gamex.png'))
-knitr::include_graphics(here('figs/threxceed.png'))
-knitr::include_graphics(here('figs/thrcount.png'))
+knitr::include_graphics(here('figs/tempgamex.png'))
+knitr::include_graphics(here('figs/tempexceed.png'))
+knitr::include_graphics(here('figs/tempcount.png'))
 ```
 
-## Salinity 
+## Salinity
+
+Salinity exceedences below thresholds over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three salinity thresholds (20, 25, and 30 psu) were estimated.  The total number of days in each year when the daily salinity was below the same thresholds were also estimated.  The station level results were aggregated within each bay segment to produce the plots below.
+
+```{r}
+knitr::include_graphics(here('figs/saligamex.png'))
+knitr::include_graphics(here('figs/saliexceed.png'))
+knitr::include_graphics(here('figs/salicount.png'))
+```
 
 :::

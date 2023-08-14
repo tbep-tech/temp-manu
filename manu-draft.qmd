@@ -55,13 +55,13 @@ Thalassia:
 
 -   Temp: 20-30 (range, @lewis1985, @zieman75), 30-31 (upper, from SS)
 
--   Salinity: 25 (lower, @lewis1985); 30, lowest at 5 (lower, @lirman2003), 33-38 (range, @phillips1960); 24-35 (range, @zieman1975 citing @phillips1960); avg 28
+-   Salinity: 25 (lower, @lewis1985); 30, lowest at 5 (lower, @lirman2003), 33-38 (range, @phillips1960); 24-35 (range, @zieman1975 citing @phillips1960); 15 (SS)
 
 Syringodium:
 
 -   Temp: 20-30 (range, @lewis1985), 29 (upper from SS)
 
--   Salinity: 20 (lower, @lewis1985), 25 (lower, @lirman2003); avg 22.5
+-   Salinity: 20 (lower, @lewis1985), 25 (lower, @lirman2003); 20
 
 @lewis1985 review of seagrass in Tampa Bay. @lirman2003 conducted exposure experiments to evaluate seagrass growth in response to a range of salinity conditions. @mcmillan1967 discusses growth of halodule, syringodium, thalassia, and ruppia in response to salinity increases (up to 75 psu), no info on lower limit. Cites @phillips1960 for a salinity range of Thalassia in Florida of 33 - 38 psu. @zieman1975 discusses seasonal variation of thalassia relative to temp and salinity
 

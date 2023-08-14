@@ -1,3 +1,5 @@
+# setup ---------------------------------------------------------------------------------------
+
 library(tidyverse)
 library(lubridate)
 library(EnvStats)
@@ -9,6 +11,10 @@ library(here)
 library(wqtrends)
 
 yrsel <- c(1974, 2022)
+tempthr <- c(29, 30, 31)
+tempcol <- c('coral', 'red2', 'darkred')
+salithr <- c(20, 25, 30)
+salicol <- c('navyblue', 'dodgerblue2', 'slategray3')
 
 # kendall all months --------------------------------------------------------------------------
 
@@ -260,18 +266,17 @@ ktres %>%
     
   })
 
+# temp station gam --------------------------------------------------------------------------
 
-# station gam -------------------------------------------------------------------------------
-
-fl <- 'OTB_66_temptop'
+fl <- 'OTB_66_tempbot'
 load(file = here(paste0('data/', fl, '.RData')))
 
 toplo <- get(fl)
 
-p <- show_prdseries(toplo, ylab = 'Surface tempeature (\u00B0 C') + 
+p <- show_prdseries(toplo, ylab = 'Bottom temperature (\u00B0 C)') + 
   labs(subtitle ='Station 66, OTB')
 
-png(here('figs/gamex.png'), height = 3, width = 6, family = 'serif', units = 'in', res = 300)
+png(here('figs/tempgamex.png'), height = 3, width = 6, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 
@@ -284,7 +289,7 @@ tempsum <- tempprd %>%
   mutate(
     cnts = purrr::map(prd, function(x){
       
-      tibble(thr = c(29, 30, 31)) %>%
+      tibble(thr = tempthr) %>%
         group_nest(thr) %>%
         mutate(data = list(x)) %>%
         mutate(
@@ -307,7 +312,7 @@ tempsum <- tempprd %>%
   )
 
 toplo1 <- tempsum %>% 
-  filter(param %in% 'temptop') %>% 
+  filter(param %in% 'tempbot') %>% 
   select(-AIC, -GCV, -R2, -prd) %>% 
   unnest('cnts') %>% 
   summarise(
@@ -357,12 +362,12 @@ toplo2 <- toplo1 %>%
   arrange(bay_segment, param, thr, ind)
 
 p <- ggplot(toplo1, aes(x = yr, y = doy)) +
-  geom_polygon(data = toplo2, aes(x = yr, y = doy, fill = thr), alpha = 0.5, rule = 'winding') + 
+  geom_polygon(data = toplo2, aes(x = yr, y = doy, fill = thr), alpha = 0.5) + 
   geom_point(size = 0.5, aes(color = thr)) +
   geom_smooth(aes(group = dts, color = thr), method = 'lm', se = F, lwd = 1) +
   facet_grid(bay_segment ~ thr) +
-  scale_colour_manual(values = c('coral', 'red2', 'darkred')) +
-  scale_fill_manual(values = c('coral', 'red2', 'darkred')) +
+  scale_colour_manual(values = tempcol) +
+  scale_fill_manual(values = tempcol) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_date(date_breaks = '2 months', date_labels = paste('%b', '1st')) +
   coord_cartesian(
@@ -383,7 +388,7 @@ p <- ggplot(toplo1, aes(x = yr, y = doy)) +
     subtitle = "First and last date exceeded by year"
   )
 
-png(here('figs/threxceed.png'), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
+png(here('figs/tempexceed.png'), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 
@@ -396,7 +401,7 @@ tempsum <- tempprd %>%
   mutate(
     cnts = purrr::map(prd, function(x){
       
-      tibble(thr = c(29, 30, 31)) %>%
+      tibble(thr = tempthr) %>%
         group_nest(thr) %>%
         mutate(data = list(x)) %>%
         mutate(
@@ -440,7 +445,7 @@ p <- ggplot(toplo, aes(x = yr, y = cnt, group = thr, color = thr)) +
   geom_point(size = 0.5) + 
   geom_smooth(formula = y ~ x, method = 'lm', se = F) + 
   facet_grid(param ~ bay_segment) + 
-  scale_colour_manual(values = c('coral', 'red2', 'darkred')) +
+  scale_colour_manual(values = tempcol) +
   theme_bw() + 
   theme(
     panel.grid.minor = element_blank(), 
@@ -458,7 +463,207 @@ p <- ggplot(toplo, aes(x = yr, y = cnt, group = thr, color = thr)) +
     color = "Threshold (C)"
   )
 
+png(here('figs/tempcount.png'), height = 7, width = 7, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
 
-png(here('figs/thrcount.png'), height = 7, width = 7, family = 'serif', units = 'in', res = 300)
+# sali station gam --------------------------------------------------------------------------
+
+fl <- 'OTB_66_salibot'
+load(file = here(paste0('data/', fl, '.RData')))
+
+toplo <- get(fl)
+
+p <- show_prdseries(toplo, ylab = 'Bottom salinity (psu)') + 
+  labs(subtitle ='Station 66, OTB')
+
+png(here('figs/saligamex.png'), height = 3, width = 6, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# sali thresholds doy -------------------------------------------------------------------------
+
+# model file with daily sali predictions for each station, bottom/surface sali
+load(file = here('data/saliprd.RData'))
+
+salisum <- saliprd %>%
+  mutate(
+    cnts = purrr::map(prd, function(x){
+      
+      tibble(thr = salithr) %>%
+        group_nest(thr) %>%
+        mutate(data = list(x)) %>%
+        mutate(
+          data = purrr::pmap(list(data, thr), function(data, thr){
+            
+            data %>%
+              filter(yr < 2023) %>%
+              summarise(
+                cnt = sum(value < thr),
+                frt = date[which(value <= thr)[1]],
+                lst = date[rev(which(value <= thr))[1]],
+                .by = 'yr'
+              )
+            
+          })
+        ) %>% 
+        unnest('data')
+      
+    })
+  )
+
+toplo1 <- salisum %>% 
+  filter(param %in% 'salibot') %>% 
+  select(-AIC, -GCV, -R2, -prd) %>% 
+  unnest('cnts') %>% 
+  summarise(
+    frt = median(frt, na.rm = T), 
+    lst = median(lst, na.rm = T),
+    cnt = mean(cnt),
+    .by = c('bay_segment', 'thr', 'yr', 'param')
+  ) %>% 
+  mutate(
+    frt = yday(frt), 
+    frt = as.Date(date_decimal(2020 + frt / 365)),
+    lst = yday(lst), 
+    lst = as.Date(date_decimal(2020 + lst / 365)),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    thr = paste0(thr, 'psu')
+  ) %>% 
+  pivot_longer(frt:lst, names_to = 'dts', values_to = 'doy') 
+
+toplo2 <- toplo1 %>% 
+  group_nest(bay_segment, param, thr, dts) %>% 
+  mutate(
+    reg = purrr::map(data, function(x){
+      
+      dat <- x[x$doy > 0, ]
+      mod <- lm(doy ~ yr, dat)
+      prddat <- tibble(yr = range(dat$yr, na.rm = T)) %>% 
+        mutate(
+          doy = predict(mod, newdata = .), 
+          doy = as.Date(doy, origin = '1969-12-31')
+        )
+      
+      return(prddat)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest('reg') %>% 
+  mutate(
+    ind = case_when(
+      dts == 'frt' & yr == max(yr) ~ 1, 
+      dts == 'frt' & yr == min(yr) ~ 2,
+      dts == 'lst' & yr == min(yr) ~ 3,
+      dts == 'lst' & yr == max(yr) ~ 4
+    ),
+    .by = c(bay_segment, param, thr)
+  ) %>% 
+  arrange(bay_segment, param, thr, ind)
+
+p <- ggplot(toplo1, aes(x = yr, y = doy)) +
+  geom_polygon(data = toplo2, aes(x = yr, y = doy, fill = thr), alpha = 0.5) +
+  geom_point(size = 0.5, aes(color = thr)) +
+  geom_smooth(aes(group = dts, color = thr), method = 'lm', se = F, lwd = 1) +
+  facet_grid(bay_segment ~ thr) +
+  scale_colour_manual(values = salicol) +
+  scale_fill_manual(values = salicol) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_date(date_breaks = '2 months', date_labels = paste('%b', '1st')) +
+  # coord_cartesian(
+  #   ylim = as.Date(c('2020-05-01', '2020-11-01'))
+  # ) +
+  theme_bw() + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    strip.background = element_blank(), 
+    strip.text = element_text(size = 12) ,
+    axis.text = element_text(size = 9), 
+    legend.position = 'none'
+  ) +
+  labs(
+    x = NULL, 
+    y = "Day of year", 
+    title = "Seasonal duration of time below salinity thresholds", 
+    subtitle = "First and last date exceeded by year"
+  )
+
+png(here('figs/saliexceed.png'), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# sali thresholds length of time --------------------------------------------------------------
+
+# model file with daily sali predictions for each station, bottom/surface temp
+load(file = here('data/saliprd.RData'))
+
+salisum <- saliprd %>%
+  mutate(
+    cnts = purrr::map(prd, function(x){
+      
+      tibble(thr = salithr) %>%
+        group_nest(thr) %>%
+        mutate(data = list(x)) %>%
+        mutate(
+          data = purrr::pmap(list(data, thr), function(data, thr){
+            
+            data %>%
+              filter(yr < 2023) %>%
+              summarise(
+                cnt = sum(value <= thr),
+                frt = date[which(value <= thr)[1]],
+                lst = date[rev(which(value <= thr))[1]],
+                .by = 'yr'
+              )
+            
+          })
+        ) %>% 
+        unnest('data')
+      
+    })
+  )
+
+toplo <- salisum %>% 
+  select(-AIC, -GCV, -R2, -prd) %>% 
+  unnest('cnts') %>% 
+  summarise(
+    frt = median(frt, na.rm = T), 
+    lst = median(lst, na.rm = T),
+    cnt = median(cnt),
+    .by = c('bay_segment', 'thr', 'yr', 'param')
+  ) %>% 
+  mutate(
+    frt = yday(frt), 
+    lst = yday(lst), 
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    thr = paste0(thr, 'psu'),
+    param = factor(param, levels = c('salitop', 'salibot'), labels = c('Top', 'Bottom'))
+    # cnt = lst - frt
+  ) 
+
+p <- ggplot(toplo, aes(x = yr, y = cnt, group = thr, color = thr)) + 
+  geom_point(size = 0.5) + 
+  geom_smooth(formula = y ~ x, method = 'lm', se = F) + 
+  facet_grid(param ~ bay_segment) + 
+  scale_colour_manual(values = salicol) +
+  theme_bw() + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    strip.background = element_blank(),
+    strip.text = element_text(size = 12),
+    axis.text.y = element_text(size = 9), 
+    axis.text.x = element_text(size = 8),
+    legend.position = 'top'
+  ) +
+  labs(
+    x = NULL,
+    y = "Number of days", 
+    title = "Number of days below threshold over time", 
+    subtitle = "Results for top and bottom water salinity by bay segment", 
+    color = "Threshold (psu)"
+  )
+
+png(here('figs/salicount.png'), height = 7, width = 7, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
