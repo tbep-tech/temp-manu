@@ -278,9 +278,9 @@ dev.off()
 # temp thresholds doy -------------------------------------------------------------------------
 
 # model file with daily temp predictions for each station, bottom/surface temp
-load(file = here('data/moddat.RData'))
+load(file = here('data/tempprd.RData'))
 
-modsum <- moddat %>%
+tempsum <- tempprd %>%
   mutate(
     cnts = purrr::map(prd, function(x){
       
@@ -306,7 +306,7 @@ modsum <- moddat %>%
     })
   )
 
-toplo1 <- modsum %>% 
+toplo1 <- tempsum %>% 
   filter(param %in% 'temptop') %>% 
   select(-AIC, -GCV, -R2, -prd) %>% 
   unnest('cnts') %>% 
@@ -378,9 +378,9 @@ dev.off()
 # temp thresholds length of time --------------------------------------------------------------
 
 # model file with daily temp predictions for each station, bottom/surface temp
-load(file = here('data/moddat.RData'))
+load(file = here('data/tempprd.RData'))
 
-modsum <- moddat %>%
+tempsum <- tempprd %>%
   mutate(
     cnts = purrr::map(prd, function(x){
       
@@ -406,7 +406,7 @@ modsum <- moddat %>%
     })
   )
 
-toplo <- modsum %>% 
+toplo <- tempsum %>% 
   select(-AIC, -GCV, -R2, -prd) %>% 
   unnest('cnts') %>% 
   summarise(

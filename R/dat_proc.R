@@ -6,7 +6,7 @@ library(haven)
 library(here)
 library(sf)
 
-# GAMs for each station, save file ------------------------------------------------------------
+# temp GAMs for each station, save file -------------------------------------------------------
 
 # save model files for each station, separate for bottom/surface temp
 epcdata %>% 
@@ -53,12 +53,12 @@ epcdata %>%
     
   })
 
-# get daily predictions from GAM files --------------------------------------------------------
+# get daily temp predictions from GAM files ---------------------------------------------------
 
 fls <- list.files(here('data'), pattern = 'temp', full.names = T)
 obs <- gsub('\\.RData$', '', basename(fls))
 
-moddat <- tibble(obs = obs) %>% 
+tempprd <- tibble(obs = obs) %>% 
   mutate(fit = NA, prd = NA)
 for(i in seq_along(fls)){
   
@@ -69,19 +69,19 @@ for(i in seq_along(fls)){
   
   load(file = fl)
   toadd <- get(ob)
-  moddat[moddat$obs == ob, 'fit'][[1]] <- list(anlz_fit(toadd))
-  moddat[moddat$obs == ob, 'prd'][[1]] <- list(anlz_prdday(toadd))
+  tempprd[tempprd$obs == ob, 'fit'][[1]] <- list(anlz_fit(toadd))
+  tempprd[tempprd$obs == ob, 'prd'][[1]] <- list(anlz_prdday(toadd))
   
   rm(toadd)
   rm(list = ob)
   
 }
 
-moddat <- moddat %>% 
+tempprd <- tempprd %>% 
   separate(obs, c('bay_segment', 'station', 'param')) %>% 
   unnest('fit')
 
-save(moddat, file = here('data/moddat.RData'))
+save(tempprd, file = here('data/tempprd.RData'))
 
 # fim data ------------------------------------------------------------------------------------
 
