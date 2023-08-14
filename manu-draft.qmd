@@ -4,7 +4,7 @@ format:
     reference-doc: my_styles.docx
     number-sections: true
 title: "Title"
-# bibliography: refs.bib
+bibliography: refs.bib
 # csl: limnology-and-oceanography.csl
 author: 
   - Marcus W Beck:
@@ -37,9 +37,29 @@ library(here)
 
 ## Methods
 
-* Get FIM, Pinellas, Manatee data
-* Look at salinity
-* Find upper temp, lower salinity thresholds for HW, SF, and TT.
+Salinity tolerance: Ruppia \> Halodule\> Thalassia \> Syringodium
+
+Halodule:
+
+-   Temp: 20-30 (range, @lewis1985)
+
+-   Salinity: grows well in most salinity ranges [@lirman2003], like Syringodium but more tolerant [@lewis1985], 10-35 (range) or \< 10 (S. Scolaro)
+
+Thalassia:
+
+-   Temp: 20-30 (range, @lewis1985, @zieman75), 30-31 (upper, from SS)
+
+-   Salinity: 25 (lower, @lewis1985); 30, lowest at 5 (lower, @lirman2003), 33-38 (range, @phillips1960); 24-35 (range, @zieman1975 citing @phillips1960)
+
+Syringodium:
+
+-   Temp: 20-30 (range, @lewis1985), 29 (upper from SS)
+
+-   Salinity: 20 (lower, @lewis1985), 25 (lower, @lirman),
+
+@lewis1985 review of seagrass in Tampa Bay. @lirman2003 conducted exposure experiments to evaluate seagrass growth in response to a range of salinity conditions. @mcmillan1967 discusses growth of halodule, syringodium, thalassia, and ruppia in response to salinity increases (up to 75 psu), no info on lower limit. Cites @phillips1960 for a salinity range of Thalassia in Florida of 33 - 38 psu. @zieman1975 discusses seasonal variation of thalassia relative to temp and salinity
+
+-   Get FIM, Pinellas, Manatee data
 
 The conceptual stressor diagram @fig-concept.
 
@@ -53,8 +73,7 @@ The conceptual stressor diagram @fig-concept.
 
 ## Figures {.unnumbered}
 
-![Conceptual stressor diagram](figs/concept.png){#fig-concept}
-{{< pagebreak >}}
+![Conceptual stressor diagram](figs/concept.png){#fig-concept} {{< pagebreak >}}
 
 ## Tables {.unnumbered}
 
