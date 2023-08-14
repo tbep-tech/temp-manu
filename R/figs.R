@@ -284,7 +284,7 @@ tempsum <- tempprd %>%
   mutate(
     cnts = purrr::map(prd, function(x){
       
-      tibble(thr = c(20, 25, 30)) %>%
+      tibble(thr = c(29, 30, 31)) %>%
         group_nest(thr) %>%
         mutate(data = list(x)) %>%
         mutate(
@@ -345,17 +345,29 @@ toplo2 <- toplo1 %>%
   ) %>% 
   select(-data) %>% 
   unnest('reg') %>% 
-  arrange(param, thr, doy, yr)
+  mutate(
+    ind = case_when(
+      dts == 'frt' & yr == max(yr) ~ 1, 
+      dts == 'frt' & yr == min(yr) ~ 2,
+      dts == 'lst' & yr == min(yr) ~ 3,
+      dts == 'lst' & yr == max(yr) ~ 4
+    ),
+    .by = c(bay_segment, param, thr)
+  ) %>% 
+  arrange(bay_segment, param, thr, ind)
 
 p <- ggplot(toplo1, aes(x = yr, y = doy)) +
-  geom_polygon(data = toplo2, aes(x = yr, y = doy, fill = thr), alpha = 0.5) + 
+  geom_polygon(data = toplo2, aes(x = yr, y = doy, fill = thr), alpha = 0.5, rule = 'winding') + 
   geom_point(size = 0.5, aes(color = thr)) +
   geom_smooth(aes(group = dts, color = thr), method = 'lm', se = F, lwd = 1) +
   facet_grid(bay_segment ~ thr) +
   scale_colour_manual(values = c('coral', 'red2', 'darkred')) +
   scale_fill_manual(values = c('coral', 'red2', 'darkred')) +
   scale_x_continuous(expand = c(0,0)) +
-  scale_y_date(date_breaks = '3 months', date_labels = paste('%b', '1st')) +
+  scale_y_date(date_breaks = '2 months', date_labels = paste('%b', '1st')) +
+  coord_cartesian(
+    ylim = as.Date(c('2020-05-01', '2020-11-01'))
+  ) +
   theme_bw() + 
   theme(
     panel.grid.minor = element_blank(), 
@@ -384,7 +396,7 @@ tempsum <- tempprd %>%
   mutate(
     cnts = purrr::map(prd, function(x){
       
-      tibble(thr = c(20, 25, 30)) %>%
+      tibble(thr = c(29, 30, 31)) %>%
         group_nest(thr) %>%
         mutate(data = list(x)) %>%
         mutate(
