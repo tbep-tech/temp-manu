@@ -83,6 +83,83 @@ tempprd <- tempprd %>%
 
 save(tempprd, file = here('data/tempprd.RData'))
 
+# sali GAMs for each station, save file -------------------------------------------------------
+
+# save model files for each station, separate for bottom/surface temp
+epcdata %>% 
+  select(bay_segment, station = epchc_station, date = SampleTime, salitop = Sal_Top_ppth, salibot = Sal_Bottom_ppth) %>% 
+  filter(year(date) < 2023) %>% 
+  filter(year(date) > 1975) %>% 
+  pivot_longer(matches('sal'), names_to = 'param', values_to = 'value') %>% 
+  mutate(
+    stationdup = station,
+    paramdup = param,
+    date = as.Date(date), 
+    cont_year = decimal_date(date), 
+    yr = year(date), 
+  ) %>% 
+  unite('ind', bay_segment, station, param) %>% 
+  group_nest(ind) %>% 
+  mutate(
+    cnt = 1:nrow(.)
+  ) %>% 
+  unite('ind', cnt, ind, sep = '-') %>% 
+  deframe() %>% 
+  iwalk(function(data, ind){
+    
+    cat(ind, '\n')
+    
+    yrcnt <- data %>% 
+      na.omit() %>% 
+      summarize(
+        cnt = n(),
+        .by = 'yr'
+      ) %>% 
+      arrange(yr) %>% 
+      mutate(flt = cnt >= 5)
+    yrmin <- yrcnt$yr[which(yrcnt$flt)[1]]
+    
+    mod <- data %>% 
+      filter(yr >= yrmin) %>% 
+      anlz_gam(trans = 'ident')
+    
+    ind <- gsub('^.*-', '', ind)
+    assign(ind, mod)
+    fl <- here(paste0('data/', ind, '.RData'))
+    save(list = ind, file = fl, compress = 'xz')
+    
+  })
+
+# get daily sali predictions from GAM files ---------------------------------------------------
+
+fls <- list.files(here('data'), pattern = 'sali', full.names = T)
+obs <- gsub('\\.RData$', '', basename(fls))
+
+saliprd <- tibble(obs = obs) %>% 
+  mutate(fit = NA, prd = NA)
+for(i in seq_along(fls)){
+  
+  cat(i, 'of', length(fls), '\n')
+  
+  fl <- fls[i]
+  ob <- obs[i]
+  
+  load(file = fl)
+  toadd <- get(ob)
+  saliprd[saliprd$obs == ob, 'fit'][[1]] <- list(anlz_fit(toadd))
+  saliprd[saliprd$obs == ob, 'prd'][[1]] <- list(anlz_prdday(toadd))
+  
+  rm(toadd)
+  rm(list = ob)
+  
+}
+
+saliprd <- saliprd %>% 
+  separate(obs, c('bay_segment', 'station', 'param')) %>% 
+  unnest('fit')
+
+save(saliprd, file = here('data/saliprd.RData'))
+
 # fim data ------------------------------------------------------------------------------------
 
 prj <- 4326
