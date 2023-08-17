@@ -45,6 +45,8 @@ Temp background for TB: NOAA coastwatch trends
 
 Seagrass changes over time in @fig-seagrasschg. 
 
+Observed trends aggregated by year and bay segment across stations and months in @fig-saltempraw.
+
 The conceptual stressor diagram @fig-concept.
 
 Salinity tolerance: Ruppia \> Halodule\> Thalassia \> Syringodium
@@ -73,6 +75,8 @@ Syringodium:
 
 ## Results
 
+For @fig-saltempraw, salinity shows much higher inter-annual variability, but lower intra-year variation among stations. Trends are similar for bottom vs top, temperature shows stronger trend than salinity. 
+
 ## Discussion
 
 Other areas showing seagrass loss - Florida Bay is different, less water flowing out of everglad and compounding SLR has elevated salinity and likely stress in other direction. Also, Biscayne Bay and IRL is a lot like OTB, poor flushing for example.
@@ -84,6 +88,10 @@ Other areas showing seagrass loss - Florida Bay is different, less water flowing
 ## Figures {.unnumbered}
 
 ![Seagrass changes over time in Tampa Bay for (a) areal coverage and (b) frequency occurrence of major species.  Changes are shown for major bay segments. Note the different time scale between (a) and  (b).  Coverage maps in (a) began in 1988 and seagrass transect monitoring in (b) began in 1998. Red lines in (a) show approximate capacity of seagrass coverage based on the baywide target of 40,000 acres. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. ](figs/seagrasschg.png){#fig-seagrasschg} 
+
+{{< pagebreak >}}
+
+![Long-term salinity and temperature trends for major bay segments from 1975 to 2022. Points are colored by sampling location in the water column.  Points show the average and 95% confidence interval across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. ](figs/saltempraw.png){#fig-saltempraw} 
 
 {{< pagebreak >}}
 

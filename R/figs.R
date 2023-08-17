@@ -108,6 +108,61 @@ png(here('figs/seagrasschg.png'), height = 6, width = 8, family = 'serif', units
 print(p)
 dev.off()
 
+# raw temp and salinity changes ---------------------------------------------------------------
+
+toplo <- epcdata %>% 
+  select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
+  mutate(
+    var = factor(var, 
+                 levels = c(c("Sal_Top_ppth", "Sal_Bottom_ppth", "Temp_Water_Top_degC", "Temp_Water_Bottom_degC"
+                 )), 
+                 labels = c("Sal_Top", "Sal_Bottom", "Temp_Top", "Temp_Bottom")
+                 ),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  separate(var, c('var', 'loc')) %>% 
+  mutate(
+    var = factor(var, levels = c('Sal', 'Temp'), labels = c('Salinity (psu)', 'Temperature (\u00B0 C)')),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
+  ) %>% 
+  filter(!is.na(val)) %>% 
+  summarise(
+    avev = mean(val, na.rm = T),
+    lov = t.test(val, na.rm = T)$conf.int[1],
+    hiv = t.test(val, na.rm = T)$conf.int[2],
+    .by = c('bay_segment', 'yr', 'var', 'loc') 
+  )
+
+wd <- 0.5
+p <- ggplot(toplo, aes(x = yr, y = avev, group = loc, color = loc)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
+  geom_point(position = position_dodge2(width = wd)) +
+  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  facet_grid(var ~ bay_segment, scales = 'free_y', switch = 'y') +
+  scale_color_manual(values = c('steelblue1', 'steelblue4')) +
+  theme_bw(base_size = 14) + 
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(), 
+    strip.placement = 'outside', 
+    legend.position = 'top', 
+    strip.background = element_blank(),
+    axis.text.x = element_text(colour = 'black', angle = 45, size = 9, hjust = 1)
+  ) +
+  labs(
+    x = NULL, 
+    y = NULL, 
+    color = NULL, 
+    shape = NULL
+  )
+
+png(here('figs/saltempraw.png'), height = 5, width = 9, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
 # kendall all months --------------------------------------------------------------------------
 
 sktres <- epcdata %>% 

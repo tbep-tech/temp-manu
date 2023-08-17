@@ -1,5 +1,5 @@
 ---
-title: "Exploratory data analysis"
+title: "Hot and fresh: Temperature, salinity, and seagrass change in a large Gulf coast estuary"
 author: 
    - name: Marcus Beck, <mbeck@tbep.org>
 institute: "Tampa Bay Estuary Program"
