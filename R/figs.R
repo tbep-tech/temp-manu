@@ -16,6 +16,98 @@ tempcol <- c('coral', 'red2', 'darkred')
 salithr <- c(20, 25, 30)
 salicol <- c('navyblue', 'dodgerblue2', 'slategray3')
 
+# seagrass loss -------------------------------------------------------------------------------
+
+load(file = url('https://github.com/tbep-tech/tbep-os-presentations/raw/master/data/sgsegest.RData'))
+
+sgsegest <- sgsegest %>% 
+  mutate(
+    segment = factor(segment, 
+                     levels = c("Old Tampa Bay", "Hillsborough Bay", "Middle Tampa Bay", "Lower Tampa Bay", 
+                                "Boca Ciega Bay", "Terra Ceia Bay", "Manatee River"),
+                     labels = c('OTB', 'HB', 'MTB', 'LTB', 'BCB', 'TCB', 'MR'))
+  )
+
+# segment coverage targets in 1k acres
+segtrgs <- tibble(
+  segment = factor(c(levels(sgsegest$segment), 'Total')), 
+  trgs = c(11.1, 1.751, 9.4, 7.4, 8.8, 1.1, 0.449, 40)
+)  
+
+savval <- c('Halodule', 'Syringodium', 'Thalassia')
+savleg <- expression(italic('H. wrightii'), italic('S. filiforme'), italic('T. testudinum'))
+savcol <- c('#ED90A4', '#CCA65A', '#7EBA68')
+names(savcol) <- savval
+
+toplo1 <- sgsegest %>%
+  filter(!segment %in% c('BCB', 'TCB', 'MR')) %>%
+  mutate(acres = acres / 1000) %>%
+  mutate(segment = forcats::fct_drop(segment))
+
+subsegtrgs <- segtrgs %>%
+  filter(segment %in% levels(toplo1$segment))
+
+p1 <- ggplot(toplo1, aes(x = factor(year), y = acres)) +
+  geom_bar(fill = '#00806E', stat = 'identity', colour = 'black', width = 0.6) +
+  geom_hline(data = subsegtrgs, aes(yintercept = trgs, color = 'Target')) +
+  scale_color_manual(values = 'red') +
+  facet_wrap(~segment, ncol = 4) +
+  theme_bw() + 
+  theme(panel.grid.minor =element_blank(),
+        panel.grid.major.x =element_blank(),
+        # plot.background = element_rect(fill = NA, color = NA),
+        axis.text.y = element_text(colour = 'black'),
+        axis.text.x = element_text(colour = 'black', angle = 45, size = 6, hjust = 1),
+        strip.background = element_blank(),
+        # strip.text = element_text(hjust = 0, size = 13),
+        legend.position = 'none'
+  ) +
+  labs(
+    y = 'Seagrass Coverage (x1,000 acres)',
+    x = NULL,
+    color = NULL,
+    subtitle = '(a) Coverage changes for all species by bay segment',
+    caption = expression(italic('Source: Southwest Florida Water Management District'))
+  )
+
+transectocc <- anlz_transectocc(transect)
+transectavespp <- anlz_transectavespp(transectocc, by_seg = TRUE)
+
+toplo2 <- transectave %>% 
+  filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB')) %>% 
+  filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia'))
+
+p2 <- ggplot(toplo2, aes(x = yr, y = foest, color = Savspecies)) + 
+  geom_line() + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(min(toplo2$yr), max(toplo2$yr), by = 2)) +
+  scale_color_manual(
+    values = savcol, 
+    labels = savleg
+  ) +
+  facet_wrap(~bay_segment, ncol = 4) + 
+  theme_bw() + 
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_text(colour = 'black', angle = 45, size = 6, hjust = 1),
+  ) + 
+  labs(
+    y = 'Frequency Occurrence', 
+    x = NULL, 
+    color = NULL,
+    subtitle = '(b) Frequency occurrence changes by species by bay segment',
+    caption = expression(italic('Source: Interagency Seagrass Monitoring Program'))
+  )
+
+p <- p1 + p2 + plot_layout(ncol = 1)
+
+png(here('figs/seagrasschg.png'), height = 6, width = 8, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
 # kendall all months --------------------------------------------------------------------------
 
 sktres <- epcdata %>% 
@@ -38,8 +130,8 @@ sktres <- epcdata %>%
       ests <- kendallSeasonalTrendTest(val ~ mo + yr, data = tomod)
       
       out <- tibble(
-        pval = ests$p.value[2], 
-        slos = ests$estimate[2],
+        pval = ests$p.value[2][[1]], 
+        slos = ests$estimate[2][[1]],
         n = nrow(tomod)
       )
       
@@ -85,7 +177,7 @@ toplo <- sktres %>%
     loc =  gsub("^.*_(.*)_.*$", "\\1", var),
     var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
     loc = factor(loc, levels = c('Top', 'Bottom'))
-  ) 
+  )
 
 p <- ggmap(bsmap1_transparent) +
   geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +

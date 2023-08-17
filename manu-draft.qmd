@@ -43,6 +43,10 @@ Temp background for TB: NOAA coastwatch trends
 
 ## Methods
 
+Seagrass changes over time in @fig-seagrasschg. 
+
+The conceptual stressor diagram @fig-concept.
+
 Salinity tolerance: Ruppia \> Halodule\> Thalassia \> Syringodium
 
 Halodule:
@@ -53,7 +57,7 @@ Halodule:
 
 Thalassia:
 
--   Temp: 20-30 (range, @lewis1985, @zieman75), 30-31 (upper, from SS)
+-   Temp: 20-30 (range, @lewis1985, @zieman1975), 30-31 (upper, from SS)
 
 -   Salinity: 25 (lower, @lewis1985); 30, lowest at 5 (lower, @lirman2003), 33-38 (range, @phillips1960); 24-35 (range, @zieman1975 citing @phillips1960); 15 (SS)
 
@@ -67,11 +71,11 @@ Syringodium:
 
 -   Get FIM, Pinellas, Manatee data
 
-The conceptual stressor diagram @fig-concept.
-
 ## Results
 
 ## Discussion
+
+Other areas showing seagrass loss - Florida Bay is different, less water flowing out of everglad and compounding SLR has elevated salinity and likely stress in other direction. Also, Biscayne Bay and IRL is a lot like OTB, poor flushing for example.
 
 ## Acknowledgments {.unnumbered}
 
@@ -79,7 +83,13 @@ The conceptual stressor diagram @fig-concept.
 
 ## Figures {.unnumbered}
 
-![Conceptual stressor diagram](figs/concept.png){#fig-concept} {{< pagebreak >}}
+![Seagrass changes over time in Tampa Bay for (a) areal coverage and (b) frequency occurrence of major species.  Changes are shown for major bay segments. Note the different time scale between (a) and  (b).  Coverage maps in (a) began in 1988 and seagrass transect monitoring in (b) began in 1998. Red lines in (a) show approximate capacity of seagrass coverage based on the baywide target of 40,000 acres. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. ](figs/seagrasschg.png){#fig-seagrasschg} 
+
+{{< pagebreak >}}
+
+![Conceptual stressor diagram](figs/concept.png){#fig-concept} 
+
+{{< pagebreak >}}
 
 ## Tables {.unnumbered}
 
