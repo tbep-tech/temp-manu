@@ -1,5 +1,5 @@
 ---
-title: "Hot and fresh: Temperature, salinity, and seagrass change in a large Gulf coast estuary"
+title: "Exploratory data analysis"
 author: 
    - name: Marcus Beck, <mbeck@tbep.org>
 institute: "Tampa Bay Estuary Program"
@@ -31,7 +31,7 @@ This plot shows the significant increasing or decreasing salinity or temperature
 
 ```{r}
 #| out-width: 70%
-knitr::include_graphics(here('figs/sktall.png'))
+knitr::include_graphics(here('figseda/sktall.png'))
 ```
 
 # By month
@@ -52,7 +52,7 @@ mos <- fls %>%
 for(mo in seq_along(mos)){
   cat('## ', mos[mo], '\n\n')
   
-  chnk <- paste0('![](figs/', fls[mo], '){width=70%}\n')
+  chnk <- paste0('![](figseda/', fls[mo], '){width=70%}\n')
   cat(chnk)
   
   cat('\n\n')
@@ -77,7 +77,7 @@ locs <- fls %>%
 for(loc in seq_along(locs)){
   cat('## ', locs[loc], '\n\n')
   
-  chnk <- paste0('![](figs/', fls[loc], ')\n')
+  chnk <- paste0('![](figseda/', fls[loc], ')\n')
   cat(chnk)
   
   cat('\n\n')
@@ -95,9 +95,9 @@ for(loc in seq_along(locs)){
 Temperature exceedences over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three temperature thresholds (29, 30, and 31 degrees C) were estimated.  The total number of days in each year when the daily temperature was above the same thresholds were also estimated.  The station level results were aggregated within each bay segment to produce the plots below.
 
 ```{r}
-knitr::include_graphics(here('figs/tempgamex.png'))
-knitr::include_graphics(here('figs/tempexceed.png'))
-knitr::include_graphics(here('figs/tempcount.png'))
+knitr::include_graphics(here('figseda/tempgamex.png'))
+knitr::include_graphics(here('figseda/tempexceed.png'))
+knitr::include_graphics(here('figseda/tempcount.png'))
 ```
 
 ## Salinity
@@ -105,9 +105,9 @@ knitr::include_graphics(here('figs/tempcount.png'))
 Salinity exceedences below thresholds over time were estimated for major bay segments by using daily predictions from a Generalized Additive Model applied to each station. An example of a model is shown in the first plot. The date of the first and last instance each year for each of three salinity thresholds (20, 25, and 30 psu) were estimated.  The total number of days in each year when the daily salinity was below the same thresholds were also estimated.  The station level results were aggregated within each bay segment to produce the plots below.
 
 ```{r}
-knitr::include_graphics(here('figs/saligamex.png'))
-knitr::include_graphics(here('figs/saliexceed.png'))
-knitr::include_graphics(here('figs/salicount.png'))
+knitr::include_graphics(here('figseda/saligamex.png'))
+knitr::include_graphics(here('figseda/saliexceed.png'))
+knitr::include_graphics(here('figseda/salicount.png'))
 ```
 
 :::

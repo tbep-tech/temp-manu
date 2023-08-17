@@ -3,7 +3,7 @@ format:
   docx:
     reference-doc: my_styles.docx
     number-sections: true
-title: "Title"
+title: "Hot and fresh: Temperature, salinity, and seagrass change in a large Gulf coast estuary"
 bibliography: refs.bib
 # csl: limnology-and-oceanography.csl
 author: 
