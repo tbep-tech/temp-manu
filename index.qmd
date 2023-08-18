@@ -41,7 +41,7 @@ These plots show significant increasing or decreasing temperature or salinity tr
 ::: panel-tabset
 ```{r}
 #| results: asis
-fls <- list.files(here('figs'), 'skt_', full.names = F)
+fls <- list.files(here('figseda'), 'skt_', full.names = F)
 mos <- fls %>% 
   basename %>% 
   gsub('^skt_|\\.png', '', .) %>% 
@@ -69,7 +69,7 @@ These plots show the percent of stations by month and bay segment that had signi
 ```{r}
 #| results: asis
 #| out-width: 80%
-fls <- list.files(here('figs'), 'segsum_', full.names = F) %>% 
+fls <- list.files(here('figseda'), 'segsum_', full.names = F) %>% 
   rev
 locs <- fls %>% 
   basename %>% 
