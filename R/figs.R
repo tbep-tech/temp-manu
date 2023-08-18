@@ -240,7 +240,7 @@ ktres <- epcdata %>%
   select(-data) %>% 
   unnest(kt)
 
-# segment summaries by month
+# plots of segment summaries by month
 ktresplo <- ktres %>% 
   mutate(
     mo = month(mo, label = T), 
@@ -257,8 +257,8 @@ ktresplo <- ktres %>%
       data %>% 
         summarise(
           nsig = case_when(
-            varsimp == 'Sal' ~ -1 * sum(pval < 0.05 & slos < 0),
-            varsimp == 'Temp' ~ sum(pval < 0.05 & slos > 0)
+            varsimp == 'Salinity' ~ -1 * sum(pval < 0.05 & slos < 0),
+            varsimp == 'Temperature' ~ sum(pval < 0.05 & slos > 0)
           ),
           cnt = n(),
           nsigper = round(100 * nsig / cnt, 0),
@@ -272,10 +272,10 @@ ktresplo <- ktres %>%
   group_nest(loc) %>% 
   mutate(
     plo = purrr::pmap(list(loc, data), function(loc, data){
- 
+
       p <- ggplot(data, aes(x = mo, y = bay_segment, fill = nsigper)) + 
         geom_tile(color = 'darkgrey') +
-        geom_text(aes(label = perlab)) +
+        geom_text(aes(label = perlab), color = 'white', fontface = 'bold') +
         scale_x_discrete(expand = c(0, 0)) + 
         scale_y_discrete(expand = c(0, 0)) + 
         scale_fill_gradientn(leglab, limits = c(-100, 100), colors = c('blue', 'grey', 'tomato1')) +
@@ -283,7 +283,8 @@ ktresplo <- ktres %>%
         theme(
           strip.background = element_blank(), 
           strip.text = element_text(hjust = 0, size = 12), 
-          legend.position = 'none'
+          legend.position = 'none',
+          axis.text = element_text(size = 10)
         ) + 
         labs(
           x = NULL, 
@@ -312,16 +313,6 @@ colrng <- range(sktres$slos) %>%
   max
 colrng <- c(-1 * colrng, colrng)
 
-pthm <- theme_bw(base_family = 'serif', base_size = 14) +
-  theme(
-    legend.position = 'right',
-    # legend.box = 'vertical',
-    strip.background = element_blank(),
-    axis.title = element_blank(),
-    axis.text = element_text(size = 9),
-    strip.text = element_text(size = 14)
-  )
-
 toplo <- sktres %>%
   mutate(
     pvalcol = ifelse(pval < 0.05, T, F),
@@ -329,23 +320,53 @@ toplo <- sktres %>%
     coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
     loc =  gsub("^.*_(.*)_.*$", "\\1", var),
     var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    var = factor(var, levels = c('Sal', 'Temp'), labels = c('Salinity', 'Temperature')),
     loc = factor(loc, levels = c('Top', 'Bottom'))
   )
 
-p <- ggmap(bsmap1_transparent) +
+pthm <- theme_bw(base_family = 'serif') +
+  theme(
+    legend.position = c(0.9, 0.1), 
+    # legend.box = 'horizontal',
+    strip.background = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(size = 8),
+    strip.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+    legend.text = element_text(size = 8),
+    legend.background = element_rect(fill = NA)
+  )
+
+p1 <- ggmap(bsmap1_transparent) +
+  geom_sf(data = tbseg, inherit.aes = F) +
   geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
   facet_grid(loc ~ var) +
   # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
   scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
-  scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = F, drop = FALSE) +
-  coord_map() +
-  scale_shape_manual(values = c(24, 25), guide = 'none', drop = FALSE) +
+  scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
+  # coord_map() +
+  scale_shape_manual(values = c(24, 25), drop = FALSE, guide = 'none') +
   pthm +
-  scale_size(range = c(2, 6), guide = F) +
+  scale_size(range = c(0.75, 4), guide = 'none') +
+  guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
   labs(
+    title = '(a) Change per year, 1974-2022',
     caption = 'Outlines indicate p < 0.05'
   )
 
-png(here('figseda/sktall.png'), height = 7, width = 6, family = 'serif', units = 'in', res = 300)
-p
+p2 <- ktresplo %>% 
+  filter(loc == 'Top') %>% 
+  pull(plo) %>% 
+  .[[1]] + labs(title = '(b) Top, % stations with significant trends by month')
+
+p3 <- ktresplo %>% 
+  filter(loc == 'Bottom') %>% 
+  pull(plo) %>% 
+  .[[1]] + labs(title = '(c) Bottom, % stations with significant trends by month')
+
+p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, width = c(0.9, 1))
+
+png(here('figs/kendall.png'), height = 7, width = 9.5, family = 'serif', units = 'in', res = 300)
+print(p)
 dev.off()

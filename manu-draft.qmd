@@ -3,7 +3,7 @@ format:
   docx:
     reference-doc: my_styles.docx
     number-sections: true
-title: "Hot and fresh: Temperature, salinity, and seagrass change in a large Gulf coast estuary"
+title: "Hot and fresh: Pervasive climate stressors of seagrass in a large Gulf coast estuary"
 bibliography: refs.bib
 # csl: limnology-and-oceanography.csl
 author: 
@@ -43,7 +43,7 @@ Temp background for TB: NOAA coastwatch trends
 
 ## Methods
 
-Seagrass changes over time in @fig-seagrasschg. 
+Seagrass changes over time in @fig-seagrasschg.
 
 Observed trends aggregated by year and bay segment across stations and months in @fig-saltempraw.
 
@@ -75,7 +75,9 @@ Syringodium:
 
 ## Results
 
-For @fig-saltempraw, salinity shows much higher inter-annual variability, but lower intra-year variation among stations. Trends are similar for bottom vs top, temperature shows stronger trend than salinity. 
+For @fig-saltempraw, salinity shows much higher inter-annual variability, but lower intra-year variation among stations. Trends are similar for bottom vs top, temperature shows stronger trend than salinity.
+
+Kendall test results are shown in @fig-kendall. 
 
 ## Discussion
 
@@ -87,15 +89,19 @@ Other areas showing seagrass loss - Florida Bay is different, less water flowing
 
 ## Figures {.unnumbered}
 
-![Seagrass changes over time in Tampa Bay for (a) areal coverage and (b) frequency occurrence of major species.  Changes are shown for major bay segments. Note the different time scale between (a) and  (b).  Coverage maps in (a) began in 1988 and seagrass transect monitoring in (b) began in 1998. Red lines in (a) show approximate capacity of seagrass coverage based on the baywide target of 40,000 acres. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. ](figs/seagrasschg.png){#fig-seagrasschg} 
+![Seagrass changes over time in Tampa Bay for (a) areal coverage and (b) frequency occurrence of major species. Changes are shown for major bay segments. Note the different time scale between (a) and (b). Coverage maps in (a) began in 1988 and seagrass transect monitoring in (b) began in 1998. Red lines in (a) show approximate capacity of seagrass coverage based on the baywide target of 40,000 acres. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/seagrasschg.png){#fig-seagrasschg}
 
 {{< pagebreak >}}
 
-![Long-term salinity and temperature trends for major bay segments from 1975 to 2022. Points are colored by sampling location in the water column.  Points show the average and 95% confidence interval across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. ](figs/saltempraw.png){#fig-saltempraw} 
+![Long-term salinity and temperature trends for major bay segments from 1975 to 2022. Points are colored by sampling location in the water column. Points show the average and 95% confidence interval across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/saltempraw.png){#fig-saltempraw}
 
 {{< pagebreak >}}
 
-![Conceptual stressor diagram](figs/concept.png){#fig-concept} 
+![Conceptual stressor diagram](figs/concept.png){#fig-concept}
+
+{{< pagebreak >}}
+
+![Trends from 1974 to 2022 for salinity and temperature measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the waer column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1).  Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant decreasing (salinity) or increasing (temperature) trends.  Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.  ](figs/kendall.png){#fig-kendall}
 
 {{< pagebreak >}}
 
