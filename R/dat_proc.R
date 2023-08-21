@@ -5,6 +5,9 @@ library(lubridate)
 library(haven)
 library(here)
 library(sf)
+library(lmerTest)
+
+source(here('R/funcs.R'))
 
 # temp GAMs for each station, save file -------------------------------------------------------
 
@@ -159,6 +162,127 @@ saliprd <- saliprd %>%
   unnest('fit')
 
 save(saliprd, file = here('data/saliprd.RData'))
+
+# count of days per year per station above/below thresholds -----------------------------------
+
+# threshoulds to count by year, temp is above, salinity is below
+thrs <- list(
+  temp = c(29, 30, 31),
+  sali = c(15, 20, 25)
+)
+
+# GAM models for salinity, temp by station with daily predictions for POR
+load(file = here('data/saliprd.RData'))
+load(file = here('data/tempprd.RData'))
+
+# lookup table for threshold type by parameter
+cntsel <- tibble(
+  name = c('temp', 'sali'),
+  tosel = c('cntabv', 'cntbel')
+)
+
+# get T/F vectors for predictions above/below thresholds by day
+sumdat <- list(
+  sali = saliprd,
+  temp = tempprd
+) %>%
+  enframe() %>% 
+  unnest('value') %>% 
+  filter(param %in% c('salibot', 'tempbot')) %>% 
+  full_join(cntsel, by = 'name') %>% 
+  mutate(
+    cnts = purrr::pmap(list(name, tosel, prd), function(name, tosel, prd){
+      
+      out <- thrs[[name]] %>%
+        tibble(thr = .) %>%
+        group_nest(thr) %>%
+        mutate(data = list(prd)) %>%
+        unnest('data') %>% 
+        filter(yr < 2023) %>% 
+        mutate(
+          cntbel = value <= thr,
+          cntabv = value >= thr
+        )
+      
+      names(out)[names(out) %in% tosel] <- 'cnt'
+      
+      out <- out %>% 
+        select(thr, date, doy, cont_year,  yr, value, cnt)
+      
+      return(out)
+      
+    })
+  )
+
+# get counts above/below thresholds by year, station, also counts for both thresholds
+cmbdat <- sumdat %>% 
+  select(-prd) %>% 
+  unnest('cnts') %>% 
+  nest(.by = c('name', 'thr')) %>% 
+  unite(thr, c('name', 'thr'))
+salicnt <- cmbdat %>% 
+  filter(grepl('sali', thr))
+tempcnt <- cmbdat %>% 
+  filter(grepl('temp', thr))
+
+cmbdat <- expand_grid(salicnt, tempcnt, .name_repair = 'unique')
+names(cmbdat) <- c('salithr', 'salicnt', 'tempthr', 'tempcnt')
+thrdat <- cmbdat %>% 
+  mutate(
+    cmbcnt = purrr::pmap(list(salicnt, tempcnt), function(salicnt, tempcnt){
+      
+      salicnt <- salicnt %>%
+        select(bay_segment, station, date, doy, yr, salicnt = cnt)
+      tempcnt <- tempcnt %>%
+        select(station, date, tempcnt = cnt)
+      out <- inner_join(salicnt, tempcnt, by = c('station', 'date')) %>%
+        mutate(
+          bothcnt = salicnt & tempcnt
+        )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-salicnt, -tempcnt) %>% 
+  unnest('cmbcnt') %>% 
+  pivot_longer(names_to = 'thrtyp', values_to = 'cnt', matches('cnt')) %>% 
+  summarise(
+    cnt = sum(cnt), 
+    .by = c(bay_segment, station, salithr, tempthr, thrtyp, yr)
+  )
+
+save(thrdat, file = here('data/thrdat.RData'), compress = 'xz')
+
+# mixef mods of threshold counts over time ----------------------------------------------------
+
+load(file = here("data/thrdat.RData'"))
+
+# create mixed effecgs models of cnt ~ yr with station as random intercept
+mixmods <- thrdat %>% 
+  group_by(bay_segment, salithr, tempthr, thrtyp) %>% 
+  nest() %>% 
+  summarise(
+    mod = purrr::map(data, function(x){
+      
+      mod <- try(lmer(cnt ~ yr + (1|station), data = x, REML = F), silent = T)
+      if(inherits(mod, 'try-error'))
+        return(NA)
+      
+      summod <- summary(mod)$coefficients
+      
+      out <- tibble(
+        slo = summod['yr', 'Estimate'],
+        pvl = summod['yr', 'Pr(>|t|)']
+      )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  unnest('mod')
+
+save(mixmods, file = here('data/mixmods.RData'), compress = 'xz')
 
 # fim data ------------------------------------------------------------------------------------
 
