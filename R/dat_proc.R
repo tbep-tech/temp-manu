@@ -269,18 +269,25 @@ mixmods <- thrdat %>%
       if(inherits(mod, 'try-error'))
         return(NA)
       
+      effs <- estimate_means(mod, 'yr')
+      
       summod <- summary(mod)$coefficients
       
       out <- tibble(
         slo = summod['yr', 'Estimate'],
-        pvl = summod['yr', 'Pr(>|t|)']
+        pvl = summod['yr', 'Pr(>|t|)'], 
+        yrstr = effs$Mean[1],
+        yrstrse = effs$SE[1], 
+        yrend = effs$Mean[nrow(effs)],
+        yrendse = effs$SE[nrow(effs)]
       )
       
       return(out)
       
     })
   ) %>% 
-  unnest('mod')
+  unnest('mod') %>% 
+  ungroup()
 
 save(mixmods, file = here('data/mixmods.RData'), compress = 'xz')
 

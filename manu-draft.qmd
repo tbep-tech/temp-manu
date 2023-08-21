@@ -29,6 +29,10 @@ execute:
 ```{r, results = 'hide'}
 library(knitr)
 library(here)
+library(flextable)
+
+load(file = here('tabs/mixtab.RData'))
+load(file = here('tabs/daytab.RData'))
 ```
 
 ## Abstract {.unnumbered}
@@ -107,6 +111,18 @@ Other areas showing seagrass loss - Florida Bay is different, less water flowing
 
 ## Tables {.unnumbered}
 
-<!-- {{< pagebreak >}} -->
+Summary of mixed-effects models evaluating increases in the number of days each year from 1974 to 2022 when salinity or temperature was below or above critical thresholds, respectively.  The slope estimates in the "Both" column indicate trends in the number of days when both salinity and temperature were below or above critical thresholds. ** p < 0.005, * p < 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+```{r}
+mixtab
+```
+
+{{< pagebreak >}}
+
+Number of days at the beginning and end of the period of record when salinity or temperature was below or above critical thresholds, respectively.  Values are the estimated mean number of days (plus standard error) from 1974 to 2022.  Columns for "Both" indicate the estimated number of days when both salinity and temperature were below or above critical thresholds.  Note that not all models are significant (see (table 1)). ** p < 0.005, * p < 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+```{r}
+daytab
+```
+
+{{< pagebreak >}}
 
 ## References {.unnumbered}
