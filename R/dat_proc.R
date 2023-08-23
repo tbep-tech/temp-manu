@@ -317,9 +317,9 @@ hyddat <- hydraw %>%
   filter(Depth == max(Depth), .by = 'Reference') %>% # some have depth profile, take bottom
   select(Reference, depth = Depth, temp = Temperature, sal = Salinity)
 
-fimdat <- phydat %>% 
+fimtempdat <- phydat %>% 
   inner_join(hyddat, by = 'Reference') %>% 
   filter(year(date) > 1995) %>% # only spring/fall sampling prior to 1996
   st_intersection(tbseg[, 'bay_segment']) 
 
-save(fimdat, file = here('data/fimdat.RData'), compress = 'xz')
+save(fimtempdat, file = here('data/fimtempdat.RData'), compress = 'xz')
