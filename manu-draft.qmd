@@ -83,6 +83,8 @@ For @fig-saltempraw, salinity shows much higher inter-annual variability, but lo
 
 Kendall test results are shown in @fig-kendall. 
 
+An example of mixed effects models for two selected thresholds is shown in @fig-mixeff.
+
 ## Discussion
 
 Other areas showing seagrass loss - Florida Bay is different, less water flowing out of everglad and compounding SLR has elevated salinity and likely stress in other direction. Also, Biscayne Bay and IRL is a lot like OTB, poor flushing for example.
@@ -106,6 +108,10 @@ Other areas showing seagrass loss - Florida Bay is different, less water flowing
 {{< pagebreak >}}
 
 ![Trends from 1974 to 2022 for salinity and temperature measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the waer column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1).  Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant decreasing (salinity) or increasing (temperature) trends.  Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.  ](figs/kendall.png){#fig-kendall}
+
+{{< pagebreak >}}
+
+![Example of mixed effects models for the estimated number of days by year that salinity (blue) or temperature (red) were below or above thresholds of 25 psu and 30 degrees C, respectively.  The bottom row (black) shows the number of days when both salinity and temperature were below or above the thresholds.  The models included station as a random effect for each bay segment, with grey lines indicating individual station trends and thicker lines indicating the overall model fit.  Slopes for significant models are shown in the bottom right of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/mixeff.png){#fig-mixeff}
 
 {{< pagebreak >}}
 

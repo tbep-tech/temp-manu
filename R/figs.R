@@ -10,6 +10,8 @@ library(patchwork)
 library(here)
 library(wqtrends)
 library(ggspatial)
+library(modelbased)
+library(lmerTest)
 
 yrsel <- c(1974, 2022)
 tempthr <- c(29, 30, 31)
@@ -368,5 +370,110 @@ p3 <- ktresplo %>%
 p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, width = c(0.9, 1))
 
 png(here('figs/kendall.png'), height = 7, width = 9.5, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# mixeff example plot -------------------------------------------------------------------------
+
+load(file = here('data/thrdat.RData'))
+
+salthr <- '25'
+tmpthr <- '30'
+
+modprd <- thrdat %>% 
+  filter(salithr == paste0('sali_', salthr)) %>% 
+  filter(tempthr == paste0('temp_', tmpthr)) %>% 
+  group_by(thrtyp, bay_segment) %>% 
+  nest() %>% 
+  mutate(
+    mod = purrr::map(data, function(x){
+      
+      mod <- try(lmer(cnt ~ yr + (1|station), data = x, REML = F), silent = T)
+      if(inherits(mod, 'try-error'))
+        return(NA)
+      
+      return(mod)
+      
+    }), 
+    data = purrr::pmap(list(data, mod), function(data, mod){
+      bind_cols(data, prd = predict(mod))
+    }),
+    fix = purrr::map(mod, function(x){
+      
+      fixef <- estimate_means(x, 'yr')
+      
+      out <- tibble(
+        yr = fixef$yr, 
+        prd = fixef$Mean
+      )
+      
+      return(out)
+      
+    }),
+    slo = purrr::map(mod, function(x){
+      
+      summod <- summary(x)$coefficients
+      
+      pvl <- summod['yr', 'Pr(>|t|)']
+      if(pvl >= 0.05)
+        return('')
+      
+      out <- summod['yr', 'Estimate'] %>% 
+        round(2) %>% 
+        as.character()
+      
+      return(out)
+      
+    })
+  ) %>% 
+  ungroup() %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    thrtyp = factor(thrtyp, 
+                    levels = c('salicnt', 'tempcnt', 'bothcnt'), 
+                    labels = c(paste('Salinity <', salthr), paste('Temperature >', tmpthr), 'Both')
+    )
+  )
+
+toplo1 <- modprd %>% 
+  select(-mod, -fix, -slo) %>% 
+  unnest('data') %>% 
+  filter(
+    !(cnt > 100 & thrtyp == paste('Temperature >', tmpthr)) # outliers
+  ) %>% 
+  filter(
+    !(cnt > 100 & thrtyp == 'Both') # outliers
+  )
+toplo2 <- modprd %>% 
+  select(-mod, -data, -slo) %>% 
+  unnest('fix')
+toplo3 <- modprd %>% 
+  select(-mod, -data, -fix) %>% 
+  unnest('slo') %>% 
+  filter(slo != '')
+
+p <- ggplot(toplo1, aes(x = yr, y = cnt)) + 
+  geom_point(size = 0.7, alpha = 0.6, color = 'darkgrey') + 
+  geom_line(aes(y = prd, group = station), color = 'darkgrey', linewidth = 0.5) + 
+  geom_line(data = toplo2, aes(y = prd, col = thrtyp), show.legend = F, linewidth = 1.5) + 
+  geom_label(data = toplo3, aes(x = 2022, y = 0, label = slo, col = thrtyp), show.legend = F, 
+             vjust = 0, hjust = 1, fontface = 'italic', size = 3, label.r = unit(0, "lines"),
+             label.padding = unit(0.1, "lines")) +
+  scale_color_manual(values = c('dodgerblue2', 'red2', 'black')) +
+  # coord_cartesian(ylim = c(-10, NA)) +
+  facet_grid(thrtyp ~ bay_segment, scales = 'free_y') + 
+  theme_bw() + 
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.background = element_blank(), 
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+    strip.text = element_text(size = 10)
+  ) + 
+  labs(
+    x = NULL, 
+    y = expression(paste("Days ", year^-1))
+  )
+
+png(here('figs/mixeff.png'), height = 6, width = 7, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()

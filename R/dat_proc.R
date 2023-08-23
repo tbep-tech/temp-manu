@@ -6,6 +6,7 @@ library(haven)
 library(here)
 library(sf)
 library(lmerTest)
+library(modelbased)
 
 source(here('R/funcs.R'))
 
