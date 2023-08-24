@@ -89,7 +89,9 @@ An example of mixed effects models for two selected thresholds is shown in @fig-
 
 ## Discussion
 
-Other areas showing seagrass loss - Florida Bay is different, less water flowing out of everglad and compounding SLR has elevated salinity and likely stress in other direction. Also, Biscayne Bay and IRL is a lot like OTB, poor flushing for example.
+Other areas showing seagrass loss - Florida Bay is different, less water flowing out of everglades and compounding SLR has elevated salinity and likely stress in other direction. Also, Biscayne Bay and IRL is a lot like OTB, poor flushing for example.
+
+Viral/disease effects on seagrass change, [@vanbogaert2018] for TB and [@duffin2021] for Florida Bay.
 
 ## Acknowledgments {.unnumbered}
 
