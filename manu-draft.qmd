@@ -43,6 +43,8 @@ Background: SST trends in Tampa Bay w/ EPC data, WFS, and deep GOM [@nickerson20
 
 Heat stress combined with highlight accelerates decline of *E. acoroides*, used 36C [@zhang2023]
 
+Widgeongrass colonization in Chesapeake Bay as an opportunistic, heat-tolerant species that has replaced Eelgrass, although former is sensitive to nutrient pulses. Paper provides an example of implications on climate change and nutrient management on foundation species and system resiliency [@hensel2023].
+
 Focus on two time periods: full record and recent decline
 
 Focus on two physical parameters: temperature and salinity
