@@ -76,7 +76,7 @@ p1 <- ggplot(toplo1, aes(x = factor(year), y = acres)) +
 transectocc <- anlz_transectocc(transect)
 transectavespp <- anlz_transectavespp(transectocc, by_seg = TRUE)
 
-toplo2 <- transectave %>% 
+toplo2 <- transectavespp %>% 
   filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB')) %>% 
   filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia'))
 
