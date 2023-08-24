@@ -41,6 +41,8 @@ load(file = here('tabs/daytab.RData'))
 
 Background: SST trends in Tampa Bay w/ EPC data, WFS, and deep GOM [@nickerson2023] showed that 1975 to 2022 trend for EPC was notable, but less so from 1998 to 2022. Also noted the trend was most pronounced in the winter, see Fig 3.
 
+Heat stress combined with highlight accelerates decline of *E. acoroides*, used 36C [@zhang2023]
+
 Focus on two time periods: full record and recent decline
 
 Focus on two physical parameters: temperature and salinity
