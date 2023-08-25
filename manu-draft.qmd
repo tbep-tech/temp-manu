@@ -97,7 +97,7 @@ Other areas showing seagrass loss - Florida Bay is different, less water flowing
 
 Viral/disease effects on seagrass change, [@vanbogaert2018] for TB and [@duffin2021] for Florida Bay.
 
-OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lopez2021]. For salinity, highest growth rates at 24 psu and above, with decline in growth rates at 20 psu [@usup1994], in Florida growth has occurred in psu 10-45, bloom concentrations observed above 15 psu [@phlips2006; @lopez2021].
+OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lopez2021]. For salinity, highest growth rates at 24 psu and above, with decline in growth rates at 20 psu [@usup1994], in Florida growth has occurred in psu 10-45, bloom concentrations observed above 15 psu [@phlips2006; @lopez2021]. Optimal salinity range between 20-32 psu [@lopez2021].
 
 ## Acknowledgments
 
