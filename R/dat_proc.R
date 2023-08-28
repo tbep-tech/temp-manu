@@ -48,6 +48,7 @@ epcdata %>%
     
     mod <- data %>% 
       filter(yr >= yrmin) %>% 
+      filter(!is.na(value)) %>% 
       anlz_gam(trans = 'ident')
     
     ind <- gsub('^.*-', '', ind)
@@ -125,6 +126,7 @@ epcdata %>%
     
     mod <- data %>% 
       filter(yr >= yrmin) %>% 
+      filter(!is.na(value)) %>% 
       anlz_gam(trans = 'ident')
     
     ind <- gsub('^.*-', '', ind)
@@ -164,9 +166,87 @@ saliprd <- saliprd %>%
 
 save(saliprd, file = here('data/saliprd.RData'))
 
+# chla GAMs for each station, save file -------------------------------------------------------
+
+# save model files for each station, separate for bottom/surface temp
+epcdata %>% 
+  select(bay_segment, station = epchc_station, date = SampleTime, chlatop = chla) %>% 
+  filter(year(date) < 2023) %>% 
+  filter(year(date) > 1975) %>% 
+  pivot_longer(matches('chla'), names_to = 'param', values_to = 'value') %>% 
+  mutate(
+    stationdup = station,
+    paramdup = param,
+    date = as.Date(date), 
+    cont_year = decimal_date(date), 
+    yr = year(date), 
+  ) %>% 
+  unite('ind', bay_segment, station, param) %>% 
+  group_nest(ind) %>% 
+  mutate(
+    cnt = 1:nrow(.)
+  ) %>% 
+  unite('ind', cnt, ind, sep = '-') %>% 
+  deframe() %>% 
+  iwalk(function(data, ind){
+    
+    cat(ind, '\n')
+    
+    yrcnt <- data %>% 
+      na.omit() %>% 
+      summarize(
+        cnt = n(),
+        .by = 'yr'
+      ) %>% 
+      arrange(yr) %>% 
+      mutate(flt = cnt >= 5)
+    yrmin <- yrcnt$yr[which(yrcnt$flt)[1]]
+
+    mod <- data %>% 
+      filter(yr >= yrmin) %>% 
+      filter(!is.na(value)) %>% 
+      anlz_gam(trans = 'log10')
+    
+    ind <- gsub('^.*-', '', ind)
+    assign(ind, mod)
+    fl <- here(paste0('data/', ind, '.RData'))
+    save(list = ind, file = fl, compress = 'xz')
+    
+  })
+
+# get daily chla predictions from GAM files ---------------------------------------------------
+
+fls <- list.files(here('data'), pattern = 'chla', full.names = T)
+obs <- gsub('\\.RData$', '', basename(fls))
+
+chlaprd <- tibble(obs = obs) %>% 
+  mutate(fit = NA, prd = NA)
+for(i in seq_along(fls)){
+  
+  cat(i, 'of', length(fls), '\n')
+  
+  fl <- fls[i]
+  ob <- obs[i]
+  
+  load(file = fl)
+  toadd <- get(ob)
+  chlaprd[chlaprd$obs == ob, 'fit'][[1]] <- list(anlz_fit(toadd))
+  chlaprd[chlaprd$obs == ob, 'prd'][[1]] <- list(anlz_prdday(toadd))
+  
+  rm(toadd)
+  rm(list = ob)
+  
+}
+
+chlaprd <- chlaprd %>% 
+  separate(obs, c('bay_segment', 'station', 'param')) %>% 
+  unnest('fit')
+
+save(chlaprd, file = here('data/chlaprd.RData'))
+
 # count of days per year per station above/below thresholds -----------------------------------
 
-# threshoulds to count by year, temp is above, salinity is below
+# thresholds to count by year, temp is above, salinity is below
 thrs <- list(
   temp = c(29, 30, 31),
   sali = c(15, 20, 25)
@@ -259,7 +339,7 @@ save(thrdat, file = here('data/thrdat.RData'), compress = 'xz')
 
 load(file = here("data/thrdat.RData'"))
 
-# create mixed effecgs models of cnt ~ yr with station as random intercept
+# create mixed effects models of cnt ~ yr with station as random intercept
 mixmods <- thrdat %>% 
   group_by(bay_segment, salithr, tempthr, thrtyp) %>% 
   nest() %>% 
