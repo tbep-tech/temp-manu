@@ -335,6 +335,45 @@ thrdat <- cmbdat %>%
 
 save(thrdat, file = here('data/thrdat.RData'), compress = 'xz')
 
+# count of days per year per station above chl threshold --------------------------------------
+
+# thresholds to count by year, segment specific
+thrs <- targets %>% 
+  filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB')) %>% 
+  select(bay_segment, chla_target)
+
+# GAM models for chla by station with daily predictions for POR
+load(file = here('data/chlaprd.RData'))
+
+# get T/F vectors for predictions above thresholds by day
+chlthrdat <- chlaprd %>% 
+  left_join(thrs, by = 'bay_segment') %>% 
+  mutate(
+    cnts = purrr::pmap(list(chla_target, prd), function(chla_target, prd){
+      
+      out <- prd %>% 
+        filter(yr < 2023) %>% 
+        mutate(
+          chlathr = chla_target
+        ) %>% 
+        summarise(
+          cnt = sum(value >= chlathr), 
+          .by = c('yr')
+        )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(bay_segment, station, chla_thr = chla_target, cnts) %>% 
+  mutate(
+    chla_thr = paste0('chla_', chla_thr), 
+    thrtyp = 'chlacnt'
+  ) %>% 
+  unnest('cnts')
+
+save(chlthrdat, file = here('data/chlthrdat.RData'), compress = 'xz')
+
 # mixef mods of threshold counts over time ----------------------------------------------------
 
 load(file = here("data/thrdat.RData'"))
