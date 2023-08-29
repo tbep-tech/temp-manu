@@ -1,3 +1,5 @@
+# setup ---------------------------------------------------------------------------------------
+
 library(wqtrends)
 library(tbeptools)
 library(tidyverse)
@@ -7,6 +9,7 @@ library(here)
 library(sf)
 library(lmerTest)
 library(modelbased)
+library(mgcv)
 
 source(here('R/funcs.R'))
 
@@ -329,7 +332,7 @@ thrdat <- cmbdat %>%
   unnest('cmbcnt') %>% 
   pivot_longer(names_to = 'thrtyp', values_to = 'cnt', matches('cnt')) %>% 
   summarise(
-    cnt = sum(cnt), 
+    cnt = runfunc(cnt), 
     .by = c(bay_segment, station, salithr, tempthr, thrtyp, yr)
   )
 
@@ -340,7 +343,7 @@ save(thrdat, file = here('data/thrdat.RData'), compress = 'xz')
 # thresholds to count by year, segment specific
 thrs <- targets %>% 
   filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB')) %>% 
-  select(bay_segment, chla_target)
+  select(bay_segment, thr = chla_thresh)
 
 # GAM models for chla by station with daily predictions for POR
 load(file = here('data/chlaprd.RData'))
@@ -349,15 +352,15 @@ load(file = here('data/chlaprd.RData'))
 chlthrdat <- chlaprd %>% 
   left_join(thrs, by = 'bay_segment') %>% 
   mutate(
-    cnts = purrr::pmap(list(chla_target, prd), function(chla_target, prd){
-      
+    cnts = purrr::pmap(list(thr, prd), function(thr, prd){
+
       out <- prd %>% 
         filter(yr < 2023) %>% 
         mutate(
-          chlathr = chla_target
+          cnt = value >= thr
         ) %>% 
         summarise(
-          cnt = sum(value >= chlathr), 
+          cnt = runfunc(cnt), 
           .by = c('yr')
         )
       
@@ -365,7 +368,7 @@ chlthrdat <- chlaprd %>%
       
     })
   ) %>% 
-  select(bay_segment, station, chla_thr = chla_target, cnts) %>% 
+  select(bay_segment, station, chla_thr = thr, cnts) %>% 
   mutate(
     chla_thr = paste0('chla_', chla_thr), 
     thrtyp = 'chlacnt'
@@ -376,7 +379,7 @@ save(chlthrdat, file = here('data/chlthrdat.RData'), compress = 'xz')
 
 # mixef mods of threshold counts over time ----------------------------------------------------
 
-load(file = here("data/thrdat.RData'"))
+load(file = here("data/thrdat.RData"))
 
 # create mixed effects models of cnt ~ yr with station as random intercept
 mixmods <- thrdat %>% 
@@ -410,6 +413,93 @@ mixmods <- thrdat %>%
   ungroup()
 
 save(mixmods, file = here('data/mixmods.RData'), compress = 'xz')
+
+# combined transect, chl, sal, temp data ------------------------------------------------------
+
+load(file = here('data/thrdat.RData'))
+load(file = here('data/chlthrdat.RData'))
+
+seglng <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
+segshr <- c('OTB', 'HB', 'MTB', 'LTB')
+
+##
+# seagrass fo
+transectocc <- anlz_transectocc(transect)
+transectave <- anlz_transectave(transectocc)
+
+fodat <- transectave %>% 
+  select(bay_segment, yr, total = foest) %>% 
+  filter(bay_segment %in% segshr) %>% 
+  mutate(
+    total = total / 100
+  ) %>% 
+  ungroup()
+
+# ##
+# # coverage data
+# 
+# load(file = url('https://github.com/tbep-tech/tbep-os-presentations/raw/master/data/sgsegest.RData'))
+# 
+# sgsegest <- sgsegest %>% 
+#   mutate(
+#     segment = factor(segment, 
+#                      levels = c("Old Tampa Bay", "Hillsborough Bay", "Middle Tampa Bay", "Lower Tampa Bay", 
+#                                 "Boca Ciega Bay", "Terra Ceia Bay", "Manatee River"),
+#                      labels = c('OTB', 'HB', 'MTB', 'LTB', 'BCB', 'TCB', 'MR'))
+#   ) %>% 
+#   filter(segment %in% segshr) %>% 
+#   select(
+#     bay_segment = segment,
+#     yr = year, 
+#     acres
+#   )
+
+##
+# threshold count data
+
+# these had strong models
+salthr <- '25'
+tmpthr <- '30'
+
+cntsaltmp <- thrdat %>% 
+  filter(salithr == paste0('sali_', salthr)) %>% 
+  filter(tempthr == paste0('temp_', tmpthr)) %>% 
+  summarise(
+    cnt = mean(cnt),
+    .by = c('thrtyp', 'bay_segment', 'yr')
+  )
+
+cntchla <- chlthrdat %>% 
+  summarise(
+    cnt = mean(cnt), 
+    .by = c('thrtyp', 'bay_segment', 'yr')
+  )
+
+cntdat <- bind_rows(cntsaltmp, cntchla) %>% 
+  pivot_wider(names_from = thrtyp, values_from = cnt)
+
+##
+# combine
+
+cmbdat <- fodat %>% 
+  inner_join(cntdat, by = c('yr', 'bay_segment')) %>% 
+  mutate(
+    bay_segment = factor(bay_segment, 
+                         levels = segshr)
+  )
+
+save(cmbdat, file = here('data/cmbdat.RData'))
+
+# gam for cmbdat ------------------------------------------------------------------------------
+
+load(file = here('data/cmbdat.RData'))
+
+tomod <- cmbdat %>% 
+  filter(!bay_segment %in% 'LTB')
+
+cmbmod <- gam(total ~ ti(salicnt) + ti(salicnt, yr) + ti(yr) + ti(bothcnt) + ti(bothcnt, yr) + ti(tempcnt) + ti(tempcnt, yr), data = tomod)
+
+save(cmbmod, file = 'data/cmbmod.RData')
 
 # fim data ------------------------------------------------------------------------------------
 

@@ -12,6 +12,11 @@ library(wqtrends)
 library(ggspatial)
 library(modelbased)
 library(lmerTest)
+library(vegan)
+library(ggord)
+library(scales)
+library(visreg)
+library(car)
 
 yrsel <- c(1974, 2022)
 tempthr <- c(29, 30, 31)
@@ -477,3 +482,71 @@ p <- ggplot(toplo1, aes(x = yr, y = cnt)) +
 png(here('figs/mixeff.png'), height = 6, width = 7, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
+
+# nms -----------------------------------------------------------------------------------------
+
+load(file = here('data/cmbdat.RData'))
+cmbdat <- cmbdat %>% 
+  filter(!bay_segment %in% 'LTB')
+
+toord <- cmbdat %>% 
+  dplyr::select(-yr, -chlacnt, -bay_segment) %>% 
+  mutate_all(rescale, to = c(0, 1))
+
+orddat <- metaMDS(toord, k = 3, trymax = 100)
+grps <- factor(cmbdat$bay_segment)
+
+vec_ext <- 1.75
+coord_fix <- F
+size <- toord$total
+repel <- F
+force <- T
+arrow <- 0.2
+txt <- 3
+alpha <- 0.8
+ext <- 1.25
+exp <- 0.1
+parse <- F
+ellipse <- T
+vec_lab <- list(
+  'bothcnt' = 'Sal. + Temp.',
+  'total'= 'Freq. Occ.',
+  'salicnt' = 'Sal.',
+  'tempcnt' = 'Temp.'
+)
+grp_title <- 'Bay segment'
+sizelab <- 'Freq. Occ.'
+
+p1 <- ggord(orddat, axes = c('1', '2'), ellipse = ellipse, grp_in = grps,
+      parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
+      repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
+      exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
+      force = force)
+p2 <- ggord(orddat, axes = c('2', '3'), ellipse = ellipse, grp_in = grps,
+      parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
+      repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
+      exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
+      force = force)
+
+p <- p1 + p2 + plot_layout(ncol = 2, guides = 'collect')
+
+png(here('figs/nms.png'), height = 4, width = 9, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# gam results ---------------------------------------------------------------------------------
+
+load(file = here('data/cmbdat.RData'))
+
+tomod <- cmbdat %>% 
+  filter(!bay_segment %in% 'LTB')
+
+cmbmod <- gam(total ~ ti(salicnt) + ti(salicnt, yr) + ti(bothcnt) + ti(bothcnt, yr) + ti(yr) + ti(tempcnt) + ti(tempcnt, yr), data = tomod)
+
+visreg(cmbmod, 'bothcnt', by = 'yr', breaks = c(2000, 2005, 2012, 2016, 2020, 2022), scale = 'response', rug = 1)
+visreg(cmbmod, 'tempcnt', by = 'yr', breaks = c(2000, 2005, 2012, 2016, 2020, 2022), scale = 'response', rug = 1)
+visreg(cmbmod, 'salicnt', by = 'yr', breaks = c(2000, 2005, 2012, 2016, 2020, 2022), scale = 'response', rug = 1)
+
+vifmod <- glm(total ~ salicnt + bothcnt + tempcnt + yr, data = tomod)
+vif(vifmod)
+

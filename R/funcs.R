@@ -10,3 +10,14 @@ p_ast <- function(x){
   return(out)
   
 }
+
+# run length encoding for vector of TF, return longest run of T
+runfunc <- function(cnt){
+  x <- rle(cnt)
+  rn <- x$lengths[x$values]
+  if(length(rn) == 0)
+    out <- 0
+  else
+    out <- max(rn)
+  return(out)
+}
