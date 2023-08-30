@@ -91,6 +91,8 @@ Kendall test results are shown in @fig-kendall.
 
 An example of mixed effects models for two selected thresholds is shown in @fig-mixeff.
 
+NMS results in @fig-nms and GAM results in @fig-gamres.
+
 ## Discussion
 
 Other areas showing seagrass loss - Florida Bay is different, less water flowing out of everglades and compounding SLR has elevated salinity and likely stress in other direction. Also, Biscayne Bay and IRL is a lot like OTB, poor flushing for example.
@@ -125,7 +127,11 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![NMS plot](figs/nms.png){#fig-nms}
+![Ordination plots of Nonmetric Multidimensional Scaling results for annual estimates in each bay segment for total seagrass frequency occurrence (Freq. Occ.), counts of days above the temperature threshold (Temp.), counts of days below the salinity threshold (Sal.), and counts of days above or below for both, respectively (Sal. + Temp.). Points are sized by seagrass frequency occurrence.  95% confidence ellipses are shown for observations in each major bay segment  OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.](figs/nms.png){#fig-nms}
+
+{{< pagebreak >}}
+
+![Predicted results from a Generalized Additive Model evaluating frequency occurrence of seagrass versus year (left), number of days in a year when temperature exceeded the threshold (top right), and number of days in a year when salinity was below the threshold (bottom right).  Year was fit as a main effect, whereas the temperature and salinity counts were fit with interactions by year.  The right plots show model predicted results for the threshold variables for selected year slices.  2016 to 2022 are years with recent seagrass decline. Shaded areas are 95% confidence intervals.](figs/gamres.png){#fig-gamres}
 
 {{< pagebreak >}}
 

@@ -17,6 +17,7 @@ library(ggord)
 library(scales)
 library(visreg)
 library(car)
+library(mgcv)
 
 yrsel <- c(1974, 2022)
 tempthr <- c(29, 30, 31)
@@ -543,10 +544,82 @@ tomod <- cmbdat %>%
 
 cmbmod <- gam(total ~ ti(salicnt) + ti(salicnt, yr) + ti(bothcnt) + ti(bothcnt, yr) + ti(yr) + ti(tempcnt) + ti(tempcnt, yr), data = tomod)
 
-visreg(cmbmod, 'bothcnt', by = 'yr', breaks = c(2000, 2005, 2012, 2016, 2020, 2022), scale = 'response', rug = 1)
-visreg(cmbmod, 'tempcnt', by = 'yr', breaks = c(2000, 2005, 2012, 2016, 2020, 2022), scale = 'response', rug = 1)
-visreg(cmbmod, 'salicnt', by = 'yr', breaks = c(2000, 2005, 2012, 2016, 2020, 2022), scale = 'response', rug = 1)
+# vifmod <- glm(total ~ salicnt + bothcnt + tempcnt + yr, data = tomod)
+# vif(vifmod)
 
-vifmod <- glm(total ~ salicnt + bothcnt + tempcnt + yr, data = tomod)
-vif(vifmod)
+yrbrks <- c(2000, 2010, 2016, 2020, 2022)
+# visreg(cmbmod, 'bothcnt', by = 'yr', breaks = yrbrks, scale = 'response', rug = 1)
+yrvis <- visreg(cmbmod, 'yr', scale = 'response', rug = 1, plot = F)
+yrfit <- yrvis$fit
+yrres <- yrvis$res
+tempvis <- visreg(cmbmod, 'tempcnt', by = 'yr', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
+tempfit <- tempvis$fit
+tempres <- tempvis$res
+salivis <- visreg(cmbmod, 'salicnt', by = 'yr', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
+salifit <- salivis$fit
+salires <- salivis$res
 
+alph <- 0.5
+ylb <- 'Freq. Occ.'
+lwd <- 0.8
+ptsz <- 1
+thm <- theme_minimal() + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    strip.text = element_text(size = 11),
+    panel.spacing.x = unit(0.5, 'lines')
+  )
+salicol <- 'dodgerblue2'
+tempcol <- 'red2'
+ylim <- c(0, 1)
+
+p1 <- ggplot(yrfit, aes(x = yr)) + 
+  geom_point(data = yrres, aes(y = visregRes), size = ptsz) + 
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph) + 
+  geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
+  geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
+  geom_line(aes(y = visregFit), linewidth = lwd) + 
+  coord_cartesian(ylim = ylim) +
+  thm +
+  labs(
+    y = ylb, 
+    x = 'Year'
+  )
+
+p2 <- ggplot(tempfit, aes(x = tempcnt)) + 
+  geom_point(data = tempres, aes(y = visregRes), size = ptsz) + 
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph, color = tempcol, fill = tempcol) + 
+  geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
+  geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
+  geom_line(aes(y = visregFit), linewidth = lwd) + 
+  coord_cartesian(ylim = ylim) +
+  facet_wrap(~yr, ncol = length(unique(tempres$yr))) +
+  scale_x_continuous(n.breaks = 3) +
+  thm +
+  theme(axis.text.x = element_text(size = 9)) +
+  labs(
+    y = ylb, 
+    x = '# days temperature > threshold'
+  )
+
+p3 <- ggplot(salifit, aes(x = salicnt)) + 
+  geom_point(data = salires, aes(y = visregRes), size = ptsz) + 
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph, color = salicol, fill = salicol) + 
+  geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
+  geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
+  geom_line(aes(y = visregFit), linewidth = lwd) + 
+  coord_cartesian(ylim = ylim) +
+  facet_wrap(~yr, ncol = length(unique(tempres$yr))) +
+  scale_x_continuous(n.breaks = 3) +
+  thm +
+  theme(axis.text.x = element_text(size = 9)) +
+  labs(
+    y = ylb, 
+    x = '# days salinity < threshold'
+  )
+
+p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, widths = c(0.5, 1))
+
+png(here('figs/gamres.png'), height = 5, width = 8.5, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
