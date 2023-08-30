@@ -33,6 +33,7 @@ library(flextable)
 
 load(file = here('tabs/mixtab.RData'))
 load(file = here('tabs/daytab.RData'))
+load(file = here('tabs/gamtab.RData'))
 ```
 
 ## Abstract {.unnumbered}
@@ -131,7 +132,7 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![Predicted results from a Generalized Additive Model evaluating frequency occurrence of seagrass versus year (left), number of days in a year when temperature exceeded the threshold (top right), and number of days in a year when salinity was below the threshold (bottom right).  Year was fit as a main effect, whereas the temperature and salinity counts were fit with interactions by year.  The right plots show model predicted results for the threshold variables for selected year slices.  2016 to 2022 are years with recent seagrass decline. Shaded areas are 95% confidence intervals.](figs/gamres.png){#fig-gamres}
+![Predicted results from a Generalized Additive Model evaluating frequency occurrence of seagrass versus year (left), number of days in a year when temperature exceeded the threshold (top right), and number of days in a year when salinity was below the threshold (bottom right).  All variables were fit as main effects, including interactions with year.  The right plots show model predicted results for the threshold variables for selected year slices.  2016 to 2022 are years with recent seagrass decline. Shaded areas are 95% confidence intervals.](figs/gamres.png){#fig-gamres}
 
 {{< pagebreak >}}
 
@@ -152,5 +153,11 @@ daytab
 ```
 
 {{< pagebreak >}}
+
+Summary of a Generalized Additive Model evaluating frequency occurrence of seagrass versus year, number of days in a year when temperature exceeded the threshold, number of days in a year when salinity was below the threshold, and number of days in a year when both temperature and salinity were above or below thresholds.  All variables were fit as main effects, including interactions with year. edf: estimate degrees of freedom, ref.df: reference degrees of freedom, F: F-statistic. * p < 0.05, ** p < 0.005.
+
+```{r}
+gamtab
+```
 
 ## References {.unnumbered}

@@ -487,11 +487,12 @@ dev.off()
 # nms -----------------------------------------------------------------------------------------
 
 load(file = here('data/cmbdat.RData'))
+
 cmbdat <- cmbdat %>% 
   filter(!bay_segment %in% 'LTB')
 
 toord <- cmbdat %>% 
-  dplyr::select(-yr, -chlacnt, -bay_segment) %>% 
+  dplyr::select(-Year, -Chla, -bay_segment) %>% 
   mutate_all(rescale, to = c(0, 1))
 
 orddat <- metaMDS(toord, k = 3, trymax = 100)
@@ -510,13 +511,13 @@ exp <- 0.1
 parse <- F
 ellipse <- T
 vec_lab <- list(
-  'bothcnt' = 'Sal. + Temp.',
-  'total'= 'Freq. Occ.',
-  'salicnt' = 'Sal.',
-  'tempcnt' = 'Temp.'
+  'total'= 'Freq Occ',
+  'Sal' = 'Sal', 
+  'Temp' = 'Temp', 
+  'Both' = 'Both'
 )
 grp_title <- 'Bay segment'
-sizelab <- 'Freq. Occ.'
+sizelab <- 'Freq Occ'
 
 p1 <- ggord(orddat, axes = c('1', '2'), ellipse = ellipse, grp_in = grps,
       parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
@@ -537,25 +538,25 @@ dev.off()
 
 # gam results ---------------------------------------------------------------------------------
 
-load(file = here('data/cmbdat.RData'))
+load(file = here('data/cmbmod.RData'))
 
-tomod <- cmbdat %>% 
-  filter(!bay_segment %in% 'LTB')
-
-cmbmod <- gam(total ~ ti(salicnt) + ti(salicnt, yr) + ti(bothcnt) + ti(bothcnt, yr) + ti(yr) + ti(tempcnt) + ti(tempcnt, yr), data = tomod)
-
-# vifmod <- glm(total ~ salicnt + bothcnt + tempcnt + yr, data = tomod)
+# load(file = here('data/cmbdat.RData'))
+# 
+# tomod <- cmbdat %>%
+#   filter(!bay_segment %in% 'LTB')
+# 
+# vifmod <- glm(total ~ Sal + Temp + Both + Year, data = tomod)
 # vif(vifmod)
 
 yrbrks <- c(2000, 2010, 2016, 2020, 2022)
-# visreg(cmbmod, 'bothcnt', by = 'yr', breaks = yrbrks, scale = 'response', rug = 1)
-yrvis <- visreg(cmbmod, 'yr', scale = 'response', rug = 1, plot = F)
+# visreg(cmbmod, 'Both', by = 'Year', breaks = yrbrks, scale = 'response', rug = 1)
+yrvis <- visreg(cmbmod, 'Year', scale = 'response', rug = 1, plot = F)
 yrfit <- yrvis$fit
 yrres <- yrvis$res
-tempvis <- visreg(cmbmod, 'tempcnt', by = 'yr', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
+tempvis <- visreg(cmbmod, 'Temp', by = 'Year', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
 tempfit <- tempvis$fit
 tempres <- tempvis$res
-salivis <- visreg(cmbmod, 'salicnt', by = 'yr', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
+salivis <- visreg(cmbmod, 'Sal', by = 'Year', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
 salifit <- salivis$fit
 salires <- salivis$res
 
@@ -573,7 +574,7 @@ salicol <- 'dodgerblue2'
 tempcol <- 'red2'
 ylim <- c(0, 1)
 
-p1 <- ggplot(yrfit, aes(x = yr)) + 
+p1 <- ggplot(yrfit, aes(x = Year)) + 
   geom_point(data = yrres, aes(y = visregRes), size = ptsz) + 
   geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph) + 
   geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
@@ -586,14 +587,14 @@ p1 <- ggplot(yrfit, aes(x = yr)) +
     x = 'Year'
   )
 
-p2 <- ggplot(tempfit, aes(x = tempcnt)) + 
+p2 <- ggplot(tempfit, aes(x = Temp)) + 
   geom_point(data = tempres, aes(y = visregRes), size = ptsz) + 
   geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph, color = tempcol, fill = tempcol) + 
   geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
   geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
   geom_line(aes(y = visregFit), linewidth = lwd) + 
   coord_cartesian(ylim = ylim) +
-  facet_wrap(~yr, ncol = length(unique(tempres$yr))) +
+  facet_wrap(~Year, ncol = length(unique(tempres$Year))) +
   scale_x_continuous(n.breaks = 3) +
   thm +
   theme(axis.text.x = element_text(size = 9)) +
@@ -602,14 +603,14 @@ p2 <- ggplot(tempfit, aes(x = tempcnt)) +
     x = '# days temperature > threshold'
   )
 
-p3 <- ggplot(salifit, aes(x = salicnt)) + 
+p3 <- ggplot(salifit, aes(x = Sal)) + 
   geom_point(data = salires, aes(y = visregRes), size = ptsz) + 
   geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph, color = salicol, fill = salicol) + 
   geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
   geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
   geom_line(aes(y = visregFit), linewidth = lwd) + 
   coord_cartesian(ylim = ylim) +
-  facet_wrap(~yr, ncol = length(unique(tempres$yr))) +
+  facet_wrap(~Year, ncol = length(unique(salires$Year))) +
   scale_x_continuous(n.breaks = 3) +
   thm +
   theme(axis.text.x = element_text(size = 9)) +

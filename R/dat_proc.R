@@ -486,6 +486,13 @@ cmbdat <- fodat %>%
   mutate(
     bay_segment = factor(bay_segment, 
                          levels = segshr)
+  ) %>% 
+  rename(
+    Year = yr,
+    Sal = salicnt, 
+    Temp = tempcnt, 
+    Both = bothcnt, 
+    Chla = chlacnt
   )
 
 save(cmbdat, file = here('data/cmbdat.RData'))
@@ -497,7 +504,9 @@ load(file = here('data/cmbdat.RData'))
 tomod <- cmbdat %>% 
   filter(!bay_segment %in% 'LTB')
 
-cmbmod <- gam(total ~ ti(salicnt) + ti(salicnt, yr) + ti(yr) + ti(bothcnt) + ti(bothcnt, yr) + ti(tempcnt) + ti(tempcnt, yr), data = tomod)
+cmbmod <- gam(total ~ ti(Year) + ti(Temp) + ti(Sal) + ti(Both) + ti(Temp, Year) + ti(Sal, Year) + ti(Both, Year), data = tomod)
+
+# cmbmod <- gam(total ~ te(Temp, Year) + te(Sal, Year), data = tomod)
 
 save(cmbmod, file = 'data/cmbmod.RData')
 
