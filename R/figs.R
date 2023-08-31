@@ -493,7 +493,7 @@ cmbdat <- cmbdat %>%
   filter(!bay_segment %in% 'LTB')
 
 toord <- cmbdat %>% 
-  dplyr::select(-Year, -Chla, -bay_segment) %>% 
+  dplyr::select(-Year, -Chla, -bbave, -bay_segment) %>% 
   mutate_all(rescale, to = c(0, 1))
 
 orddat <- metaMDS(toord, k = 3, trymax = 100)

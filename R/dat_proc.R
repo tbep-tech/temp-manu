@@ -435,6 +435,23 @@ fodat <- transectave %>%
   ) %>% 
   ungroup()
 
+bbdat <- transectocc %>% 
+  ungroup() %>% 
+  filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia')) %>% 
+  filter(
+    bbest > 0, 
+    .by = c('Date', 'Transect')
+  ) %>% 
+  inner_join(trnptsshed, by = 'Transect') %>% 
+  filter(!bay_segment %in% c('BCB', 'TCB', 'MR')) %>% 
+  mutate(
+    yr = year(Date)
+  ) %>% 
+  summarise(
+    bbave = mean(bbest),
+    .by = c('bay_segment', 'yr')
+  )
+
 # ##
 # # coverage data
 # 
@@ -483,6 +500,7 @@ cntdat <- bind_rows(cntsaltmp, cntchla) %>%
 
 cmbdat <- fodat %>% 
   inner_join(cntdat, by = c('yr', 'bay_segment')) %>% 
+  inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
   mutate(
     bay_segment = factor(bay_segment, 
                          levels = segshr)
