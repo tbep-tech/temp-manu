@@ -43,9 +43,9 @@ segtrgs <- tibble(
   trgs = c(11.1, 1.751, 9.4, 7.4, 8.8, 1.1, 0.449, 40)
 )  
 
-savval <- c('Halodule', 'Syringodium', 'Thalassia')
-savleg <- expression(italic('H. wrightii'), italic('S. filiforme'), italic('T. testudinum'))
-savcol <- c('#ED90A4', '#CCA65A', '#7EBA68')
+savval <- c('total', 'Halodule', 'Syringodium', 'Thalassia')
+savleg <- expression('total', italic('H. wrightii'), italic('S. filiforme'), italic('T. testudinum'))
+savcol <- c('darkgrey', '#ED90A4', '#CCA65A', '#7EBA68')
 names(savcol) <- savval
 
 toplo1 <- sgsegest %>%
@@ -84,7 +84,7 @@ transectavespp <- anlz_transectavespp(transectocc, by_seg = TRUE)
 
 toplo2 <- transectavespp %>% 
   filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB')) %>% 
-  filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia'))
+  filter(Savspecies %in% c('total', 'Halodule', 'Syringodium', 'Thalassia'))
 
 p2 <- ggplot(toplo2, aes(x = yr, y = foest, color = Savspecies)) + 
   geom_line() + 
@@ -103,6 +103,7 @@ p2 <- ggplot(toplo2, aes(x = yr, y = foest, color = Savspecies)) +
     panel.grid.major.x = element_blank(),
     axis.text.x = element_text(colour = 'black', angle = 45, size = 6, hjust = 1),
   ) + 
+  coord_cartesian(ylim = c(0, 1)) + 
   labs(
     y = 'Frequency Occurrence', 
     x = NULL, 
