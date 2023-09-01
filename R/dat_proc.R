@@ -435,6 +435,11 @@ fodat <- transectave %>%
   ) %>% 
   ungroup()
 
+trnptsshed <- trnpts %>% 
+  sf::st_set_geometry(NULL) %>% 
+  select(Transect = TRAN_ID, bay_segment) %>% 
+  unique()
+
 bbdat <- transectocc %>% 
   ungroup() %>% 
   filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia')) %>% 
