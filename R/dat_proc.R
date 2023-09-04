@@ -10,8 +10,84 @@ library(sf)
 library(lmerTest)
 library(modelbased)
 library(mgcv)
+library(SPEI)
+library(rnoaa)
 
 source(here('R/funcs.R'))
+
+# SPEI, monthly rain, and monthly air temp ----------------------------------------------------
+
+noaa_key <- Sys.getenv('NOAA_KEY')
+
+yrs <- seq(1975, 2022)
+
+stameta <- ghcnd_stations()
+sta <- 'USW00012842'
+stalat <- stameta %>% 
+  filter(id %in% sta) %>% 
+  pull(latitude) %>% 
+  unique()
+
+res <- yrs %>%
+  tibble::enframe('name', 'year') %>%
+  dplyr::group_by(name) %>%
+  tidyr::nest() %>%
+  dplyr::mutate(
+    ests = purrr::map(data, function(x){
+      
+      yr <- x$year
+      cat(yr, '\n')
+      
+      start <- paste0(yr, "-01-01")
+      end <- paste0(yr, "-12-31")
+      
+      # download NOAA UWS rainfall and temperature station data
+      tia_dat <- meteo_pull_monitors(monitors = sta, 
+                                     date_min = start, date_max = end)
+      
+      out <- tia_dat
+      
+      return(out)
+      
+    })
+  )
+
+# tavg does not start until 1998, so reproduce from tmin/tmax
+resdat <- res %>% 
+  unnest('data') %>% 
+  unnest('ests') %>% 
+  ungroup() %>% 
+  select(date, prcp, tmax, tmin) %>% 
+  mutate(
+    yr = year(date),
+    mo = month(date),
+    tavg_c = (tmax + tmin) / 2,
+    tavg_c = tavg_c / 10,
+    tavg_c = na.approx(tavg_c),
+    precip_mm = prcp / 10, 
+    precip_in = precip_mm * 0.0393701
+  ) %>% 
+  select(date, yr, mo, tavg_c, precip_mm, precip_in)
+
+# monthly avg, sum
+speidat <- resdat %>% 
+  summarise(
+    precip_mm = sum(precip_mm),
+    precip_in = sum(precip_in), 
+    tavg_c = mean(tavg_c),
+    date = min(date),
+    .by = c('yr', 'mo')
+  ) %>% 
+  mutate(
+    PET = thornthwaite(tavg_c, stalat),
+    BAL = precip_mm - PET,
+    spei = as.numeric(spei(BAL, 12)$fitted), 
+    spi = spi(precip_mm, 12)$fitted,
+    speisign = ifelse(spei >= 0, 'wet', 'dry'), 
+    spisign = ifelse(spi >= 0, 'wet', 'dry')
+  )
+
+save(speidat, file = here('data/speidat.RData'))
 
 # temp GAMs for each station, save file -------------------------------------------------------
 

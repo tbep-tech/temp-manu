@@ -120,6 +120,89 @@ dev.off()
 
 # raw temp and salinity changes ---------------------------------------------------------------
 
+load(file = here('data/speidat.RData'))
+load(file = url("https://github.com/tbep-tech/load-estimates/raw/main/data/totanndat.RData"))
+
+yrsel <- range(speidat$yr)
+
+# hydro load, otb, mtb, ltb, hb
+hydrodat <- totanndat %>% 
+  select(year, bay_segment, hy_load) %>% 
+  filter(bay_segment %in% c('Hillsborough Bay', 'Old Tampa Bay', 'Lower Tampa Bay', 'Middle Tampa Bay')) %>% 
+  summarise(
+    hy_load = sum(hy_load) / 1e3, 
+    .by = 'year'
+  ) 
+
+toplo1 <- speidat %>% 
+  select(yr, precip_mm, tavg_c) %>% 
+  summarise(
+    precip_mm = sum(precip_mm), 
+    tavg_c = mean(tavg_c), 
+    .by = 'yr'
+  )
+
+thm <- theme_minimal() + 
+  theme(
+    strip.placement = 'outside', 
+    panel.grid.minor = element_blank(), 
+    axis.text.y = element_text(size = 12), 
+    legend.text = element_text(size= 12)
+  )
+
+p1 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) + 
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
+  thm +
+  theme(
+    axis.text.x = element_blank()
+  ) +
+  labs(
+    x = NULL, 
+    y = 'Precip. (m)'
+  )
+
+p2 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
+  coord_cartesian(xlim = yrsel) + 
+  thm +
+  theme(
+    axis.text.x = element_blank()
+  ) +
+  labs(
+    x = NULL, 
+    y = expression(paste('Hyd. load (', 10^3, ' t/yr)'))
+  )
+
+p3 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
+  geom_col(width = 35) +
+  scale_fill_manual(values = c('grey70', 'grey30'), guide = 'none') + 
+  thm + 
+  theme(
+    axis.text.x = element_blank()
+  ) +
+  coord_cartesian(xlim = range(resmo$date)) +
+  labs(
+    x = NULL, 
+    y = 'SPI (z-values)'
+  )
+
+p4 <- ggplot(toplo1, aes(x = yr, y = tavg_c)) + 
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'red2') +
+  thm +
+  theme(
+    axis.text.x = element_text(size = 12)
+  ) +
+  labs(
+    x = NULL, 
+    y = 'Air temp. (\u00B0 C)'
+  )
+
 toplo <- epcdata %>% 
   select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
   filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
@@ -134,7 +217,7 @@ toplo <- epcdata %>%
   ) %>% 
   separate(var, c('var', 'loc')) %>% 
   mutate(
-    var = factor(var, levels = c('Sal', 'Temp'), labels = c('Salinity (psu)', 'Temperature (\u00B0 C)')),
+    var = factor(var, levels = c('Sal', 'Temp'), labels = c('Salinity (ppt)', 'Water temp. (\u00B0C)')),
     loc = factor(loc, levels = c('Top', 'Bottom'))
   ) %>% 
   filter(!is.na(val)) %>% 
@@ -146,30 +229,48 @@ toplo <- epcdata %>%
   )
 
 wd <- 0.5
-p <- ggplot(toplo, aes(x = yr, y = avev, group = loc, color = loc)) + 
+
+toplo5 <- toplo %>% 
+  filter(var == 'Salinity (ppt)')
+p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) + 
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
   geom_point(position = position_dodge2(width = wd)) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
   geom_smooth(method = 'lm', formula = y ~ x, se = F) +
-  facet_grid(var ~ bay_segment, scales = 'free_y', switch = 'y') +
+  facet_grid(~ bay_segment) +
   scale_color_manual(values = c('steelblue1', 'steelblue4')) +
-  theme_bw(base_size = 14) + 
+  thm +
   theme(
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank(), 
-    strip.placement = 'outside', 
-    legend.position = 'top', 
-    strip.background = element_blank(),
-    axis.text.x = element_text(colour = 'black', angle = 45, size = 9, hjust = 1)
+    axis.text.x = element_blank(), 
+    strip.text = element_text(size = 12)
   ) +
   labs(
     x = NULL, 
-    y = NULL, 
+    y = 'Salinity (ppt)', 
+    color = NULL, 
+    shape = NULL
+  )
+toplo6 <- toplo %>% 
+  filter(var == 'Water temp. (\u00B0C)')
+p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
+  geom_point(position = position_dodge2(width = wd)) +
+  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  facet_grid(~ bay_segment) +
+  scale_color_manual(values = c('steelblue1', 'steelblue4')) +
+  thm +
+  theme(strip.text = element_blank()) +
+  labs(
+    x = NULL, 
+    y = 'Water temp. (\u00B0C)', 
     color = NULL, 
     shape = NULL
   )
 
-png(here('figs/saltempraw.png'), height = 5, width = 9, family = 'serif', units = 'in', res = 300)
+p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.5)) & theme(legend.position = 'top')
+
+png(here('figs/meteowqraw.png'), height = 8.5, width = 7, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 
