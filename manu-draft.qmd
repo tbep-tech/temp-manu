@@ -86,13 +86,23 @@ Syringodium:
 
 ## Results
 
-For @fig-saltempraw, salinity shows much higher inter-annual variability, but lower intra-year variation among stations. Trends are similar for bottom vs top, temperature shows stronger trend than salinity.
+For @fig-meteowqraw, salinity shows much higher inter-annual variability, but lower intra-year variation among stations. Trends are similar for bottom vs top, temperature shows stronger trend than salinity.
 
 Kendall test results are shown in @fig-kendall.
 
 An example of mixed effects models for two selected thresholds is shown in @fig-mixeff.
 
+$$
+Y_{ij} = \beta_0 + \beta_1X_{ij} + u_i + \epsilon_{ij}
+$$
+
 NMS results in @fig-nms and GAM results in @fig-gamres.
+
+GAM notation:
+
+$$
+Y_i = \beta_0 + f_1\left(\text{Sal}_i\right) + f_2\left(\text{Temp}_i\right) + f_3\left(\text{Both}_i\right) + f_4\left(\text{Year}_i, \text{Sal}_i\right) + f_5\left(\text{Year}_i, \text{Temp}_i\right) + f_6\left(\text{Year}_i, \text{Both}_i\right)  + \epsilon_i
+$$
 
 ## Discussion
 
@@ -128,11 +138,11 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![Ordination plots of Nonmetric Multidimensional Scaling results for annual estimates in each bay segment for total seagrass frequency occurrence (Freq. Occ.), counts of days above the temperature threshold (Temp.), counts of days below the salinity threshold (Sal.), and counts of days above or below for both, respectively (Sal. + Temp.). Points are sized by seagrass frequency occurrence.  95% confidence ellipses are shown for observations in each major bay segment  OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.](figs/nms.png){#fig-nms}
+![Ordination plots of Nonmetric Multidimensional Scaling results for annual estimates in each bay segment for total seagrass frequency occurrence (Freq. Occ.), counts of days above the temperature threshold (Temp.), counts of days below the salinity threshold (Sal.), and counts of days above or below for both, respectively (Sal. + Temp.). Points are sized by seagrass frequency occurrence. 95% confidence ellipses are shown for observations in each major bay segment OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.](figs/nms.png){#fig-nms}
 
 {{< pagebreak >}}
 
-![Predicted results from a Generalized Additive Model evaluating frequency occurrence of seagrass versus year (left), number of days in a year when temperature exceeded the threshold (top right), and number of days in a year when salinity was below the threshold (bottom right).  All variables were fit as main effects, including interactions with year.  The right plots show model predicted results for the threshold variables for selected year slices.  2016 to 2022 are years with recent seagrass decline. Shaded areas are 95% confidence intervals.](figs/gamres.png){#fig-gamres}
+![Predicted results from a Generalized Additive Model evaluating frequency occurrence of seagrass versus year (left), number of days in a year when temperature exceeded the threshold (top right), and number of days in a year when salinity was below the threshold (bottom right). All variables were fit as main effects, including interactions with year. The right plots show model predicted results for the threshold variables for selected year slices. 2016 to 2022 are years with recent seagrass decline. Shaded areas are 95% confidence intervals.](figs/gamres.png){#fig-gamres}
 
 {{< pagebreak >}}
 
@@ -154,7 +164,7 @@ daytab
 
 {{< pagebreak >}}
 
-Summary of a Generalized Additive Model evaluating frequency occurrence of seagrass versus year, number of days in a year when temperature exceeded the threshold, number of days in a year when salinity was below the threshold, and number of days in a year when both temperature and salinity were above or below thresholds.  All variables were fit as main effects, including interactions with year. edf: estimate degrees of freedom, ref.df: reference degrees of freedom, F: F-statistic. * p < 0.05, ** p < 0.005.
+Summary of a Generalized Additive Model evaluating frequency occurrence of seagrass versus year, number of days in a year when temperature exceeded the threshold, number of days in a year when salinity was below the threshold, and number of days in a year when both temperature and salinity were above or below thresholds. All variables were fit as main effects, including interactions with year. edf: estimate degrees of freedom, ref.df: reference degrees of freedom, F: F-statistic. \* p \< 0.05, \*\* p \< 0.005.
 
 ```{r}
 gamtab

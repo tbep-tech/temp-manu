@@ -118,12 +118,10 @@ png(here('figs/seagrasschg.png'), height = 6, width = 8, family = 'serif', units
 print(p)
 dev.off()
 
-# raw temp and salinity changes ---------------------------------------------------------------
+# meteorological, salinity, water temp obs data -----------------------------------------------
 
 load(file = here('data/speidat.RData'))
 load(file = url("https://github.com/tbep-tech/load-estimates/raw/main/data/totanndat.RData"))
-
-yrsel <- range(speidat$yr)
 
 # hydro load, otb, mtb, ltb, hb
 hydrodat <- totanndat %>% 
@@ -167,7 +165,7 @@ p2 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
   geom_line() + 
   geom_point() + 
   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
-  coord_cartesian(xlim = yrsel) + 
+  coord_cartesian(xlim = range(speidat$yr)) + 
   thm +
   theme(
     axis.text.x = element_blank()
@@ -184,7 +182,7 @@ p3 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) +
   theme(
     axis.text.x = element_blank()
   ) +
-  coord_cartesian(xlim = range(resmo$date)) +
+  coord_cartesian(xlim = range(speidat$date)) +
   labs(
     x = NULL, 
     y = 'SPI (z-values)'
@@ -234,7 +232,7 @@ toplo5 <- toplo %>%
   filter(var == 'Salinity (ppt)')
 p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) + 
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
-  geom_point(position = position_dodge2(width = wd)) +
+  geom_point(position = position_dodge2(width = wd), size = 0.5) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
   geom_smooth(method = 'lm', formula = y ~ x, se = F) +
   facet_grid(~ bay_segment) +
@@ -254,7 +252,7 @@ toplo6 <- toplo %>%
   filter(var == 'Water temp. (\u00B0C)')
 p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) + 
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
-  geom_point(position = position_dodge2(width = wd)) +
+  geom_point(position = position_dodge2(width = wd), size = 0.5) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
   geom_smooth(method = 'lm', formula = y ~ x, se = F) +
   facet_grid(~ bay_segment) +
@@ -270,7 +268,7 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
 
 p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.5)) & theme(legend.position = 'top')
 
-png(here('figs/meteowqraw.png'), height = 8.5, width = 7, family = 'serif', units = 'in', res = 300)
+png(here('figs/meteowqraw.png'), height = 8.5, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
 dev.off()
 
@@ -612,6 +610,7 @@ ext <- 1.25
 exp <- 0.1
 parse <- F
 ellipse <- T
+cols <- c("#3B9AB2", "#EBCC2A", "#F21A00")# c("#1F78B4", "#33A02C", "#E31A1C")
 vec_lab <- list(
   'total'= 'Freq Occ',
   'Sal' = 'Sal', 
@@ -621,12 +620,12 @@ vec_lab <- list(
 grp_title <- 'Bay segment'
 sizelab <- 'Freq Occ'
 
-p1 <- ggord(orddat, axes = c('1', '2'), ellipse = ellipse, grp_in = grps,
+p1 <- ggord(orddat, axes = c('1', '2'), cols = cols, ellipse = ellipse, grp_in = grps,
       parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
       repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
       exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
       force = force)
-p2 <- ggord(orddat, axes = c('2', '3'), ellipse = ellipse, grp_in = grps,
+p2 <- ggord(orddat, axes = c('2', '3'), cols = cols, ellipse = ellipse, grp_in = grps,
       parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
       repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
       exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
