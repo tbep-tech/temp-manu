@@ -12,6 +12,7 @@ library(modelbased)
 library(mgcv)
 library(SPEI)
 library(rnoaa)
+library(dataRetrieval)
 
 source(here('R/funcs.R'))
 
@@ -608,6 +609,127 @@ cmbmod <- gam(total ~ ti(Year) + ti(Temp) + ti(Sal) + ti(Both) + ti(Temp, Year) 
 # cmbmod <- gam(total ~ te(Temp, Year) + te(Sal, Year), data = tomod)
 
 save(cmbmod, file = 'data/cmbmod.RData')
+
+
+# USGS gage data ------------------------------------------------------------------------------
+
+yrs <- seq(1975, 2022)
+
+sites <- list(
+  Hillsborough = "02303000",
+  Alafia = "02301500",
+  LittleManatee = "02300500",
+  Tarpon = "02307498",
+  Ward = "02300042",
+  Manatee = "02299950"
+)
+
+res <- yrs %>%
+  tibble::enframe('name', 'year') %>%
+  dplyr::group_by(name) %>%
+  tidyr::nest() %>%
+  dplyr::mutate(
+    ests = purrr::map(data, function(x){
+      
+      yr <- x$year
+      cat(yr, '\n')
+      
+      start <- paste0(yr, "-01-01")
+      end <- paste0(yr, "-12-31")
+      
+      ##
+      # flow 
+      
+      # download USGS streamflow data
+      outflow <- lapply(sites, 
+                        function(x) dataRetrieval::readNWISdv(x, "00060", start, end)
+      )
+      
+      # combine flow
+      # remove empty elements
+      nodat <- lapply(outflow, function(x) nrow(x) == 0) %>% unlist
+      if(!any(!nodat)) {
+        outflow <- NULL
+      } else {
+        outflow <- outflow[!nodat]
+        outflow <- outflow %>%
+          enframe() %>% 
+          unnest('value') %>% 
+          rename(
+            site = site_no,
+            date = Date
+          ) %>% 
+          mutate(
+            val = X_00060_00003 * 86400 / 35.3147 # ft3/s to m3/d
+          ) %>% 
+          summarise(val = sum(val, na.rm = T), .by = c(name, site, date)) %>% 
+          mutate(
+            var = 'flow_m3d'
+          )
+      }
+      
+      ##
+      # water temp
+      
+      # download USGS temp data
+      outtemp <- lapply(sites, 
+                        function(x) readNWISdata(sites = x, service = "dv", parameterCd = "00010", startDate = start, endDate = end)
+      )
+      
+      # remove empty list elements
+      nodat <- lapply(outtemp, function(x) nrow(x) == 0) %>% unlist
+      if(!any(!nodat)) {
+        outtemp <- NULL
+      } else {
+        outtemp <- outtemp[!nodat]
+        
+        # create avg temp from min max 
+        nms <- lapply(outtemp, 
+                      function(x) 'X_00010_00001' %in% names(x) & 'X_00010_00002' %in% names(x)
+        ) %>% unlist()
+        if(any(nms)){
+          outtemp[nms] <- lapply(outtemp[nms], function(x){
+            
+            x <- x %>% 
+              mutate(
+                X_00010_00011 = (X_00010_00001 + X_00010_00002) / 2
+              ) %>% 
+              select(-X_00010_00001, -X_00010_00002)
+            
+            return(x)
+          })
+        }
+        
+        outtemp <- outtemp %>% 
+          enframe() %>% 
+          unnest('value') %>% 
+          rename(
+            site = site_no, 
+            date = dateTime,
+            val = X_00010_00011
+          ) %>%  
+          summarise(val = mean(val, na.rm = T), .by = c(name, site, date)) %>% 
+          mutate(
+            var = 'temp_c'
+          )
+      }
+      
+      # combine all
+      out <- bind_rows(outflow, outtemp)
+      
+      return(out)
+      
+    })
+  )
+
+gagedat <- res %>%
+  unnest('data') %>%
+  ungroup() %>% 
+  select(-name) %>% 
+  unnest('ests') %>%
+  select(name, site, year, date, val, var)
+
+save(gagedat, file = here('data/gagedat.RData'), compress = 'xz')
 
 # fim data ------------------------------------------------------------------------------------
 
