@@ -731,6 +731,77 @@ gagedat <- res %>%
 
 save(gagedat, file = here('data/gagedat.RData'), compress = 'xz')
 
+# ports water temp data -----------------------------------------------------------------------
+
+noaa_key <- Sys.getenv('NOAA_KEY')
+
+ports <- list(
+  stpete = '8726520', 
+  oldporttampa = '8726607', 
+  manatee = '8726384', 
+  mckay = '8726667', 
+  eastbay = '8726674'
+)
+
+yrs <- tibble(
+  dts = seq.Date(from = as.Date('1975-01-01'), to = as.Date('2022-12-31'), 'days')
+) %>% 
+  mutate(
+    mo = month(dts), 
+    yr = year(dts)
+  ) %>% 
+  crossing(ports %>% enframe %>% unnest('value')) %>% 
+  group_nest(yr, mo, name) %>% 
+  mutate(
+    res = purrr::pmap(list(name, yr, mo, data), function(name, yr, mo, data){
+      
+      cat(name, yr, mo)
+      
+      nm <- unique(data$value) %>% as.numeric()
+      rng <- range(data$dts) %>% as.character() %>% gsub('\\-', '', .) %>% as.numeric()
+      
+      res <- try(coops_search(station_name = nm, begin_date = rng[1],
+                              end_date = rng[2], product = "water_temperature"), silent = T)
+      
+      if(inherits(res, 'try-error')){
+        cat('\tno data\n')
+        return(NULL)
+      }
+      
+      cat('\n')
+      
+      return(res$data)
+      
+    })
+  )
+
+portsdat <- yrs %>% 
+  mutate(
+    flt = purrr::map(res, is.data.frame)
+  ) %>% 
+  unnest(flt) %>% 
+  filter(flt) %>% 
+  select(yr, mo, name, res) %>% 
+  unnest(res) %>% 
+  filter(!is.na(v)) %>% 
+  mutate(
+    dy = day(t), 
+  ) %>% 
+  mutate(
+    cnt = length(unique(hour(t))), 
+    .by = c(name, yr, mo, dy)
+  ) %>% 
+  filter(cnt >= 20) %>% 
+  summarise(
+    temp_c = median(v), 
+    date = as.Date(min(t)), 
+    .by = c(name, yr, mo, dy)
+  ) %>% 
+  filter(!(yr < 2003 & name == 'stpete')) %>% # wonky data befofore 2004
+  filter(name != 'eastbay') # only three years
+
+save(portsdat, file = here('data/portsdat.RData'))
+
 # fim data ------------------------------------------------------------------------------------
 
 prj <- 4326

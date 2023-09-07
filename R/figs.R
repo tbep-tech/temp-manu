@@ -725,3 +725,27 @@ p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, widths = c(0
 png(here('figs/gamres.png'), height = 5, width = 8.5, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
+
+# # hillsborough flow v temp over time ----------------------------------------------------------
+# 
+# load(file = here('data/gagedat.RData'))
+# 
+# toplo <- gagedat %>% 
+#   filter(name == 'Hillsborough') %>% 
+#   pivot_wider(names_from = 'var', values_from = 'val') %>% 
+#   na.omit() %>% 
+#   mutate(
+#     yrgroup = ifelse(year < 2000, 'past', 'present'),
+#     mo = month(date)
+#   ) %>% 
+#   # filter(flow_m3d < quantile(flow_m3d, 0.9)) %>%
+#   filter(mo %in% c(2, 8)) #%>%
+# # filter(temp_c > 1)
+# 
+# ggplot(toplo, aes(x = flow_m3d, y = temp_c, group = yrgroup, color = yrgroup)) + 
+#   geom_point(size = 0.6) +  
+#   scale_x_log10() +
+#   facet_grid(~mo) +
+#   geom_smooth(se = T, method = 'lm', formula = y~ x)
+
+
