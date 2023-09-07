@@ -739,8 +739,8 @@ ports <- list(
   stpete = '8726520', 
   oldporttampa = '8726607', 
   manatee = '8726384', 
-  mckay = '8726667', 
-  eastbay = '8726674'
+  mckay = '8726667'#, 
+  # eastbay = '8726674' # only a few years of water temp data
 )
 
 yrs <- tibble(
@@ -797,8 +797,7 @@ portsdat <- yrs %>%
     date = as.Date(min(t)), 
     .by = c(name, yr, mo, dy)
   ) %>% 
-  filter(!(yr < 2003 & name == 'stpete')) %>% # wonky data befofore 2004
-  filter(name != 'eastbay') # only three years
+  filter(!(yr < 2003 & name == 'stpete')) # wonky data before 2004
 
 save(portsdat, file = here('data/portsdat.RData'))
 

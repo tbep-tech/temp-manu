@@ -748,4 +748,42 @@ dev.off()
 #   facet_grid(~mo) +
 #   geom_smooth(se = T, method = 'lm', formula = y~ x)
 
+# # ports data threshold counts -----------------------------------------------------------------
+# 
+# # thresholds to count by year, temp is above
+# thrs <- tibble(
+#   temp = c(29, 30, 31)
+# )
+# 
+# # get T/F vectors for predictions above/below thresholds by day
+# sumdat <- portsdat %>% 
+#   group_nest(name) %>% 
+#   crossing(thrs) %>% 
+#   mutate(
+#     data = purrr::pmap(list(data, temp), function(data, temp){
+#       
+#       out <- data %>% 
+#         mutate(
+#           cnt = temp_c >= temp
+#         )
+#       
+#       return(out)
+#       
+#     })
+#   ) %>% 
+#   unnest('data') %>% 
+#   summarise(
+#     runcnt = runfunc(cnt),
+#     sumcnt = sum(cnt),
+#     .by = c(name, yr, temp)
+#   )
+# 
+# ggplot(sumdat, aes(x = yr, y = runcnt, col = factor(temp))) + 
+#   geom_point() + 
+#   geom_smooth(se = F, method = 'lm', formula = y ~ x) + 
+#   facet_wrap(~name)
+# 
+# ggplot(portsdat, aes(x = date, y = temp_c)) + 
+#   geom_line() + 
+#   facet_wrap(~name, ncol = 1)
 
