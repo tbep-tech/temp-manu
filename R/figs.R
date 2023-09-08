@@ -249,7 +249,9 @@ p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 toplo6 <- toplo %>% 
-  filter(var == 'Water temp. (\u00B0C)')
+  filter(var == 'Water temp. (\u00B0C)') %>% 
+  filter(!(yr %in% c(1982, 1985) & bay_segment == 'OTB')) %>%  # missing months create outliers
+  filter(!(yr %in% 1975 & bay_segment == 'HB')) # missing months create outliers
 p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) + 
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
   geom_point(position = position_dodge2(width = wd), size = 0.5) +
