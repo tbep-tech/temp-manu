@@ -130,7 +130,7 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![Trends from 1974 to 2022 for salinity and temperature measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the waer column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1). Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant decreasing (salinity) or increasing (temperature) trends. Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/kendall.png){#fig-kendall}
+![Trends from 1998 to 2022 for salinity and temperature measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the waer column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1). Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant decreasing (salinity) or increasing (temperature) trends. Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/kendall.png){#fig-kendall}
 
 {{< pagebreak >}}
 

@@ -19,7 +19,7 @@ library(visreg)
 library(car)
 library(mgcv)
 
-yrsel <- c(1974, 2022)
+yrsel <- c(1998, 2022)
 tempthr <- c(29, 30, 31)
 tempcol <- c('coral', 'red2', 'darkred')
 salithr <- c(20, 25, 30)
@@ -461,7 +461,7 @@ p1 <- ggmap(bsmap1_transparent) +
   scale_size(range = c(0.75, 4), guide = 'none') +
   guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
   labs(
-    title = '(a) Change per year, 1974-2022',
+    title = paste0('(a) Change per year, ', yrsel[1], '-', yrsel[2]),
     caption = 'Outlines indicate p < 0.05'
   )
 
@@ -494,44 +494,57 @@ modprd <- thrdat %>%
   group_by(thrtyp, bay_segment) %>% 
   nest() %>% 
   mutate(
-    mod = purrr::map(data, function(x){
+    mod = purrr::map(data, function(data){
       
-      mod <- try(lmer(cnt ~ yr + (1|station), data = x, REML = F), silent = T)
+      mod <- try(lmer(cnt ~ yr + (1|station), data = data, REML = F), silent = T)
       if(inherits(mod, 'try-error'))
-        return(NA)
+        return(NULL)
       
       return(mod)
       
-    }), 
+    }),
     data = purrr::pmap(list(data, mod), function(data, mod){
-      bind_cols(data, prd = predict(mod))
-    }),
-    fix = purrr::map(mod, function(x){
-      
-      fixef <- estimate_means(x, 'yr')
-      
-      out <- tibble(
-        yr = fixef$yr, 
-        prd = fixef$Mean
-      )
-      
+      if(!is.null(mod))
+        out <- bind_cols(data, prd = predict(mod))
+      else
+        out <- data %>% 
+          mutate(prd = NA)
       return(out)
-      
     }),
-    slo = purrr::map(mod, function(x){
+    fix = purrr::map(mod, function(mod){
+
+      if(!is.null(mod)){
+        
+        fixef <- estimate_means(mod, 'yr')
+
+        out <- tibble(
+          yr = fixef$yr,
+          prd = fixef$Mean
+        )
+
+        return(out)
+
+      }
+
+    }),
+    slo = purrr::map(mod, function(mod){
       
-      summod <- summary(x)$coefficients
-      
-      pvl <- summod['yr', 'Pr(>|t|)']
-      if(pvl >= 0.05)
-        return('')
-      
-      out <- summod['yr', 'Estimate'] %>% 
-        round(2) %>% 
-        as.character()
-      
-      return(out)
-      
+      if(!is.null(mod)){
+        
+        summod <- summary(mod)$coefficients
+  
+        pvl <- summod['yr', 'Pr(>|t|)']
+        if(pvl >= 0.05)
+          return('')
+  
+        out <- summod['yr', 'Estimate'] %>%
+          round(2) %>%
+          as.character()
+  
+        return(out)
+        
+      }
+
     })
   ) %>% 
   ungroup() %>% 
@@ -593,16 +606,23 @@ load(file = here('data/cmbdat.RData'))
 cmbdat <- cmbdat %>% 
   filter(!bay_segment %in% 'LTB')
 
-toord <- cmbdat %>% 
-  dplyr::select(-Year, -Chla, -bbave, -bay_segment) %>% 
+toord1 <- cmbdat %>% 
+  dplyr::select(-Year, -Chla, -bbave, -Both, -bay_segment) %>% 
   mutate_all(rescale, to = c(0, 1))
 
-orddat <- metaMDS(toord, k = 3, trymax = 100)
+orddat1 <- metaMDS(toord1, k = 2, trymax = 100)
+
+toord2 <- cmbdat %>% 
+  dplyr::select(-Year, -Chla, -bbave, -Sal, -Temp, -bay_segment) %>% 
+  mutate_all(rescale, to = c(0, 1))
+
+orddat2 <- metaMDS(toord2, k = 2, trymax = 100)
+
 grps <- factor(cmbdat$bay_segment)
 
 vec_ext <- 1.75
 coord_fix <- F
-size <- toord$total
+size <- toord1$total
 repel <- F
 force <- T
 arrow <- 0.2
@@ -622,16 +642,16 @@ vec_lab <- list(
 grp_title <- 'Bay segment'
 sizelab <- 'Freq Occ'
 
-p1 <- ggord(orddat, axes = c('1', '2'), cols = cols, ellipse = ellipse, grp_in = grps,
-      parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
-      repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
-      exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
-      force = force)
-p2 <- ggord(orddat, axes = c('2', '3'), cols = cols, ellipse = ellipse, grp_in = grps,
-      parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
-      repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
-      exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
-      force = force)
+p1 <- ggord(orddat1, axes = c('1', '2'), cols = cols, ellipse = ellipse, grp_in = grps,
+            parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
+            repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
+            exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
+            force = force)
+p2 <- ggord(orddat2, axes = c('1', '2'), cols = cols, ellipse = ellipse, grp_in = grps,
+            parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
+            repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
+            exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
+            force = force)
 
 p <- p1 + p2 + plot_layout(ncol = 2, guides = 'collect')
 
@@ -789,3 +809,124 @@ dev.off()
 #   geom_line() + 
 #   facet_wrap(~name, ncol = 1)
 
+
+
+# # alafia hydro load v s2t3 fo chng ------------------------------------------------------------
+#
+# data(gagedat)
+# 
+# toplo <- gagedat %>% 
+#   filter(var == 'flow_m3d') %>% 
+#   summarise(
+#     # loqnt = quantile(val, 0.99), 
+#     meqnt = quantile(val, 0.90),
+#     # hiqnt = quantile(val, 0.85),
+#     .by = c(name, year)
+#   ) %>% 
+#   pivot_longer(names_to = 'met', values_to = 'val', matches('qnt')) %>% 
+#   filter(name %in% c('Alafia', 'Hillsborough'))
+# 
+# ggplot(toplo, aes(x = year, y = val, color = met)) + 
+#   geom_point() + 
+#   geom_smooth(method = 'lm', se = F) +
+#   facet_grid(~name, scales = 'free_y')
+# # scale_y_log10()
+# 
+# 
+# trnptssub <- trnpts %>% 
+#   st_set_geometry(NULL) %>% 
+#   select(
+#     Transect = TRAN_ID, 
+#     bay_segment
+#   ) %>% 
+#   filter(bay_segment == 'HB')
+# transectocc <- anlz_transectocc(transect)
+# tots <- transectocc %>% 
+#   filter(Savspecies == 'total') %>% 
+#   inner_join(trnptssub, by = 'Transect') %>% 
+#   filter(Transect %in% c('S2T5', 'S2T4', 'S2T3', 'S2T2'))
+# 
+# ggplot(tots, aes(x = Date, y = foest, group = Transect)) + 
+#   geom_line() + 
+#   geom_point()
+# facet_grid(~Transect)
+# 
+# s2t3 <- tots %>% 
+#   ungroup() %>% 
+#   filter(Transect == 'S2T3') %>% 
+#   select(Date, foest, bbest)
+# 
+# alaf <- gagedat %>% 
+#   filter(name == 'Alafia') %>% 
+#   filter(year >= min(year(s2t3$Date))) %>% 
+#   filter(var == 'flow_m3d') %>% 
+#   mutate(
+#     trndt = cut(as.numeric(as.Date(date)), c(-Inf, unique(s2t3$Date), Inf), 
+#                 labels = c(as.character(unique(s2t3$Date)), 'beyond')), 
+#   ) %>% 
+#   filter(!trndt %in% 'beyond') %>% 
+#   mutate(trndt = ymd(trndt)) %>% 
+#   mutate(
+#     mocnt = trndt - floor_date(as.Date(date), 'month'), 
+#     mocnt = factor(mocnt, levels = unique(mocnt), labels = rev(c(1:length(unique(mocnt))))),
+#     mocnt = as.numeric(as.character(mocnt)),
+#     .by = trndt
+#   )
+# 
+# for(i in 1:12){
+#   
+#   alaf2 <- alaf %>% 
+#     filter(mocnt <= i) %>%
+#     summarise(
+#       ave = exp(mean(log(val))),
+#       ld = sum(val),
+#       qnt90 = quantile(val, 0.9), 
+#       .by = 'trndt'
+#     )
+#   
+#   tomod <- s2t3 %>% 
+#     ungroup() %>% 
+#     full_join(alaf2, by = c('Date' = 'trndt')) %>% 
+#     mutate(
+#       fodif = c(NA, diff(foest)),
+#       fochg = ifelse(sign(fodif) == -1, 1, 0), 
+#       bbdif = c(NA, diff(bbest)), 
+#       bbchg = ifelse(sign(bbdif) == -1, 1, 0)
+#     ) %>% 
+#     filter(!is.na(fochg))
+#   
+#   mod <- glm(fochg ~ ld, data = tomod, family = binomial('logit'))
+#   # visreg(mod, 'ld', scale = 'response')
+#   print(coefficients(summary(mod))[2, 4])
+#   
+# }
+# 
+# alaf2 <- alaf %>% 
+#   filter(mocnt <= 8) %>%
+#   summarise(
+#     ave = exp(mean(log(val))),
+#     ld = sum(val),
+#     qnt90 = quantile(val, 0.9), 
+#     .by = 'trndt'
+#   )
+# 
+# tomod <- s2t3 %>% 
+#   ungroup() %>% 
+#   full_join(alaf2, by = c('Date' = 'trndt')) %>% 
+#   mutate(
+#     fodif = c(NA, diff(foest)),
+#     fochg = ifelse(sign(fodif) == -1, 1, 0), 
+#     bbdif = c(NA, diff(bbest)), 
+#     bbchg = ifelse(sign(bbdif) == -1, 1, 0)
+#   ) %>% 
+#   filter(!is.na(fochg))
+# 
+# mod <- glm(fochg ~ ld, data = tomod, family = binomial('logit'))
+# visreg(mod, 'ld', scale = 'response')
+# 
+# ggplot(tomod, aes(x = factor(Date), y = ld, fill = fodif)) + 
+#   geom_col(color = 'black') +
+#   scale_fill_gradient2(low = 'red', mid = 'white', high = 'green', midpoint = 0)
+# 
+# ggplot(tomod, aes(x = factor(Date), y = ld, fill = factor(fochg))) + 
+#   geom_col(color = 'black')
