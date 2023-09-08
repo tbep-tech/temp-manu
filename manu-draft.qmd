@@ -138,7 +138,7 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![Ordination plots of Nonmetric Multidimensional Scaling results for annual estimates in each bay segment for total seagrass frequency occurrence (Freq. Occ.), counts of days above the temperature threshold (Temp.), counts of days below the salinity threshold (Sal.), and counts of days above or below for both, respectively (Sal. + Temp.). Points are sized by seagrass frequency occurrence. 95% confidence ellipses are shown for observations in each major bay segment OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.](figs/nms.png){#fig-nms}
+![Ordination plots of Nonmetric Multidimensional Scaling results for annual estimates in each bay segment for total seagrass frequency occurrence (Freq. Occ.), counts of days above the temperature threshold (Temp.), counts of days below the salinity threshold (Sal.), and counts of days above or below for both, respectively (Sal. + Temp.). The left plot excludes counts of days with both temperature and salinity, whereas the right plot excludes the separate temperature and salinity metrics.  Points are sized by seagrass frequency occurrence. 95% confidence ellipses are shown for observations in each major bay segment OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.](figs/nms.png){#fig-nms}
 
 {{< pagebreak >}}
 
