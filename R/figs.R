@@ -483,80 +483,9 @@ dev.off()
 
 # mixeff example plot -------------------------------------------------------------------------
 
-load(file = here('data/thrdat.RData'))
+load(file = here('data/mixmodprds.RData'))
 
-salthr <- '25'
-tmpthr <- '30'
-
-modprd <- thrdat %>% 
-  filter(salithr == paste0('sali_', salthr)) %>% 
-  filter(tempthr == paste0('temp_', tmpthr)) %>% 
-  group_by(thrtyp, bay_segment) %>% 
-  nest() %>% 
-  mutate(
-    mod = purrr::map(data, function(data){
-      
-      mod <- try(lmer(cnt ~ yr + (1|station), data = data, REML = F), silent = T)
-      if(inherits(mod, 'try-error'))
-        return(NULL)
-      
-      return(mod)
-      
-    }),
-    data = purrr::pmap(list(data, mod), function(data, mod){
-      if(!is.null(mod))
-        out <- bind_cols(data, prd = predict(mod))
-      else
-        out <- data %>% 
-          mutate(prd = NA)
-      return(out)
-    }),
-    fix = purrr::map(mod, function(mod){
-
-      if(!is.null(mod)){
-        
-        fixef <- estimate_means(mod, 'yr')
-
-        out <- tibble(
-          yr = fixef$yr,
-          prd = fixef$Mean
-        )
-
-        return(out)
-
-      }
-
-    }),
-    slo = purrr::map(mod, function(mod){
-      
-      if(!is.null(mod)){
-        
-        summod <- summary(mod)$coefficients
-  
-        pvl <- summod['yr', 'Pr(>|t|)']
-        if(pvl >= 0.05)
-          return('')
-  
-        out <- summod['yr', 'Estimate'] %>%
-          round(2) %>%
-          as.character()
-  
-        return(out)
-        
-      }
-
-    })
-  ) %>% 
-  ungroup() %>% 
-  mutate(
-    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
-    thrtyp = factor(thrtyp, 
-                    levels = c('salicnt', 'tempcnt', 'bothcnt'), 
-                    labels = c(paste('Salinity <', salthr), paste('Temperature >', tmpthr), 'Both')
-    )
-  )
-
-toplo1 <- modprd %>% 
+toplo1 <- mixmodprds %>% 
   select(-mod, -fix, -slo) %>% 
   unnest('data') %>% 
   filter(
