@@ -524,8 +524,10 @@ mixmodprds <- thrdat %>%
     fix = purrr::map(mod, function(mod){
       
       if(!is.null(mod)){
-        
-        fixef <- estimate_means(mod, 'yr')
+      
+        yrpd <- sort(unique(mod@frame$yr))
+        atv <- paste0('yr=c(', paste(yrpd, collapse = ', '), ')')
+        fixef <- estimate_means(mod, at = atv)
         
         out <- tibble(
           yr = fixef$yr,
@@ -572,6 +574,7 @@ save(mixmodprds, file = here('data/mixmodprds.RData'))
 
 load(file = here('data/thrdat.RData'))
 load(file = here('data/chlthrdat.RData'))
+load(file = here('data/mixmodprds.RData'))
 
 seglng <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
 segshr <- c('OTB', 'HB', 'MTB', 'LTB')
@@ -655,11 +658,27 @@ cntdat <- bind_rows(cntsaltmp, cntchla) %>%
   pivot_wider(names_from = thrtyp, values_from = cnt)
 
 ##
+# threshold prediction data
+
+prddat <- mixmodprds %>% 
+  select(bay_segment, thrtyp, fix) %>% 
+  unnest('fix') %>% 
+  mutate(
+    thrtyp = case_when(
+      grepl('^Sal', thrtyp) ~ 'saliprd', 
+      grepl('^Temp', thrtyp) ~ 'tempprd', 
+      grepl('Both', thrtyp) ~ 'bothprd'
+    )
+  ) %>% 
+  pivot_wider(names_from = thrtyp, values_from = prd)
+
+##
 # combine
 
 cmbdat <- fodat %>% 
   inner_join(cntdat, by = c('yr', 'bay_segment')) %>% 
   inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
+  inner_join(prddat, by = c('yr', 'bay_segment')) %>% 
   mutate(
     bay_segment = factor(bay_segment, 
                          levels = segshr)
@@ -669,7 +688,10 @@ cmbdat <- fodat %>%
     Sal = salicnt, 
     Temp = tempcnt, 
     Both = bothcnt, 
-    Chla = chlacnt
+    Chla = chlacnt,
+    Tempprd = tempprd, 
+    Salprd = saliprd, 
+    Bothprd = bothprd
   )
 
 save(cmbdat, file = here('data/cmbdat.RData'))
