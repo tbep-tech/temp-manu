@@ -940,7 +940,31 @@ for(i in 1:12){
   
   # mod <- glm(fochg ~ ld, data = tomod, family = binomial('logit'))
   mod <- glm(foest ~ ld, data = tomod)
-  # visreg(mod, 'ld', scale = 'response')
+  visreg(mod, 'ld', scale = 'response')
   print(coefficients(summary(mod))[2, 4])
   
 }
+
+lddat2 <- lddat %>%
+  filter(mocnt <= 12) %>%
+  summarise(
+    ave = mean(hy_load_106_m3_mo),
+    ld = sum(hy_load_106_m3_mo ),
+    qnt90 = quantile(hy_load_106_m3_mo, 0.9),
+    .by = c('trnyear', 'bay_segment')
+  )
+
+tomod <- transectavespp %>%
+  ungroup() %>%
+  inner_join(lddat2, by = c('yr' = 'trnyear', 'bay_segment')) %>%
+  arrange(bay_segment, yr) %>% 
+  mutate(
+    fodif = c(NA, diff(foest)),
+    fochg = ifelse(sign(fodif) == -1, 1, 0), 
+    .by = bay_segment
+  ) %>%
+  filter(!is.na(fochg))
+
+ggplot(tomod, aes(x = ld, y = foest)) + 
+  geom_point() +
+  geom_smooth(method = 'lm', formula = y~x) 
