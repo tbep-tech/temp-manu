@@ -456,6 +456,9 @@ save(chlthrdat, file = here('data/chlthrdat.RData'), compress = 'xz')
 
 # counts by day above/below thresholds referenced to transect dates ---------------------------
 
+# note that these include all days and threhsolds
+# data are not summarized by year as in thrdat
+
 ##
 # approximate sample month of transects by year, segment
 
@@ -583,7 +586,7 @@ thrdat <- cmbdat %>%
 ##
 # reference counts to transect sample dates by bay segment
 
-thrtrndat <- thrdat %>% 
+thralltrndat <- thrdat %>% 
   left_join(trndts, by = c('bay_segment', 'date'), relationship = 'many-to-one') %>% 
   group_by(bay_segment, station, salithr, tempthr, thrtyp) %>% 
   fill(trndt, .direction = 'up') %>% 
@@ -596,7 +599,7 @@ thrtrndat <- thrdat %>%
     .by = c(bay_segment, station, thrtyp, salithr, tempthr, trndt)
   ) 
 
-save(thrtrnalldat, file = here('data/thrtrndat.RData'))
+save(thralltrndat, file = here('data/thralltrndat.RData'))
 
 # mixef mods of threshold counts over time ----------------------------------------------------
 
