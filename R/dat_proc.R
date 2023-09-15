@@ -596,7 +596,7 @@ thrtrndat <- thrdat %>%
     .by = c(bay_segment, station, thrtyp, salithr, tempthr, trndt)
   ) 
 
-save(thrtrndat, file = here('data/thrtrndat.RData'))
+save(thrtrnalldat, file = here('data/thrtrndat.RData'))
 
 # mixef mods of threshold counts over time ----------------------------------------------------
 
