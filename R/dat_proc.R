@@ -465,7 +465,7 @@ save(chlthrdat, file = here('data/chlthrdat.RData'), compress = 'xz')
 transectocc <- anlz_transectocc(transect) 
 transectavespp <- transectocc %>% 
   anlz_transectavespp(by_seg = TRUE) %>% 
-  filter(bay_segment %in% c('HB', 'OTB', 'MTB')) %>% 
+  filter(bay_segment %in% c('HB', 'OTB', 'MTB', 'LTB')) %>% 
   filter(Savspecies %in% 'total') %>% 
   select(yr, bay_segment, foest)
 
@@ -476,7 +476,7 @@ trnptssub <- trnpts %>%
     Transect = TRAN_ID,
     bay_segment
   ) %>%
-  filter(bay_segment %in% c('OTB', 'HB', 'MTB'))
+  filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB'))
 trndts <- transectocc %>%
   ungroup() %>% 
   filter(Savspecies == 'total') %>%
@@ -580,7 +580,6 @@ thrdat <- cmbdat %>%
   unnest('cmbcnt') %>% 
   pivot_longer(names_to = 'thrtyp', values_to = 'cnt', matches('cnt')) %>% 
   filter(yr >= (min(year(trndts$date)) - 1)) %>% 
-  filter(!bay_segment == 'LTB') %>% 
   arrange(bay_segment, station, thrtyp, salithr, tempthr, date)
 
 ##

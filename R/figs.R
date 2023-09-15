@@ -968,3 +968,127 @@ tomod <- transectavespp %>%
 ggplot(tomod, aes(x = ld, y = foest)) + 
   geom_point() +
   geom_smooth(method = 'lm', formula = y~x) 
+
+
+# ---------------------------------------------------------------------------------------------
+
+load(file = here('data/thralltrndat.RData'))
+
+seglng <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
+segshr <- c('OTB', 'HB', 'MTB', 'LTB')
+
+##
+# seagrass fo
+transectocc <- anlz_transectocc(transect)
+transectave <- anlz_transectave(transectocc)
+
+fodat <- transectave %>% 
+  select(bay_segment, yr, total = foest) %>% 
+  filter(bay_segment %in% segshr) %>% 
+  mutate(
+    total = total / 100
+  ) %>% 
+  ungroup()
+
+trnptsshed <- trnpts %>% 
+  sf::st_set_geometry(NULL) %>% 
+  select(Transect = TRAN_ID, bay_segment) %>% 
+  unique()
+
+bbdat <- transectocc %>% 
+  ungroup() %>% 
+  filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia')) %>% 
+  filter(
+    bbest > 0, 
+    .by = c('Date', 'Transect')
+  ) %>% 
+  inner_join(trnptsshed, by = 'Transect') %>% 
+  filter(!bay_segment %in% c('BCB', 'TCB', 'MR')) %>% 
+  mutate(
+    yr = year(Date)
+  ) %>% 
+  summarise(
+    bbave = mean(bbest),
+    .by = c('bay_segment', 'yr')
+  )
+
+##
+# threshold count data
+
+# these had strong models
+salthr <- '25'
+tmpthr <- '30'
+
+dys <- seq(30, 365, by = 30)
+for(i in dys){
+  
+  thrtrndat <- thralltrndat %>% 
+    filter(salithr == paste0('sali_', salthr)) %>% 
+    filter(tempthr == paste0('temp_', tmpthr)) %>% 
+    filter(dycnt <= i) %>% 
+    summarise(
+      cnt = runfunc(cnt),
+      .by = c('bay_segment', 'station', 'thrtyp', 'trnyr')
+    ) %>% 
+    summarise(
+      cnt = mean(cnt), 
+      .by = c('bay_segment', 'thrtyp', 'trnyr')
+    ) %>% 
+    rename(yr = trnyr)
+  
+  ##
+  # combine
+  
+  cmbdat <- fodat %>% 
+    inner_join(thrtrndat, by = c('yr', 'bay_segment')) %>% 
+    inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
+    mutate(
+      bay_segment = factor(bay_segment, 
+                           levels = segshr)
+    ) %>% 
+    pivot_wider(names_from = 'thrtyp', values_from = 'cnt') %>% 
+    rename(
+      Year = yr,
+      Sal = salicnt, 
+      Temp = tempcnt, 
+      Both = bothcnt
+    ) %>% 
+    arrange(bay_segment, Year) %>% 
+    mutate(
+      chng = c(NA, sign(diff(total))), 
+      chng = ifelse(chng == -1, 1, 0), 
+      .by = 'bay_segment'
+    ) %>% 
+    filter(!is.na(chng))
+  
+  tomod <- cmbdat %>% 
+    mutate(
+      pchg = (total - lag(total)) / lag(total), 
+      .by = bay_segment
+    ) %>% 
+    filter(!is.na(pchg)) %>% 
+    filter(bay_segment != 'LTB')
+  
+  combmod <- lm(pchg ~ bay_segment*Sal + Year*Sal + bay_segment*Temp + Year*Temp, data = tomod) %>% 
+    step(trace = 0)
+  
+  cat(i, '\n')
+  # print(summary(combmod)$s.table)
+  print(coefficients(summary(combmod)))
+  
+}
+
+# use i = 360
+
+yrbrks <- c(2000, 2010, 2016, 2020, 2022)
+
+visreg(combmod, 'Sal', by = 'Year', breaks = yrbrks, cond = list(bay_segment = 'HB'))
+visreg(combmod, 'Temp', by = 'Year', breaks = yrbrks)
+
+cmbmod <- gam(pchg ~ ti(Temp, by = bay_segment) + ti(Temp, Year), data = tomod)
+
+visreg(cmbmod, 'Temp', by = 'Year', breaks = yrbrks, cond = list(bay_segment = 'HB'))
+
+cmbmod <- gam(pchg ~ ti(Sal, by = bay_segment) + ti(Sal, Year), data = tomod)
+
+visreg(cmbmod, 'Sal', by = 'Year', breaks = yrbrks, cond = list(bay_segment = 'OTB'))
