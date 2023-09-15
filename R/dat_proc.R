@@ -593,11 +593,14 @@ thralltrndat <- thrdat %>%
   ungroup() %>% 
   filter(!is.na(trndt)) %>% # counts occurring after max date in trnds
   mutate(
-    dycnt = rev(1:n()), 
+    dycnt = rev(1:n()),
+    trndtcnt = trndt, 
     trndt = max(date),
     trnyr = max(year(date)),
     .by = c(bay_segment, station, thrtyp, salithr, tempthr, trndt)
-  ) 
+  ) %>% 
+  select(-doy) %>% 
+  filter(!(dycnt > 365 & trndtcnt == 'trndt1')) # remove day cnts beyond one year for starting year
 
 save(thralltrndat, file = here('data/thralltrndat.RData'))
 
