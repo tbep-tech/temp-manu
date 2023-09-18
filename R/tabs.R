@@ -90,34 +90,34 @@ save(daytab, file = here('tabs/daytab.RData'))
 
 # GAM summary ---------------------------------------------------------------------------------
 
-load(file = here('data/cmbmod.RData'))
-
-totab <- cmbmod %>% 
-  tidy() %>% 
-  mutate(
-    p.value = p_ast(p.value), 
-    term = gsub('^ti\\(|\\)$', '', term),
-    Effect = case_when(
-      grepl('\\,', term) ~ 'Interaction',
-      T ~ 'Main'
-    )
-  ) %>% 
-  mutate_if(is.numeric, round, 2) %>% 
-  unite('statistic', statistic, p.value, sep = '') %>% 
-  select(
-    Effect, 
-    Term = term, 
-    edf, 
-    ref.df, 
-    `F` = statistic
-  )
-
-gamtab <- totab %>% 
-  as_grouped_data(groups = 'Effect') %>% 
-  flextable() %>% 
-  padding(padding = 0, part = 'all') %>% 
-  font(part = 'all', fontname = 'Times New Roman') %>% 
-  align(j = 3:5, align = 'left', part = 'all')
-
-save(gamtab, file = here('tabs/gamtab.RData'))
+# load(file = here('data/cmbmod.RData'))
+# 
+# totab <- cmbmod %>% 
+#   tidy() %>% 
+#   mutate(
+#     p.value = p_ast(p.value), 
+#     term = gsub('^ti\\(|\\)$', '', term),
+#     Effect = case_when(
+#       grepl('\\,', term) ~ 'Interaction',
+#       T ~ 'Main'
+#     )
+#   ) %>% 
+#   mutate_if(is.numeric, round, 2) %>% 
+#   unite('statistic', statistic, p.value, sep = '') %>% 
+#   select(
+#     Effect, 
+#     Term = term, 
+#     edf, 
+#     ref.df, 
+#     `F` = statistic
+#   )
+# 
+# gamtab <- totab %>% 
+#   as_grouped_data(groups = 'Effect') %>% 
+#   flextable() %>% 
+#   padding(padding = 0, part = 'all') %>% 
+#   font(part = 'all', fontname = 'Times New Roman') %>% 
+#   align(j = 3:5, align = 'left', part = 'all')
+# 
+# save(gamtab, file = here('tabs/gamtab.RData'))
 

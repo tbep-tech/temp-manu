@@ -845,19 +845,179 @@ cmbdat <- fodat %>%
 
 save(cmbdat, file = here('data/cmbdat.RData'))
 
-# gam for cmbdat ------------------------------------------------------------------------------
 
-load(file = here('data/cmbdat.RData'))
+# seagrass decline models ---------------------------------------------------------------------
+
+load(file = here('data/thralltrndat.RData'))
+
+seglng <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
+segshr <- c('OTB', 'HB', 'MTB', 'LTB')
+
+##
+# seagrass fo
+transectocc <- anlz_transectocc(transect)
+transectave <- anlz_transectave(transectocc)
+
+fodat <- transectave %>% 
+  select(bay_segment, yr, total = foest) %>% 
+  filter(bay_segment %in% segshr) %>% 
+  mutate(
+    total = total / 100
+  ) %>% 
+  ungroup()
+
+trnptsshed <- trnpts %>% 
+  sf::st_set_geometry(NULL) %>% 
+  select(Transect = TRAN_ID, bay_segment) %>% 
+  unique()
+
+bbdat <- transectocc %>% 
+  ungroup() %>% 
+  filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia')) %>% 
+  filter(
+    bbest > 0, 
+    .by = c('Date', 'Transect')
+  ) %>% 
+  inner_join(trnptsshed, by = 'Transect') %>% 
+  filter(!bay_segment %in% c('BCB', 'TCB', 'MR')) %>% 
+  mutate(
+    yr = year(Date)
+  ) %>% 
+  summarise(
+    bbave = mean(bbest),
+    .by = c('bay_segment', 'yr')
+  )
+
+##
+# threshold count data
+
+# these had strong models
+salthr <- '25'
+tmpthr <- '30'
+
+# dys <- seq(30, 365, by = 30)
+# for(i in dys){
+#   
+#   thrtrndat <- thralltrndat %>% 
+#     filter(salithr == paste0('sali_', salthr)) %>% 
+#     filter(tempthr == paste0('temp_', tmpthr)) %>% 
+#     filter(dycnt <= i) %>% 
+#     summarise(
+#       cnt = runfunc(cnt),
+#       .by = c('bay_segment', 'station', 'thrtyp', 'trnyr')
+#     ) %>% 
+#     summarise(
+#       cnt = mean(cnt), 
+#       .by = c('bay_segment', 'thrtyp', 'trnyr')
+#     ) %>% 
+#     rename(yr = trnyr)
+#   
+#   ##
+#   # combine
+#   
+#   cmbdat <- fodat %>% 
+#     inner_join(thrtrndat, by = c('yr', 'bay_segment')) %>% 
+#     inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
+#     mutate(
+#       bay_segment = factor(bay_segment, 
+#                            levels = segshr)
+#     ) %>% 
+#     pivot_wider(names_from = 'thrtyp', values_from = 'cnt') %>% 
+#     rename(
+#       Year = yr,
+#       Sal = salicnt, 
+#       Temp = tempcnt, 
+#       Both = bothcnt
+#     ) %>% 
+#     arrange(bay_segment, Year) %>% 
+#     mutate(
+#       chng = c(NA, sign(diff(total))), 
+#       chng = ifelse(chng == -1, 1, 0), 
+#       .by = 'bay_segment'
+#     ) %>% 
+#     filter(!is.na(chng))
+#   
+#   tomod <- cmbdat %>% 
+#     mutate(
+#       pchg = (total - lag(total)) / lag(total), 
+#       chg = c(NA, sign(diff(total))), 
+#       chg = ifelse(chg == -1, 1, 0),
+#       .by = bay_segment, 
+#       yrcat = cut(Year, breaks = c(-Inf, 2016, Inf), labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)'), right = F)
+#     ) %>% 
+#     filter(!is.na(pchg)) %>% 
+#     filter(bay_segment != 'LTB')
+#   
+#   combmod <- glm(chg ~ bay_segment*Sal*yrcat + bay_segment*Temp*yrcat, data = tomod, family = binomial('logit')) %>% 
+#     step(trace = 0)
+#   
+#   cat(i, '\n')
+#   # print(with(summary(combmod), 1 - deviance/null.deviance))
+#   print(coefficients(summary(combmod)))
+#   
+# }
+
+# use i = 360
+
+##
+# % change
+
+i <- 360
+
+thrtrndat <- thralltrndat %>% 
+  filter(salithr == paste0('sali_', salthr)) %>% 
+  filter(tempthr == paste0('temp_', tmpthr)) %>% 
+  filter(dycnt <= i) %>% 
+  summarise(
+    cnt = runfunc(cnt),
+    .by = c('bay_segment', 'station', 'thrtyp', 'trnyr')
+  ) %>% 
+  summarise(
+    cnt = mean(cnt), 
+    .by = c('bay_segment', 'thrtyp', 'trnyr')
+  ) %>% 
+  rename(yr = trnyr)
+
+cmbdat <- fodat %>% 
+  inner_join(thrtrndat, by = c('yr', 'bay_segment')) %>% 
+  inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
+  mutate(
+    bay_segment = factor(bay_segment, 
+                         levels = segshr)
+  ) %>% 
+  pivot_wider(names_from = 'thrtyp', values_from = 'cnt') %>% 
+  rename(
+    Year = yr,
+    Sal = salicnt, 
+    Temp = tempcnt, 
+    Both = bothcnt
+  ) %>% 
+  arrange(bay_segment, Year) %>% 
+  mutate(
+    chng = c(NA, sign(diff(total))), 
+    chng = ifelse(chng == -1, 1, 0), 
+    .by = 'bay_segment'
+  ) %>% 
+  filter(!is.na(chng))
 
 tomod <- cmbdat %>% 
-  filter(!bay_segment %in% 'LTB')
+  mutate(
+    pchg = (total - lag(total)) / lag(total), 
+    chg = c(NA, sign(diff(total))), 
+    chg = ifelse(chg == -1, 1, 0),
+    .by = bay_segment, 
+    yrcat = cut(Year, breaks = c(-Inf, 2016, Inf), labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)'), right = F)
+  ) %>% 
+  filter(!is.na(pchg)) %>% 
+  filter(bay_segment != 'LTB')
 
-cmbmod <- gam(total ~ ti(Year) + ti(Temp) + ti(Sal) + ti(Both) + ti(Temp, Year) + ti(Sal, Year) + ti(Both, Year), data = tomod)
+pchgmod <- glm(pchg ~ bay_segment*Sal*yrcat + bay_segment*Temp*yrcat, data = tomod) %>% 
+  step(trace = 0)
+binomod <- glm(chg ~ bay_segment*Sal*yrcat + bay_segment*Temp*yrcat, data = tomod, family = binomial('logit')) %>% 
+  step(trace = 0) 
 
-# cmbmod <- gam(total ~ te(Temp, Year) + te(Sal, Year), data = tomod)
-
-save(cmbmod, file = 'data/cmbmod.RData')
-
+save(pchgmod, file = here('data/pchgmod.RData'))
+save(binomod, file = here('data/binomod.RData'))
 
 # USGS gage data ------------------------------------------------------------------------------
 

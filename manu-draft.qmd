@@ -106,13 +106,7 @@ $$
 Y_{ij} = \beta_0 + \beta_1X_{ij} + u_i + \epsilon_{ij}
 $$
 
-NMS results in @fig-nms and GAM results in @fig-gamres.
-
-GAM notation:
-
-$$
-Y_i = \beta_0 + f_1\left(\text{Sal}_i\right) + f_2\left(\text{Temp}_i\right) + f_3\left(\text{Both}_i\right) + f_4\left(\text{Year}_i, \text{Sal}_i\right) + f_5\left(\text{Year}_i, \text{Temp}_i\right) + f_6\left(\text{Year}_i, \text{Both}_i\right)  + \epsilon_i
-$$
+NMS results in @fig-nms and seagrass decline results in @fig-sgmod
 
 ## Discussion
 
@@ -152,7 +146,7 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![Predicted results from a Generalized Additive Model evaluating frequency occurrence of seagrass versus year (left), number of days in a year when temperature exceeded the threshold (top right), and number of days in a year when salinity was below the threshold (bottom right). All variables were fit as main effects, including interactions with year. The right plots show model predicted results for the threshold variables for selected year slices. 2016 to 2022 are years with recent seagrass decline. Shaded areas are 95% confidence intervals.](figs/gamres.png){#fig-gamres}
+![Predicted results from generalized linear models evaluating seagrass decline as (a) percent change between years and (b) probability of decline versus number of days when salinity was below the threshold.  Models evaluated the response variable on the y-axes as a function of salinity days and interactions with year category (seagrass recovery prior to 2016, seagrass decline 2016 to present) and bay segment. Shaded areas are 95% confidence intervals. Colored lines in (b) as rug plots show instances of seagrass increase (blue) or decrease (red) by year.](figs/sgmod.png){#fig-sgmod}
 
 {{< pagebreak >}}
 

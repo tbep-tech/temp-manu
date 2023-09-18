@@ -19,6 +19,8 @@ library(visreg)
 library(car)
 library(mgcv)
 
+source(here('R/funcs.R'))
+
 yrsel <- c(1998, 2022)
 tempthr <- c(29, 30, 31)
 tempcol <- c('coral', 'red2', 'darkred')
@@ -588,92 +590,56 @@ png(here('figs/nms.png'), height = 4, width = 9, family = 'serif', units = 'in',
 print(p)
 dev.off()
 
-# gam results ---------------------------------------------------------------------------------
+# seagrass decline models ---------------------------------------------------------------------
 
-load(file = here('data/cmbmod.RData'))
+load(file = here('data/pchgmod.RData'))
+load(file = here('data/binomod.RData'))
 
-# load(file = here('data/cmbdat.RData'))
-# 
-# tomod <- cmbdat %>%
-#   filter(!bay_segment %in% 'LTB')
-# 
-# vifmod <- glm(total ~ Sal + Temp + Both + Year, data = tomod)
-# vif(vifmod)
+toplo1 <- getprd_fun(pchgmod)
+toplo2 <- getprd_fun(binomod)
 
-yrbrks <- c(2000, 2010, 2016, 2020, 2022)
-# visreg(cmbmod, 'Both', by = 'Year', breaks = yrbrks, scale = 'response', rug = 1)
-yrvis <- visreg(cmbmod, 'Year', scale = 'response', rug = 1, plot = F)
-yrfit <- yrvis$fit
-yrres <- yrvis$res
-tempvis <- visreg(cmbmod, 'Temp', by = 'Year', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
-tempfit <- tempvis$fit
-tempres <- tempvis$res
-salivis <- visreg(cmbmod, 'Sal', by = 'Year', breaks = yrbrks, scale = 'response', rug = 1, plot = F)
-salifit <- salivis$fit
-salires <- salivis$res
-
-alph <- 0.5
-ylb <- 'Freq. Occ.'
-lwd <- 0.8
-ptsz <- 1
-thm <- theme_minimal() + 
+p1 <- ggplot(toplo1, aes(x = Sal)) + 
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'lightgrey', alpha = 0.5) + 
+  geom_line(aes(y = visregFit)) + 
+  geom_point(data = tomod, aes(x = Sal, y = pchg), color = 'dodgerblue2') +
+  facet_grid(bay_segment ~ yrcat) + 
+  labs(
+    y = '% change in seagrass', 
+    x = '# days salinity < threshold', 
+    title = '(a) Percent change in seagrass between years'
+  ) + 
+  theme_bw() + 
   theme(
-    panel.grid.minor = element_blank(), 
-    strip.text = element_text(size = 11),
-    panel.spacing.x = unit(0.5, 'lines')
+    strip.background = element_blank(), 
+    panel.grid.minor = element_blank()
   )
-salicol <- 'dodgerblue2'
-tempcol <- 'red2'
-ylim <- c(0, 1)
 
-p1 <- ggplot(yrfit, aes(x = Year)) + 
-  geom_point(data = yrres, aes(y = visregRes), size = ptsz) + 
-  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph) + 
-  geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
-  geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
-  geom_line(aes(y = visregFit), linewidth = lwd) + 
-  coord_cartesian(ylim = ylim) +
-  thm +
+p2 <- ggplot(toplo2, aes(x = Sal)) + 
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'lightgrey', alpha = 0.5) + 
+  geom_line(aes(y = visregFit)) + 
+  geom_rug(data = tomod[tomod$chg == 0,], aes(x = Sal, y = chg), sides = 'b', linewidth = 1, color = 'blue') +
+  geom_rug(data = tomod[tomod$chg == 1,], aes(x = Sal, y = chg), sides = 't', linewidth = 1, color = 'red') +
+  facet_grid(bay_segment ~ yrcat) + 
+  scale_y_continuous(labels = scales::percent) +
   labs(
-    y = ylb, 
-    x = 'Year'
+    y = 'Probability of seagrass decline', 
+    x = '# days salinity < threshold', 
+    title = '(b) Probability of seagrass decline between years'
+  ) + 
+  theme_bw() + 
+  theme(
+    strip.background = element_blank(), 
+    panel.grid.minor = element_blank()
   )
 
-p2 <- ggplot(tempfit, aes(x = Temp)) + 
-  geom_point(data = tempres, aes(y = visregRes), size = ptsz) + 
-  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph, color = tempcol, fill = tempcol) + 
-  geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
-  geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
-  geom_line(aes(y = visregFit), linewidth = lwd) + 
-  coord_cartesian(ylim = ylim) +
-  facet_wrap(~Year, ncol = length(unique(tempres$Year))) +
-  scale_x_continuous(n.breaks = 3) +
-  thm +
-  theme(axis.text.x = element_text(size = 9)) +
-  labs(
-    y = ylb, 
-    x = '# days temperature > threshold'
-  )
+p <- p1 + p2 + plot_layout(ncol = 2) & 
+  theme(
+    strip.text = element_text(size = 12), 
+    axis.title = element_text(size = 13), 
+    axis.text = element_text(size = 11)
+    )
 
-p3 <- ggplot(salifit, aes(x = Sal)) + 
-  geom_point(data = salires, aes(y = visregRes), size = ptsz) + 
-  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = alph, color = salicol, fill = salicol) + 
-  geom_line(aes(y = visregLwr), linetype = 'dashed', linewidth = lwd) +
-  geom_line(aes(y = visregUpr), linetype = 'dashed', linewidth = lwd) +
-  geom_line(aes(y = visregFit), linewidth = lwd) + 
-  coord_cartesian(ylim = ylim) +
-  facet_wrap(~Year, ncol = length(unique(salires$Year))) +
-  scale_x_continuous(n.breaks = 3) +
-  thm +
-  theme(axis.text.x = element_text(size = 9)) +
-  labs(
-    y = ylb, 
-    x = '# days salinity < threshold'
-  )
-
-p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, widths = c(0.5, 1))
-
-png(here('figs/gamres.png'), height = 5, width = 8.5, family = 'serif', units = 'in', res = 300)
+png(here('figs/sgmod.png'), height = 7, width = 9, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 
@@ -970,125 +936,3 @@ ggplot(tomod, aes(x = ld, y = foest)) +
   geom_smooth(method = 'lm', formula = y~x) 
 
 
-# ---------------------------------------------------------------------------------------------
-
-load(file = here('data/thralltrndat.RData'))
-
-seglng <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
-segshr <- c('OTB', 'HB', 'MTB', 'LTB')
-
-##
-# seagrass fo
-transectocc <- anlz_transectocc(transect)
-transectave <- anlz_transectave(transectocc)
-
-fodat <- transectave %>% 
-  select(bay_segment, yr, total = foest) %>% 
-  filter(bay_segment %in% segshr) %>% 
-  mutate(
-    total = total / 100
-  ) %>% 
-  ungroup()
-
-trnptsshed <- trnpts %>% 
-  sf::st_set_geometry(NULL) %>% 
-  select(Transect = TRAN_ID, bay_segment) %>% 
-  unique()
-
-bbdat <- transectocc %>% 
-  ungroup() %>% 
-  filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia')) %>% 
-  filter(
-    bbest > 0, 
-    .by = c('Date', 'Transect')
-  ) %>% 
-  inner_join(trnptsshed, by = 'Transect') %>% 
-  filter(!bay_segment %in% c('BCB', 'TCB', 'MR')) %>% 
-  mutate(
-    yr = year(Date)
-  ) %>% 
-  summarise(
-    bbave = mean(bbest),
-    .by = c('bay_segment', 'yr')
-  )
-
-##
-# threshold count data
-
-# these had strong models
-salthr <- '25'
-tmpthr <- '30'
-
-dys <- seq(30, 365, by = 30)
-for(i in dys){
-  
-  thrtrndat <- thralltrndat %>% 
-    filter(salithr == paste0('sali_', salthr)) %>% 
-    filter(tempthr == paste0('temp_', tmpthr)) %>% 
-    filter(dycnt <= i) %>% 
-    summarise(
-      cnt = runfunc(cnt),
-      .by = c('bay_segment', 'station', 'thrtyp', 'trnyr')
-    ) %>% 
-    summarise(
-      cnt = mean(cnt), 
-      .by = c('bay_segment', 'thrtyp', 'trnyr')
-    ) %>% 
-    rename(yr = trnyr)
-  
-  ##
-  # combine
-  
-  cmbdat <- fodat %>% 
-    inner_join(thrtrndat, by = c('yr', 'bay_segment')) %>% 
-    inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
-    mutate(
-      bay_segment = factor(bay_segment, 
-                           levels = segshr)
-    ) %>% 
-    pivot_wider(names_from = 'thrtyp', values_from = 'cnt') %>% 
-    rename(
-      Year = yr,
-      Sal = salicnt, 
-      Temp = tempcnt, 
-      Both = bothcnt
-    ) %>% 
-    arrange(bay_segment, Year) %>% 
-    mutate(
-      chng = c(NA, sign(diff(total))), 
-      chng = ifelse(chng == -1, 1, 0), 
-      .by = 'bay_segment'
-    ) %>% 
-    filter(!is.na(chng))
-  
-  tomod <- cmbdat %>% 
-    mutate(
-      pchg = (total - lag(total)) / lag(total), 
-      .by = bay_segment
-    ) %>% 
-    filter(!is.na(pchg)) %>% 
-    filter(bay_segment != 'LTB')
-  
-  combmod <- lm(pchg ~ bay_segment*Sal + Year*Sal + bay_segment*Temp + Year*Temp, data = tomod) %>% 
-    step(trace = 0)
-  
-  cat(i, '\n')
-  # print(summary(combmod)$s.table)
-  print(coefficients(summary(combmod)))
-  
-}
-
-# use i = 360
-
-yrbrks <- c(2000, 2010, 2016, 2020, 2022)
-
-visreg(combmod, 'Sal', by = 'Year', breaks = yrbrks, cond = list(bay_segment = 'HB'))
-visreg(combmod, 'Temp', by = 'Year', breaks = yrbrks)
-
-cmbmod <- gam(pchg ~ ti(Temp, by = bay_segment) + ti(Temp, Year), data = tomod)
-
-visreg(cmbmod, 'Temp', by = 'Year', breaks = yrbrks, cond = list(bay_segment = 'HB'))
-
-cmbmod <- gam(pchg ~ ti(Sal, by = bay_segment) + ti(Sal, Year), data = tomod)
-
-visreg(cmbmod, 'Sal', by = 'Year', breaks = yrbrks, cond = list(bay_segment = 'OTB'))
