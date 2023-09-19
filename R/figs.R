@@ -150,7 +150,20 @@ thm <- theme_minimal() +
     legend.text = element_text(size= 12)
   )
 
-p1 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) + 
+p1 <- ggplot(toplo1, aes(x = yr, y = tavg_c)) + 
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'red2') +
+  thm +
+  theme(
+    axis.text.x = element_text(size = 12)
+  ) +
+  labs(
+    x = NULL, 
+    y = 'Air temp. (\u00B0 C)'
+  )
+
+p2 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) + 
   geom_line() + 
   geom_point() + 
   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
@@ -163,7 +176,7 @@ p1 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) +
     y = 'Precip. (m)'
   )
 
-p2 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
+p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
   geom_line() + 
   geom_point() + 
   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
@@ -177,7 +190,7 @@ p2 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
     y = expression(paste('Hyd. load (', 10^3, ' t/yr)'))
   )
 
-p3 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
+p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
   geom_col(width = 35) +
   scale_fill_manual(values = c('grey70', 'grey30'), guide = 'none') + 
   thm + 
@@ -188,19 +201,6 @@ p3 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) +
   labs(
     x = NULL, 
     y = 'SPI (z-values)'
-  )
-
-p4 <- ggplot(toplo1, aes(x = yr, y = tavg_c)) + 
-  geom_line() + 
-  geom_point() + 
-  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'red2') +
-  thm +
-  theme(
-    axis.text.x = element_text(size = 12)
-  ) +
-  labs(
-    x = NULL, 
-    y = 'Air temp. (\u00B0 C)'
   )
 
 toplo <- epcdata %>% 
@@ -217,7 +217,7 @@ toplo <- epcdata %>%
   ) %>% 
   separate(var, c('var', 'loc')) %>% 
   mutate(
-    var = factor(var, levels = c('Sal', 'Temp'), labels = c('Salinity (ppt)', 'Water temp. (\u00B0C)')),
+    var = factor(var, levels = c('Temp', 'Sal'), labels = c('Water temp. (\u00B0C)', 'Salinity (ppt)')),
     loc = factor(loc, levels = c('Top', 'Bottom'))
   ) %>% 
   filter(!is.na(val)) %>% 
@@ -231,14 +231,33 @@ toplo <- epcdata %>%
 wd <- 0.5
 
 toplo5 <- toplo %>% 
-  filter(var == 'Salinity (ppt)')
+  filter(var == 'Water temp. (\u00B0C)') %>% 
+  filter(!(yr %in% c(1982, 1985) & bay_segment == 'OTB')) %>%  # missing months create outliers
+  filter(!(yr %in% 1975 & bay_segment == 'HB')) # missing months create outliers
 p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) + 
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
   geom_point(position = position_dodge2(width = wd), size = 0.5) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
   geom_smooth(method = 'lm', formula = y ~ x, se = F) +
   facet_grid(~ bay_segment) +
-  scale_color_manual(values = c('steelblue1', 'steelblue4')) +
+  scale_color_manual(values = c( 'steelblue4', 'steelblue1')) +
+  thm +
+  theme(strip.text = element_blank()) +
+  labs(
+    x = NULL, 
+    y = 'Water temp. (\u00B0C)', 
+    color = NULL, 
+    shape = NULL
+  )
+toplo6 <- toplo %>% 
+  filter(var == 'Salinity (ppt)')
+p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
+  geom_point(position = position_dodge2(width = wd), size = 0.5) +
+  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  facet_grid(~ bay_segment) +
+  scale_color_manual(values = c('steelblue4', 'steelblue1')) +
   thm +
   theme(
     axis.text.x = element_blank(), 
@@ -247,25 +266,6 @@ p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) +
   labs(
     x = NULL, 
     y = 'Salinity (ppt)', 
-    color = NULL, 
-    shape = NULL
-  )
-toplo6 <- toplo %>% 
-  filter(var == 'Water temp. (\u00B0C)') %>% 
-  filter(!(yr %in% c(1982, 1985) & bay_segment == 'OTB')) %>%  # missing months create outliers
-  filter(!(yr %in% 1975 & bay_segment == 'HB')) # missing months create outliers
-p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) + 
-  geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
-  geom_point(position = position_dodge2(width = wd), size = 0.5) +
-  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
-  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
-  facet_grid(~ bay_segment) +
-  scale_color_manual(values = c('steelblue1', 'steelblue4')) +
-  thm +
-  theme(strip.text = element_blank()) +
-  labs(
-    x = NULL, 
-    y = 'Water temp. (\u00B0C)', 
     color = NULL, 
     shape = NULL
   )
@@ -359,7 +359,7 @@ ktresplo <- ktres %>%
     bay_segment = factor(bay_segment, levels = c('LTB', 'MTB', 'HB', 'OTB')), 
     loc =  gsub("^.*_(.*)_.*$", "\\1", var),
     varsimp = gsub('^(.*?)_.*$', '\\1', var, perl = T),
-    varsimp = factor(varsimp, levels = c('Sal', 'Temp'), labels = c('Salinity', 'Temperature')),
+    varsimp = factor(varsimp, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
     loc = factor(loc, levels = c('Top', 'Bottom'))
   ) %>%
   nest(.by = c('bay_segment', 'mo', 'varsimp', 'var', 'loc')) %>% 
@@ -432,7 +432,7 @@ toplo <- sktres %>%
     coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
     loc =  gsub("^.*_(.*)_.*$", "\\1", var),
     var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
-    var = factor(var, levels = c('Sal', 'Temp'), labels = c('Salinity', 'Temperature')),
+    var = factor(var, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
     loc = factor(loc, levels = c('Top', 'Bottom'))
   )
 
@@ -496,10 +496,10 @@ toplo1 <- mixmodprds %>%
   filter(
     !(cnt > 100 & thrtyp == 'Both') # outliers
   )
-toplo2 <- modprd %>% 
+toplo2 <- mixmodprds %>% 
   select(-mod, -data, -slo) %>% 
   unnest('fix')
-toplo3 <- modprd %>% 
+toplo3 <- mixmodprds %>% 
   select(-mod, -data, -fix) %>% 
   unnest('slo') %>% 
   filter(slo != '')
@@ -511,7 +511,7 @@ p <- ggplot(toplo1, aes(x = yr, y = cnt)) +
   geom_label(data = toplo3, aes(x = 2022, y = 0, label = slo, col = thrtyp), show.legend = F, 
              vjust = 0, hjust = 1, fontface = 'italic', size = 3, label.r = unit(0, "lines"),
              label.padding = unit(0.1, "lines")) +
-  scale_color_manual(values = c('dodgerblue2', 'red2', 'black')) +
+  scale_color_manual(values = c('red2', 'dodgerblue2', 'black')) +
   # coord_cartesian(ylim = c(-10, NA)) +
   facet_grid(thrtyp ~ bay_segment, scales = 'free_y') + 
   theme_bw() + 

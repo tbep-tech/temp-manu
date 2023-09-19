@@ -17,8 +17,8 @@ totab <- mixmods %>%
     slo = as.character(round(slo, 2)), 
     salithr = gsub('^.*_', '', salithr),
     tempthr = gsub('^.*_', '', tempthr), 
-    thrtyp = factor(thrtyp, levels = c('salicnt', 'tempcnt', 'bothcnt'), 
-                     labels = c('Salinity', 'Temperature', 'Both')),
+    thrtyp = factor(thrtyp, levels = c('tempcnt', 'salicnt', 'bothcnt'), 
+                     labels = c('Temperature', 'Salinity', 'Both')),
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
   unite('slo', slo, pvl, sep = '') %>% 
@@ -34,7 +34,7 @@ mixtab <- totab %>%
   add_header_row(values = c('', 'Thresholds', 'Thresholds', rep('Slopes', 3))) %>% 
   merge_at(i = 1, j = c(2:3), part = 'header') %>% 
   merge_at(i = 1, j = c(4:6), part = 'header') %>% 
-  set_header_labels(i = 2, values = c('Bay Segment', 'Salinity', 'Temperature', 'Salinity', 'Temperature', 'Both')) %>% 
+  set_header_labels(i = 2, values = c('Bay Segment', 'Temperature', 'Salinity', 'Temperature', 'Salinity', 'Both')) %>% 
   padding(padding = 0, part = 'all') %>% 
   font(part = 'all', fontname = 'Times New Roman') %>% 
   fontsize(size = 9, part = 'body')
@@ -54,8 +54,8 @@ totab <- mixmods %>%
     yrendse = paste0('(', round(yrendse, 1), ')'),
     salithr = gsub('^.*_', '', salithr),
     tempthr = gsub('^.*_', '', tempthr), 
-    thrtyp = factor(thrtyp, levels = c('salicnt', 'tempcnt', 'bothcnt'), 
-                    labels = c('Salinity', 'Temperature', 'Both')),
+    thrtyp = factor(thrtyp, levels = c('tempcnt', 'salicnt', 'bothcnt'), 
+                    labels = c('Temperature', 'Salinity', 'Both')),
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
   unite('yrstr', yrstr, yrstrse, sep = ' ') %>%
@@ -64,8 +64,8 @@ totab <- mixmods %>%
   unite('thrtyp', thrtyp, def) %>% 
   mutate(
     thrtyp = factor(thrtyp, 
-                    levels = c('Salinity_yrstr', 'Salinity_yrend', 'Temperature_yrstr',
-                               'Temperature_yrend', 'Both_yrstr', 'Both_yrend')
+                    levels = c('Temperature_yrstr', 'Temperature_yrend', 
+                               'Salinity_yrstr', 'Salinity_yrend', 'Both_yrstr', 'Both_yrend')
     ), 
     est = ifelse(grepl('NA', est), '-', est)
   ) %>%
@@ -75,13 +75,13 @@ totab <- mixmods %>%
 daytab <- totab %>% 
   as_grouped_data(groups = 'bay_segment') %>% 
   flextable() %>% 
-  add_header_row(values = c('', 'Thresholds', 'Thresholds', rep('Salinity', 2), 
-                            rep('Temperature', 2), rep('Both', 2))) %>% 
+  add_header_row(values = c('', 'Thresholds', 'Thresholds', rep('Temperature', 2), 
+                            rep('Salinity', 2), rep('Both', 2))) %>% 
   merge_at(i = 1, j = c(2:3), part = 'header') %>% 
   merge_at(i = 1, j = c(4:5), part = 'header') %>% 
   merge_at(i = 1, j = c(6:7), part = 'header') %>% 
   merge_at(i = 1, j = c(8:9), part = 'header') %>% 
-  set_header_labels(i = 2, values = c('Bay Segment', 'Salinity', 'Temperature', rep(c('Start', 'End'), 3))) %>% 
+  set_header_labels(i = 2, values = c('Bay Segment', 'Temperature', 'Salinity', rep(c('Start', 'End'), 3))) %>% 
   padding(padding = 0, part = 'all') %>% 
   font(part = 'all', fontname = 'Times New Roman') %>% 
   fontsize(size = 9, part = 'body')

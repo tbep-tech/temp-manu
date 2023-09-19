@@ -86,13 +86,13 @@ Syringodium:
 
 ### Models
 
-All models excluded Lower Tampa Bay because of minimal seagrass change over time. Also attempted to evaluate total and change as binary. 
+All models excluded Lower Tampa Bay because of minimal seagrass change over time. Also attempted to evaluate total and change as binary.
 
-GLMs of percent change each year by Sal, Temp, with year and bay segment interactions.  Attempted different windows of time from approximate seagrass sample date, 30 days to one year. The best model was one that included an effect of Salinity and an interaction with bay segment.  Hillsborough Bay showed a strong response of increasing likelihood of seagrass loss with number of days when salinity was below the threshold.
+GLMs of percent change each year by Sal, Temp, with year and bay segment interactions. Attempted different windows of time from approximate seagrass sample date, 30 days to one year. The best model was one that included an effect of Salinity and an interaction with bay segment. Hillsborough Bay showed a strong response of increasing likelihood of seagrass loss with number of days when salinity was below the threshold.
 
-Then GAMs were evaluated looking at total by Salinity, with interaction of year and bay segment.  Also created a model looking at percent change vs Temp and year/bay segment interaction. 
+Then GAMs were evaluated looking at total by Salinity, with interaction of year and bay segment. Also created a model looking at percent change vs Temp and year/bay segment interaction.
 
-Show plots of both the glm and gams.  
+Show plots of both the glm and gams.
 
 ## Results
 
@@ -126,7 +126,7 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![Long-term precipitation, hydrologic load, Standard Precipitation Index (SPI), air temperature, salinity, and water temperature trends from 1975 to 2022. Points for salinity and water temperature are colored by sampling location in the water column and show the average (95% confidence interval) across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/meteowqraw.png){#fig-meteowqraw}
+![Long-term air temperature, precipitation, hydrologic load, Standard Precipitation Index (SPI), water temperature, and salinity trends from 1999 to 2022. Points for salinity and water temperature are colored by sampling location in the water column and show the average (95% confidence interval) across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/meteowqraw.png){#fig-meteowqraw}
 
 {{< pagebreak >}}
 
@@ -134,25 +134,25 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
-![Trends from 1998 to 2022 for salinity and temperature measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the waer column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1). Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant decreasing (salinity) or increasing (temperature) trends. Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/kendall.png){#fig-kendall}
+![Trends from 1998 to 2022 for temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the water column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1). Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant increasing (temperature) or decreasing (salinity) trends. Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/kendall.png){#fig-kendall}
 
 {{< pagebreak >}}
 
-![Example of mixed effects models for the estimated number of days by year that salinity (blue) or temperature (red) were below or above thresholds of 25 psu and 30 degrees C, respectively. The bottom row (black) shows the number of days when both salinity and temperature were below or above the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom right of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/mixeff.png){#fig-mixeff}
+![Example of mixed effects models for the estimated number of days by year that temperature (red) or salinity (blue) were above or below thresholds of 30 degrees C or 25 psu, respectively. The bottom row (black) shows the number of days when both temperature and salinity were above or below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom right of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/mixeff.png){#fig-mixeff}
 
 {{< pagebreak >}}
 
-![Ordination plots of Nonmetric Multidimensional Scaling results for annual estimates in each bay segment for total seagrass frequency occurrence (Freq. Occ.), counts of days above the temperature threshold (Temp.), counts of days below the salinity threshold (Sal.), and counts of days above or below for both, respectively (Sal. + Temp.). The left plot excludes counts of days with both temperature and salinity, whereas the right plot excludes the separate temperature and salinity metrics.  Points are sized by seagrass frequency occurrence. 95% confidence ellipses are shown for observations in each major bay segment OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.](figs/nms.png){#fig-nms}
+![Ordination plots of Nonmetric Multidimensional Scaling results for annual estimates in each bay segment for total seagrass frequency occurrence (Freq. Occ.), counts of days above the temperature threshold (Temp.), counts of days below the salinity threshold (Sal.), and counts of days above or below for both, respectively. The left plot excludes counts of days with both temperature and salinity above and below the threshods, whereas the right plot excludes the separate temperature and salinity metrics. Points are sized by seagrass frequency occurrence. 95% confidence ellipses are shown for observations in each major bay segment OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.](figs/nms.png){#fig-nms}
 
 {{< pagebreak >}}
 
-![Predicted results from generalized linear models evaluating seagrass decline as (a) percent change between years and (b) probability of decline versus number of days when salinity was below the threshold.  Models evaluated the response variable on the y-axes as a function of salinity days and interactions with year category (seagrass recovery prior to 2016, seagrass decline 2016 to present) and bay segment. Shaded areas are 95% confidence intervals. Colored lines in (b) as rug plots show instances of seagrass increase (blue) or decrease (red) by year.](figs/sgmod.png){#fig-sgmod}
+![Predicted results from generalized linear models evaluating seagrass decline as (a) percent change between years and (b) probability of decline versus number of days when salinity was below the threshold. Models evaluated the response variable on the y-axes as a function of salinity days and interactions with year category (seagrass recovery prior to 2016, seagrass decline 2016 to present) and bay segment. Shaded areas are 95% confidence intervals. Colored lines in (b) as rug plots show instances of seagrass increase (blue) or decrease (red) by year.](figs/sgmod.png){#fig-sgmod}
 
 {{< pagebreak >}}
 
 ## Tables {.unnumbered}
 
-Summary of mixed-effects models evaluating increases in the number of days each year from 1974 to 2022 when salinity or temperature was below or above critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both salinity and temperature were below or above critical thresholds. \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+Summary of mixed-effects models evaluating increases in the number of days each year from 1974 to 2022 when temperature or salinity were above or below critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both temperature and salinity were above or below critical thresholds. \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 
 ```{r}
 mixtab
@@ -160,7 +160,7 @@ mixtab
 
 {{< pagebreak >}}
 
-Number of days at the beginning and end of the period of record when salinity or temperature was below or above critical thresholds, respectively. Values are the estimated mean number of days (plus standard error) from 1974 to 2022. Columns for "Both" indicate the estimated number of days when both salinity and temperature were below or above critical thresholds. Note that not all models are significant (see (table 1)). \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+Number of days at the beginning and end of the period of record when temperature or salinity were above or below critical thresholds, respectively. Values are the estimated mean number of days (plus standard error) from 1974 to 2022. Columns for "Both" indicate the estimated number of days when both temperature and salinity were above or below critical thresholds. Note that not all models are significant (see table 1). \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 
 ```{r}
 daytab

@@ -609,7 +609,7 @@ load(file = here("data/thrdat.RData"))
 
 # create mixed effects models of cnt ~ yr with station as random intercept
 mixmods <- thrdat %>% 
-  group_by(bay_segment, salithr, tempthr, thrtyp) %>% 
+  group_by(bay_segment, tempthr, salithr, thrtyp) %>% 
   nest() %>% 
   summarise(
     mod = purrr::map(data, function(x){
@@ -712,8 +712,8 @@ mixmodprds <- thrdat %>%
   mutate(
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
     thrtyp = factor(thrtyp, 
-                    levels = c('salicnt', 'tempcnt', 'bothcnt'), 
-                    labels = c(paste('Salinity <', salthr), paste('Temperature >', tmpthr), 'Both')
+                    levels = c('tempcnt', 'salicnt', 'bothcnt'), 
+                    labels = c(paste('Temperature >', tmpthr), paste('Salinity <', salthr), 'Both')
     )
   )
 
