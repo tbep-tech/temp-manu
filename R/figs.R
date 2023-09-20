@@ -1270,18 +1270,36 @@ toplo <- gagedat %>%
   pivot_wider(names_from = 'var', values_from = 'val') %>%
   na.omit() %>%
   mutate(
-    yrgroup = ifelse(year < 2000, 'past', 'present'),
-    mo = month(date)
+    yrgroup = ifelse(year < 2000, '1975 - 1999', '2000 - 2022'),
+    mo = month(date, label = T, abbr = F)
   ) %>%
   # filter(flow_m3d < quantile(flow_m3d, 0.9)) %>%
-  filter(mo %in% c(2, 8)) #%>%
+  filter(mo %in% c('February', 'August')) #%>%
 # filter(temp_c > 1)
 
-ggplot(toplo, aes(x = flow_m3d, y = temp_c, group = yrgroup, color = yrgroup)) +
-  geom_point(size = 0.6) +
+p <- ggplot(toplo, aes(x = flow_m3d / 1e6, y = temp_c, group = yrgroup, fill = yrgroup, color = yrgroup)) +
+  geom_point(size = 0.6, show.legend = F) +
   scale_x_log10() +
   facet_grid(~mo) +
-  geom_smooth(se = T, method = 'lm', formula = y~ x)
+  theme_minimal() + 
+  scale_color_manual(values = c('tomato1', 'darkred')) +
+  scale_fill_manual(values = c('tomato1', 'darkred')) +
+  theme(
+    legend.position = 'top', 
+    panel.grid.minor = element_blank(), 
+    strip.text = element_text(size = 11)
+  ) +
+  geom_smooth(se = T, method = 'lm', formula = y ~ x) +
+  labs(
+    x = expression(paste('Hillsborough River discharge (', 10^6~m^3, ' / yr)')), 
+    y = 'Water temp. (\u00B0 C)',
+    color = 'Time period',
+    fill = 'Time period'
+  )
+
+png(here('figs/flowtemp.png'), height = 4, width = 6, family = 'serif', units = 'in', res = 600)
+print(p)
+dev.off()
 
 # # ports data threshold counts -----------------------------------------------------------------
 # 

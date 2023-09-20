@@ -149,6 +149,10 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 {{< pagebreak >}}
 
+![Relationship between water temperature and discharge in the Hillsborough River (USGS gage 02303000) over time.  The relationship is shown for February (dry month) and August (wet month) grouped by historic (1975-1999) and contemporary (2000-2022) time periods.  Regression lines with 95% confidence intervals for each temporal grouping are shown.](figs/flowtemp.png){#fig-flowtemp}
+
+{{< pagebreak >}}
+
 ## Tables {.unnumbered}
 
 Summary of mixed-effects models evaluating increases in the number of days each year from 1975 to 2022 when temperature was above 30C, salinity was below 25ppt, or both temperature and salinity were above/below the thresholds.  The start and end columns show the estimated number of days at the beginning and end of the period of record when temperature or salinity were above or below the thresholds. Values are the estimated mean number of days (plus standard error) from 1975 and 2022.  \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
