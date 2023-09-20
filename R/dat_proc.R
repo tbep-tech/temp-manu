@@ -15,6 +15,7 @@ library(rnoaa)
 library(dataRetrieval)
 
 source(here('R/funcs.R'))
+yrsel <- c(1998, 2022)
 
 # SPEI, monthly rain, and monthly air temp ----------------------------------------------------
 
@@ -618,7 +619,7 @@ mixmods <- thrdat %>%
       if(inherits(mod, 'try-error'))
         return(NA)
       
-      effs <- estimate_means(mod, 'yr')
+      effs <- estimate_means(mod, at = 'yr = c(1976, 2022)')
       
       summod <- summary(mod)$coefficients
       
@@ -639,6 +640,46 @@ mixmods <- thrdat %>%
   ungroup()
 
 save(mixmods, file = here('data/mixmods.RData'), compress = 'xz')
+
+# supp mixef mods of threshold counts over time ----------------------------------------------------
+
+load(file = here("data/thrdat.RData"))
+
+# create mixed effects models of cnt ~ yr with station as random intercept
+suppmixmods <- thrdat %>% 
+  group_by(bay_segment, tempthr, salithr, thrtyp) %>% 
+  nest() %>% 
+  summarise(
+    mod = purrr::map(data, function(x){
+
+      tomod <- x %>% 
+        filter(yr >= yrsel[1] & yr <= yrsel[2])
+      
+      mod <- try(lmer(cnt ~ yr + (1|station), data = tomod, REML = F), silent = T)
+      if(inherits(mod, 'try-error'))
+        return(NA)
+      
+      effs <- estimate_means(mod, at = 'yr = c(1998, 2022)')
+    
+      summod <- summary(mod)$coefficients
+      
+      out <- tibble(
+        slo = summod['yr', 'Estimate'],
+        pvl = summod['yr', 'Pr(>|t|)'], 
+        yrstr = effs$Mean[1],
+        yrstrse = effs$SE[1], 
+        yrend = effs$Mean[nrow(effs)],
+        yrendse = effs$SE[nrow(effs)]
+      )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  unnest('mod') %>% 
+  ungroup()
+
+save(suppmixmods, file = here('data/suppmixmods.RData'), compress = 'xz')
 
 # mixef mod predictions for select thresolds --------------------------------------------------
 
@@ -718,6 +759,86 @@ mixmodprds <- thrdat %>%
   )
 
 save(mixmodprds, file = here('data/mixmodprds.RData'))
+
+# supp mixef mod predictions for select thresolds ---------------------------------------------
+
+load(file = here('data/thrdat.RData'))
+
+salthr <- '25'
+tmpthr <- '30'
+
+suppmixmodprds <- thrdat %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  filter(salithr == paste0('sali_', salthr)) %>% 
+  filter(tempthr == paste0('temp_', tmpthr)) %>% 
+  group_by(thrtyp, bay_segment) %>% 
+  nest() %>% 
+  mutate(
+    mod = purrr::map(data, function(data){
+      
+      mod <- try(lmer(cnt ~ yr + (1|station), data = data, REML = F), silent = T)
+      if(inherits(mod, 'try-error'))
+        return(NULL)
+      
+      return(mod)
+      
+    }),
+    data = purrr::pmap(list(data, mod), function(data, mod){
+      if(!is.null(mod))
+        out <- bind_cols(data, prd = predict(mod))
+      else
+        out <- data %>% 
+          mutate(prd = NA)
+      return(out)
+    }),
+    fix = purrr::map(mod, function(mod){
+      
+      if(!is.null(mod)){
+        
+        yrpd <- sort(unique(mod@frame$yr))
+        atv <- paste0('yr=c(', paste(yrpd, collapse = ', '), ')')
+        fixef <- estimate_means(mod, at = atv)
+        
+        out <- tibble(
+          yr = fixef$yr,
+          prd = fixef$Mean
+        )
+        
+        return(out)
+        
+      }
+      
+    }),
+    slo = purrr::map(mod, function(mod){
+      
+      if(!is.null(mod)){
+        
+        summod <- summary(mod)$coefficients
+        
+        pvl <- summod['yr', 'Pr(>|t|)']
+        if(pvl >= 0.05)
+          return('')
+        
+        out <- summod['yr', 'Estimate'] %>%
+          round(2) %>%
+          as.character()
+        
+        return(out)
+        
+      }
+      
+    })
+  ) %>% 
+  ungroup() %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    thrtyp = factor(thrtyp, 
+                    levels = c('tempcnt', 'salicnt', 'bothcnt'), 
+                    labels = c(paste('Temperature >', tmpthr), paste('Salinity <', salthr), 'Both')
+    )
+  )
+
+save(suppmixmodprds, file = here('data/suppmixmodprds.RData'))
 
 # combined transect, chl, sal, temp data ------------------------------------------------------
 

@@ -156,7 +156,7 @@ p1 <- ggplot(toplo1, aes(x = yr, y = tavg_c)) +
   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'red2') +
   thm +
   theme(
-    axis.text.x = element_text(size = 12)
+    axis.text.x = element_blank()
   ) +
   labs(
     x = NULL, 
@@ -193,9 +193,9 @@ p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
 p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
   geom_col(width = 35) +
   scale_fill_manual(values = c('grey70', 'grey30'), guide = 'none') + 
-  thm + 
+  thm  +
   theme(
-    axis.text.x = element_blank()
+    axis.text.x = element_text(size = 12)
   ) +
   coord_cartesian(xlim = range(speidat$date)) +
   labs(
@@ -205,7 +205,7 @@ p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) +
 
 toplo <- epcdata %>% 
   select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  filter(yr < 2023) %>% 
   pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
   mutate(
     var = factor(var, 
@@ -276,7 +276,372 @@ png(here('figs/meteowqraw.png'), height = 8.5, width = 7, family = 'serif', unit
 print(p)
 dev.off()
 
+# supp meteorological, salinity, water temp obs data ------------------------------------------
+
+load(file = here('data/speidat.RData'))
+load(file = url("https://github.com/tbep-tech/load-estimates/raw/main/data/totanndat.RData"))
+
+# hydro load, otb, mtb, ltb, hb
+hydrodat <- totanndat %>% 
+  select(year, bay_segment, hy_load) %>% 
+  filter(bay_segment %in% c('Hillsborough Bay', 'Old Tampa Bay', 'Lower Tampa Bay', 'Middle Tampa Bay')) %>% 
+  summarise(
+    hy_load = sum(hy_load) / 1e3, 
+    .by = 'year'
+  ) %>% 
+  filter(year >= yrsel[1] & year <= yrsel[2])
+
+speidat <- speidat%>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2])
+
+toplo1 <- speidat %>% 
+  select(yr, precip_mm, tavg_c) %>% 
+  summarise(
+    precip_mm = sum(precip_mm), 
+    tavg_c = mean(tavg_c), 
+    .by = 'yr'
+  )
+
+thm <- theme_minimal() + 
+  theme(
+    strip.placement = 'outside', 
+    panel.grid.minor = element_blank(), 
+    axis.text.y = element_text(size = 12), 
+    legend.text = element_text(size= 12)
+  )
+
+p1 <- ggplot(toplo1, aes(x = yr, y = tavg_c)) + 
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'red2') +
+  thm +
+  theme(
+    axis.text.x = element_blank()
+  ) +
+  labs(
+    x = NULL, 
+    y = 'Air temp. (\u00B0 C)'
+  )
+
+p2 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) + 
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
+  thm +
+  theme(
+    axis.text.x = element_blank()
+  ) +
+  labs(
+    x = NULL, 
+    y = 'Precip. (m)'
+  )
+
+p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
+  coord_cartesian(xlim = range(toplo1$yr)) + 
+  thm +
+  theme(
+    axis.text.x = element_blank()
+  ) +
+  labs(
+    x = NULL, 
+    y = expression(paste('Hyd. load (', 10^3, ' t/yr)'))
+  )
+
+p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
+  geom_col(width = 35) +
+  scale_fill_manual(values = c('grey70', 'grey30'), guide = 'none') + 
+  thm +
+  theme(
+    axis.text.x = element_text(size = 12)
+  ) +
+  coord_cartesian(xlim = range(speidat$date)) +
+  labs(
+    x = NULL, 
+    y = 'SPI (z-values)'
+  )
+
+toplo <- epcdata %>% 
+  select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
+  mutate(
+    var = factor(var, 
+                 levels = c(c("Sal_Top_ppth", "Sal_Bottom_ppth", "Temp_Water_Top_degC", "Temp_Water_Bottom_degC"
+                 )), 
+                 labels = c("Sal_Top", "Sal_Bottom", "Temp_Top", "Temp_Bottom")
+    ),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  separate(var, c('var', 'loc')) %>% 
+  mutate(
+    var = factor(var, levels = c('Temp', 'Sal'), labels = c('Water temp. (\u00B0C)', 'Salinity (ppt)')),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
+  ) %>% 
+  filter(!is.na(val)) %>% 
+  summarise(
+    avev = mean(val, na.rm = T),
+    lov = t.test(val, na.rm = T)$conf.int[1],
+    hiv = t.test(val, na.rm = T)$conf.int[2],
+    .by = c('bay_segment', 'yr', 'var', 'loc') 
+  )
+
+wd <- 0.5
+
+toplo5 <- toplo %>% 
+  filter(var == 'Water temp. (\u00B0C)') %>% 
+  filter(!(yr %in% c(1982, 1985) & bay_segment == 'OTB')) %>%  # missing months create outliers
+  filter(!(yr %in% 1975 & bay_segment == 'HB')) # missing months create outliers
+p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
+  geom_point(position = position_dodge2(width = wd), size = 0.5) +
+  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  facet_grid(~ bay_segment) +
+  scale_color_manual(values = c( 'steelblue4', 'steelblue1')) +
+  thm +
+  theme(strip.text = element_blank()) +
+  labs(
+    x = NULL, 
+    y = 'Water temp. (\u00B0C)', 
+    color = NULL, 
+    shape = NULL
+  )
+toplo6 <- toplo %>% 
+  filter(var == 'Salinity (ppt)')
+p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
+  geom_point(position = position_dodge2(width = wd), size = 0.5) +
+  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  facet_grid(~ bay_segment) +
+  scale_color_manual(values = c('steelblue4', 'steelblue1')) +
+  thm +
+  theme(
+    axis.text.x = element_blank(), 
+    strip.text = element_text(size = 12)
+  ) +
+  labs(
+    x = NULL, 
+    y = 'Salinity (ppt)', 
+    color = NULL, 
+    shape = NULL
+  )
+
+p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.5)) & theme(legend.position = 'top')
+
+png(here('figs/suppmeteowqraw.png'), height = 8.5, width = 7, family = 'serif', units = 'in', res = 500)
+print(p)
+dev.off()
+
 # kendall -------------------------------------------------------------------------------------
+
+leglab <- expression(paste(yr^{-1}))
+
+# kendall all years
+sktres <- epcdata %>% 
+  select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
+         mo, matches('Top|Bottom')) %>% 
+  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
+  nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat')) %>% 
+  mutate(
+    skt = purrr::pmap(list(station, var, data), function(station, var, data){
+      
+      cat(station, var, '\n')
+      
+      # yr selection
+      tomod <- data %>% 
+        arrange(yr, mo) %>% 
+        na.omit()
+      
+      # run tests
+      ests <- kendallSeasonalTrendTest(val ~ mo + yr, data = tomod)
+      
+      out <- tibble(
+        pval = ests$p.value[2][[1]], 
+        slos = ests$estimate[2][[1]],
+        n = nrow(tomod)
+      )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(skt)
+
+#kendall by month
+ktres <- epcdata %>% 
+  select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
+         mo, matches('Top|Bottom')) %>% 
+  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
+  nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat', 'mo')) %>% 
+  mutate(
+    kt = purrr::pmap(list(station, var, mo, data), function(station, var, mo, data){
+      
+      cat(station, var, mo, '\n')
+      
+      # yr selection
+      tomod <- data %>% 
+        arrange(yr) %>% 
+        na.omit()
+      
+      out <- tibble(
+        pval = NA,
+        slos = NA,
+        n = NA
+      )
+      
+      # run tests
+      ests <- try(kendallTrendTest(val ~ yr, data = tomod), silent = T)
+      if(inherits(ests, 'try-error'))
+        return(out)
+      
+      out$pval <- ests$p.value[1]
+      out$slos <- ests$estimate[2]
+      out$n <- nrow(tomod)
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(kt)
+
+# plots of segment summaries by month
+ktresplo <- ktres %>% 
+  mutate(
+    mo = month(mo, label = T), 
+    bay_segment = factor(bay_segment, levels = c('LTB', 'MTB', 'HB', 'OTB')), 
+    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
+    varsimp = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    varsimp = factor(varsimp, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
+  ) %>%
+  nest(.by = c('bay_segment', 'mo', 'varsimp', 'var', 'loc')) %>% 
+  mutate(
+    sum = purrr::pmap(list(varsimp, data), function(varsimp, data){
+      
+      data %>% 
+        summarise(
+          nsig = case_when(
+            varsimp == 'Salinity' ~ -1 * sum(pval < 0.05 & slos < 0),
+            varsimp == 'Temperature' ~ sum(pval < 0.05 & slos > 0)
+          ),
+          cnt = n(),
+          nsigper = round(100 * nsig / cnt, 0),
+          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper)))
+        )
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest('sum') %>% 
+  group_nest(loc) %>% 
+  mutate(
+    plo = purrr::pmap(list(loc, data), function(loc, data){
+
+      p <- ggplot(data, aes(x = mo, y = bay_segment, fill = nsigper)) + 
+        geom_tile(color = 'darkgrey') +
+        geom_text(aes(label = perlab), color = 'white', fontface = 'bold') +
+        scale_x_discrete(expand = c(0, 0)) + 
+        scale_y_discrete(expand = c(0, 0)) + 
+        scale_fill_gradientn(leglab, limits = c(-100, 100), colors = c('blue', 'grey', 'tomato1')) +
+        facet_wrap(~ varsimp, ncol = 1, scales = 'free_x') + 
+        theme(
+          strip.background = element_blank(), 
+          strip.text = element_text(hjust = 0, size = 12), 
+          legend.position = 'none',
+          axis.text = element_text(size = 10)
+        ) + 
+        labs(
+          x = NULL, 
+          y = 'Bay segment'
+        )
+      
+      return(p)
+
+    })
+  )
+
+# basemap
+dat_ext <- unname(st_bbox(st_buffer(tbseg, dist = 2000)))
+bsmap1 <- get_stamenmap(bbox = dat_ext, maptype = 'terrain-background', zoom = 11)
+
+# change opacity of basemap
+mapatt <- attributes(bsmap1)
+bsmap1_transparent <- matrix(adjustcolor(bsmap1,
+                                         alpha.f = 0.4),
+                             nrow = nrow(bsmap1))
+attributes(bsmap1_transparent) <- mapatt
+
+leglab <- expression(paste(yr^{-1}))
+colrng <- range(sktres$slos) %>% 
+  abs %>% 
+  max
+colrng <- c(-1 * colrng, colrng)
+
+toplo <- sktres %>%
+  mutate(
+    pvalcol = ifelse(pval < 0.05, T, F),
+    coefsgn = sign(slos),
+    coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
+    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
+    var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    var = factor(var, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
+  )
+
+pthm <- theme_bw(base_family = 'serif') +
+  theme(
+    legend.position = c(0.9, 0.1), 
+    # legend.box = 'horizontal',
+    strip.background = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(size = 8),
+    strip.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+    legend.text = element_text(size = 8),
+    legend.background = element_rect(fill = NA)
+  )
+
+p1 <- ggmap(bsmap1_transparent) +
+  geom_sf(data = tbseg, inherit.aes = F) +
+  geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
+  facet_grid(loc ~ var) +
+  # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
+  scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
+  scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
+  # coord_map() +
+  scale_shape_manual(values = c(24, 25), drop = FALSE, guide = 'none') +
+  pthm +
+  scale_size(range = c(0.75, 4), guide = 'none') +
+  guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
+  labs(
+    title = paste0('(a) Change per year, ', yrsel[1], '-', yrsel[2]),
+    caption = 'Outlines indicate p < 0.05'
+  )
+
+p2 <- ktresplo %>% 
+  filter(loc == 'Top') %>% 
+  pull(plo) %>% 
+  .[[1]] + labs(title = '(b) Top, % stations with significant trends by month')
+
+p3 <- ktresplo %>% 
+  filter(loc == 'Bottom') %>% 
+  pull(plo) %>% 
+  .[[1]] + labs(title = '(c) Bottom, % stations with significant trends by month')
+
+p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, width = c(0.9, 1))
+
+png(here('figs/kendall.png'), height = 7, width = 9.5, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# supp kendall --------------------------------------------------------------------------------
 
 leglab <- expression(paste(yr^{-1}))
 
@@ -483,6 +848,211 @@ png(here('figs/kendall.png'), height = 7, width = 9.5, family = 'serif', units =
 print(p)
 dev.off()
 
+leglab <- expression(paste(yr^{-1}))
+
+# kendall all years
+sktres <- epcdata %>% 
+  select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
+         mo, matches('Top|Bottom')) %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
+  nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat')) %>% 
+  mutate(
+    skt = purrr::pmap(list(station, var, data), function(station, var, data){
+      
+      cat(station, var, '\n')
+      
+      # yr selection
+      tomod <- data %>% 
+        arrange(yr, mo) %>% 
+        na.omit()
+      
+      # run tests
+      ests <- kendallSeasonalTrendTest(val ~ mo + yr, data = tomod)
+      
+      out <- tibble(
+        pval = ests$p.value[2][[1]], 
+        slos = ests$estimate[2][[1]],
+        n = nrow(tomod)
+      )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(skt)
+
+#kendall by month
+ktres <- epcdata %>% 
+  select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
+         mo, matches('Top|Bottom')) %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
+  nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat', 'mo')) %>% 
+  mutate(
+    kt = purrr::pmap(list(station, var, mo, data), function(station, var, mo, data){
+      
+      cat(station, var, mo, '\n')
+      
+      # yr selection
+      tomod <- data %>% 
+        arrange(yr) %>% 
+        na.omit()
+      
+      out <- tibble(
+        pval = NA,
+        slos = NA,
+        n = NA
+      )
+      
+      # run tests
+      ests <- try(kendallTrendTest(val ~ yr, data = tomod), silent = T)
+      if(inherits(ests, 'try-error'))
+        return(out)
+      
+      out$pval <- ests$p.value[1]
+      out$slos <- ests$estimate[2]
+      out$n <- nrow(tomod)
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(kt)
+
+# plots of segment summaries by month
+ktresplo <- ktres %>% 
+  mutate(
+    mo = month(mo, label = T), 
+    bay_segment = factor(bay_segment, levels = c('LTB', 'MTB', 'HB', 'OTB')), 
+    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
+    varsimp = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    varsimp = factor(varsimp, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
+  ) %>%
+  nest(.by = c('bay_segment', 'mo', 'varsimp', 'var', 'loc')) %>% 
+  mutate(
+    sum = purrr::pmap(list(varsimp, data), function(varsimp, data){
+      
+      data %>% 
+        summarise(
+          nsig = case_when(
+            varsimp == 'Salinity' ~ -1 * sum(pval < 0.05 & slos < 0),
+            varsimp == 'Temperature' ~ sum(pval < 0.05 & slos > 0)
+          ),
+          cnt = n(),
+          nsigper = round(100 * nsig / cnt, 0),
+          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper)))
+        )
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest('sum') %>% 
+  group_nest(loc) %>% 
+  mutate(
+    plo = purrr::pmap(list(loc, data), function(loc, data){
+      
+      p <- ggplot(data, aes(x = mo, y = bay_segment, fill = nsigper)) + 
+        geom_tile(color = 'darkgrey') +
+        geom_text(aes(label = perlab), color = 'white', fontface = 'bold') +
+        scale_x_discrete(expand = c(0, 0)) + 
+        scale_y_discrete(expand = c(0, 0)) + 
+        scale_fill_gradientn(leglab, limits = c(-100, 100), colors = c('blue', 'grey', 'tomato1')) +
+        facet_wrap(~ varsimp, ncol = 1, scales = 'free_x') + 
+        theme(
+          strip.background = element_blank(), 
+          strip.text = element_text(hjust = 0, size = 12), 
+          legend.position = 'none',
+          axis.text = element_text(size = 10)
+        ) + 
+        labs(
+          x = NULL, 
+          y = 'Bay segment'
+        )
+      
+      return(p)
+      
+    })
+  )
+
+# basemap
+dat_ext <- unname(st_bbox(st_buffer(tbseg, dist = 2000)))
+bsmap1 <- get_stamenmap(bbox = dat_ext, maptype = 'terrain-background', zoom = 11)
+
+# change opacity of basemap
+mapatt <- attributes(bsmap1)
+bsmap1_transparent <- matrix(adjustcolor(bsmap1,
+                                         alpha.f = 0.4),
+                             nrow = nrow(bsmap1))
+attributes(bsmap1_transparent) <- mapatt
+
+leglab <- expression(paste(yr^{-1}))
+colrng <- range(sktres$slos) %>% 
+  abs %>% 
+  max
+colrng <- c(-1 * colrng, colrng)
+
+toplo <- sktres %>%
+  mutate(
+    pvalcol = ifelse(pval < 0.05, T, F),
+    coefsgn = sign(slos),
+    coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
+    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
+    var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
+    var = factor(var, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
+    loc = factor(loc, levels = c('Top', 'Bottom'))
+  )
+
+pthm <- theme_bw(base_family = 'serif') +
+  theme(
+    legend.position = c(0.9, 0.1), 
+    # legend.box = 'horizontal',
+    strip.background = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(size = 8),
+    strip.text = element_text(size = 12),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+    legend.text = element_text(size = 8),
+    legend.background = element_rect(fill = NA)
+  )
+
+p1 <- ggmap(bsmap1_transparent) +
+  geom_sf(data = tbseg, inherit.aes = F) +
+  geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
+  facet_grid(loc ~ var) +
+  # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
+  scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
+  scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
+  # coord_map() +
+  scale_shape_manual(values = c(24, 25), drop = FALSE, guide = 'none') +
+  pthm +
+  scale_size(range = c(0.75, 4), guide = 'none') +
+  guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
+  labs(
+    title = paste0('(a) Change per year, ', yrsel[1], '-', yrsel[2]),
+    caption = 'Outlines indicate p < 0.05'
+  )
+
+p2 <- ktresplo %>% 
+  filter(loc == 'Top') %>% 
+  pull(plo) %>% 
+  .[[1]] + labs(title = '(b) Top, % stations with significant trends by month')
+
+p3 <- ktresplo %>% 
+  filter(loc == 'Bottom') %>% 
+  pull(plo) %>% 
+  .[[1]] + labs(title = '(c) Bottom, % stations with significant trends by month')
+
+p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, width = c(0.9, 1))
+
+png(here('figs/suppkendall.png'), height = 7, width = 9.5, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
 # mixeff example plot -------------------------------------------------------------------------
 
 load(file = here('data/mixmodprds.RData'))
@@ -527,6 +1097,54 @@ p <- ggplot(toplo1, aes(x = yr, y = cnt)) +
   )
 
 png(here('figs/mixeff.png'), height = 6, width = 7, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
+# supp mixeff example plot --------------------------------------------------------------------
+
+load(file = here('data/suppmixmodprds.RData'))
+
+toplo1 <- suppmixmodprds %>% 
+  select(-mod, -fix, -slo) %>% 
+  unnest('data') %>% 
+  filter(
+    !(cnt > 100 & thrtyp == paste('Temperature >', tmpthr)) # outliers
+  ) %>% 
+  filter(
+    !(cnt > 100 & thrtyp == 'Both') # outliers
+  ) %>% 
+  filter(yr >= yrsel[1] & yr <= yrsel[2])
+toplo2 <- suppmixmodprds %>% 
+  select(-mod, -data, -slo) %>% 
+  unnest('fix')
+toplo3 <- suppmixmodprds %>% 
+  select(-mod, -data, -fix) %>% 
+  unnest('slo') %>% 
+  filter(slo != '')
+
+p <- ggplot(toplo1, aes(x = yr, y = cnt)) + 
+  geom_point(size = 0.7, alpha = 0.6, color = 'darkgrey') + 
+  geom_line(aes(y = prd, group = station), color = 'darkgrey', linewidth = 0.5) + 
+  geom_line(data = toplo2, aes(y = prd, col = thrtyp), show.legend = F, linewidth = 1.5) + 
+  geom_label(data = toplo3, aes(x = 2022, y = 0, label = slo, col = thrtyp), show.legend = F, 
+             vjust = 0, hjust = 1, fontface = 'italic', size = 3, label.r = unit(0, "lines"),
+             label.padding = unit(0.1, "lines")) +
+  scale_color_manual(values = c('red2', 'dodgerblue2', 'black')) +
+  coord_cartesian(xlim = c(1998, 2022)) +
+  facet_grid(thrtyp ~ bay_segment, scales = 'free_y') + 
+  theme_bw() + 
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.background = element_blank(), 
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+    strip.text = element_text(size = 10)
+  ) + 
+  labs(
+    x = NULL, 
+    y = expression(paste("Days ", year^-1))
+  )
+
+png(here('figs/suppmixeff.png'), height = 6, width = 7, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 
@@ -643,27 +1261,27 @@ png(here('figs/sgmod.png'), height = 7, width = 9, family = 'serif', units = 'in
 print(p)
 dev.off()
 
-# # hillsborough flow v temp over time ----------------------------------------------------------
-# 
-# load(file = here('data/gagedat.RData'))
-# 
-# toplo <- gagedat %>% 
-#   filter(name == 'Hillsborough') %>% 
-#   pivot_wider(names_from = 'var', values_from = 'val') %>% 
-#   na.omit() %>% 
-#   mutate(
-#     yrgroup = ifelse(year < 2000, 'past', 'present'),
-#     mo = month(date)
-#   ) %>% 
-#   # filter(flow_m3d < quantile(flow_m3d, 0.9)) %>%
-#   filter(mo %in% c(2, 8)) #%>%
-# # filter(temp_c > 1)
-# 
-# ggplot(toplo, aes(x = flow_m3d, y = temp_c, group = yrgroup, color = yrgroup)) + 
-#   geom_point(size = 0.6) +  
-#   scale_x_log10() +
-#   facet_grid(~mo) +
-#   geom_smooth(se = T, method = 'lm', formula = y~ x)
+# hillsborough flow v temp over time ----------------------------------------------------------
+
+load(file = here('data/gagedat.RData'))
+
+toplo <- gagedat %>%
+  filter(name == 'Hillsborough') %>%
+  pivot_wider(names_from = 'var', values_from = 'val') %>%
+  na.omit() %>%
+  mutate(
+    yrgroup = ifelse(year < 2000, 'past', 'present'),
+    mo = month(date)
+  ) %>%
+  # filter(flow_m3d < quantile(flow_m3d, 0.9)) %>%
+  filter(mo %in% c(2, 8)) #%>%
+# filter(temp_c > 1)
+
+ggplot(toplo, aes(x = flow_m3d, y = temp_c, group = yrgroup, color = yrgroup)) +
+  geom_point(size = 0.6) +
+  scale_x_log10() +
+  facet_grid(~mo) +
+  geom_smooth(se = T, method = 'lm', formula = y~ x)
 
 # # ports data threshold counts -----------------------------------------------------------------
 # 
