@@ -6,6 +6,48 @@ library(broom)
 
 source(here('R/funcs.R'))
 
+# mixef mod summary table and start/end -------------------------------------------------------
+
+load(file = here('data/mixmods.RData'))
+
+salthr <- '25'
+tmpthr <- '30'
+
+totab <- mixmods %>% 
+  filter(salithr == paste0('sali_', salthr)) %>% 
+  filter(tempthr == paste0('temp_', tmpthr)) %>%  
+  select(-tempthr, -salithr) %>% 
+  mutate(
+    pvl = p_ast(pvl), 
+    slo = as.character(round(slo, 2)), 
+    yrstr = round(yrstr, 0), 
+    yrstrse = paste0('(', round(yrstrse, 1), ')'),
+    yrend = round(yrend, 0), 
+    yrendse = paste0('(', round(yrendse, 1), ')'),
+    thrtyp = factor(thrtyp, levels = c('tempcnt', 'salicnt', 'bothcnt'), 
+                    labels = c(paste('Temperature >', tmpthr), paste('Salinity <', salthr), 'Both')),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  unite('slo', slo, pvl, sep = '') %>% 
+  unite('yrstr', yrstr, yrstrse, sep = ' ') %>%
+  unite('yrend', yrend, yrendse, sep = ' ') %>% 
+  mutate(
+    slo = ifelse(slo == 'NANA', '-', slo),
+    yrstr = ifelse(grepl('NA', yrstr), '-', yrstr),
+    yrend = ifelse(grepl('NA', yrend), '-', yrend)
+  ) %>%
+  arrange(bay_segment, thrtyp)
+
+mixdaytab <- totab %>% 
+  as_grouped_data(groups = 'bay_segment') %>% 
+  flextable() %>% 
+  set_header_labels(i = 1, values = c('Bay Segment', 'Threshold', 'Slope', 'Start', 'End')) %>% 
+  padding(padding = 0, part = 'all') %>% 
+  width(j = 2, width = 1.5) %>% 
+  font(part = 'all', fontname = 'Times New Roman')
+
+save(mixdaytab, file = here('tabs/mixdaytab.RData'))
+
 # supp1 mixef mod summary table ----------------------------------------------------------------
 
 load(file = here('data/mixmods.RData'))

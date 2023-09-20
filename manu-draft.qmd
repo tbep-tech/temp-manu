@@ -32,8 +32,7 @@ library(knitr)
 library(here)
 library(flextable)
 
-# load(file = here('tabs/mixtab.RData'))
-# load(file = here('tabs/daytab.RData'))
+load(file = here('tabs/mixdaytab.RData'))
 ```
 
 ## Abstract {.unnumbered}
@@ -152,19 +151,11 @@ OTB seagrass loss and role of pyrodinium, optimal temperatures from 28-31 [@lope
 
 ## Tables {.unnumbered}
 
-<!-- Summary of mixed-effects models evaluating increases in the number of days each year from 1974 to 2022 when temperature or salinity were above or below critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both temperature and salinity were above or below critical thresholds. \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. -->
+Summary of mixed-effects models evaluating increases in the number of days each year from 1975 to 2022 when temperature was above 30C, salinity was below 25ppt, or both temperature and salinity were above/below the thresholds.  The start and end columns show the estimated number of days at the beginning and end of the period of record when temperature or salinity were above or below the thresholds. Values are the estimated mean number of days (plus standard error) from 1975 and 2022.  \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 
-<!-- ```{r} -->
-<!-- mixtab -->
-<!-- ``` -->
-
-<!-- {{< pagebreak >}} -->
-
-<!-- Number of days at the beginning and end of the period of record when temperature or salinity were above or below critical thresholds, respectively. Values are the estimated mean number of days (plus standard error) from 1975 to 2022. Columns for "Both" indicate the estimated number of days when both temperature and salinity were above or below critical thresholds. Note that not all models are significant (see table 1). \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. -->
-
-<!-- ```{r} -->
-<!-- daytab -->
-<!-- ``` -->
+```{r}
+mixdaytab
+```
 
 {{< pagebreak >}}
 
