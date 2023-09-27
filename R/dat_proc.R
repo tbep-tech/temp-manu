@@ -1337,6 +1337,8 @@ prj <- 4326
 # import original SAS data
 phyraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_physical.sas7bdat')
 hydraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_hydrolab.sas7bdat')
+habraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_habitat.sas7bdat')
+fimraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/fim_codes.sas7bdat')
 
 # physical data
 # select AM projects (monhtly FIM sampling)
@@ -1351,14 +1353,32 @@ phydat <- phyraw %>%
   .[tbseg, ] %>% 
   select(date, Reference)
 
+# sal, temp data (no location)
 hyddat <- hydraw %>% 
   filter(Beg_end %in% 'B') %>% # each location has a beginning and end log, take one 
   filter(Depth == max(Depth), .by = 'Reference') %>% # some have depth profile, take bottom
   select(Reference, depth = Depth, temp = Temperature, sal = Salinity)
 
+# combine sal, temp data with location data, specific to tb
 fimtempdat <- phydat %>% 
   inner_join(hyddat, by = 'Reference') %>% 
   filter(year(date) > 1995) %>% # only spring/fall sampling prior to 1996
   st_intersection(tbseg[, 'bay_segment']) 
 
-save(fimtempdat, file = here('data/fimtempdat.RData'), compress = 'xz')
+# seagrass data (see fimraw$Code for fimraw$FieldName as BottomVeg)
+habdat <- habraw %>% 
+  filter(Reference %in% fimtempdat$Reference) %>% 
+  mutate(
+    sgpres = BottomVeg %in% c('GM', 'GU', 'HA', 'HC', 'HE', 'HI', 'RU', 'SY', 'TH') # seagrass codes
+  ) %>%
+  summarise(
+    sgpres = any(sgpres), 
+    .by = Reference
+  )
+
+# combine seagrass p/a with fimtempdat
+fimsgtempdat <- fimtempdat %>% 
+  left_join(habdat, by = 'Reference') %>% 
+  filter(!is.na(sgpres)) # 12 as na, just remove
+
+save(fimsgtempdat, file = here('data/fimsgtempdat.RData'), compress = 'xz')
