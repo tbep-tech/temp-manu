@@ -21,7 +21,8 @@ library(mgcv)
 
 source(here('R/funcs.R'))
 
-yrsel <- c(1998, 2022)
+yrsel1 <- c(1975, 2022)
+yrsel2 <- c(1998, 2022)
 tempthr <- c(29, 30, 31)
 tempcol <- c('coral', 'red2', 'darkred')
 salithr <- c(20, 25, 30)
@@ -289,10 +290,10 @@ hydrodat <- totanndat %>%
     hy_load = sum(hy_load) / 1e3, 
     .by = 'year'
   ) %>% 
-  filter(year >= yrsel[1] & year <= yrsel[2])
+  filter(year >= yrsel2[1] & year <= yrsel2[2])
 
 speidat <- speidat%>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2])
+  filter(yr >= yrsel2[1] & yr <= yrsel2[2])
 
 toplo1 <- speidat %>% 
   select(yr, precip_mm, tavg_c) %>% 
@@ -365,7 +366,7 @@ p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) +
 
 toplo <- epcdata %>% 
   select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  filter(yr >= yrsel2[1] & yr <= yrsel2[2]) %>% 
   pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
   mutate(
     var = factor(var, 
@@ -621,7 +622,7 @@ p1 <- ggmap(bsmap1_transparent) +
   scale_size(range = c(0.75, 4), guide = 'none') +
   guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
   labs(
-    title = paste0('(a) Change per year, ', yrsel[1], '-', yrsel[2]),
+    title = paste0('(a) Change per year, ', yrsel1[1], '-', yrsel1[2]),
     caption = 'Outlines indicate p < 0.05'
   )
 
@@ -649,7 +650,7 @@ leglab <- expression(paste(yr^{-1}))
 sktres <- epcdata %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
          mo, matches('Top|Bottom')) %>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  filter(yr >= yrsel2[1] & yr <= yrsel2[2]) %>% 
   pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
   nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat')) %>% 
   mutate(
@@ -682,212 +683,7 @@ sktres <- epcdata %>%
 ktres <- epcdata %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
          mo, matches('Top|Bottom')) %>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
-  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
-  nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat', 'mo')) %>% 
-  mutate(
-    kt = purrr::pmap(list(station, var, mo, data), function(station, var, mo, data){
-      
-      cat(station, var, mo, '\n')
-      
-      # yr selection
-      tomod <- data %>% 
-        arrange(yr) %>% 
-        na.omit()
-      
-      out <- tibble(
-        pval = NA,
-        slos = NA,
-        n = NA
-      )
-      
-      # run tests
-      ests <- try(kendallTrendTest(val ~ yr, data = tomod), silent = T)
-      if(inherits(ests, 'try-error'))
-        return(out)
-      
-      out$pval <- ests$p.value[1]
-      out$slos <- ests$estimate[2]
-      out$n <- nrow(tomod)
-      
-      return(out)
-      
-    })
-  ) %>% 
-  select(-data) %>% 
-  unnest(kt)
-
-# plots of segment summaries by month
-ktresplo <- ktres %>% 
-  mutate(
-    mo = month(mo, label = T), 
-    bay_segment = factor(bay_segment, levels = c('LTB', 'MTB', 'HB', 'OTB')), 
-    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
-    varsimp = gsub('^(.*?)_.*$', '\\1', var, perl = T),
-    varsimp = factor(varsimp, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
-    loc = factor(loc, levels = c('Top', 'Bottom'))
-  ) %>%
-  nest(.by = c('bay_segment', 'mo', 'varsimp', 'var', 'loc')) %>% 
-  mutate(
-    sum = purrr::pmap(list(varsimp, data), function(varsimp, data){
-      
-      data %>% 
-        summarise(
-          nsig = case_when(
-            varsimp == 'Salinity' ~ -1 * sum(pval < 0.05 & slos < 0),
-            varsimp == 'Temperature' ~ sum(pval < 0.05 & slos > 0)
-          ),
-          cnt = n(),
-          nsigper = round(100 * nsig / cnt, 0),
-          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper)))
-        )
-      
-    })
-  ) %>% 
-  select(-data) %>% 
-  unnest('sum') %>% 
-  group_nest(loc) %>% 
-  mutate(
-    plo = purrr::pmap(list(loc, data), function(loc, data){
-
-      p <- ggplot(data, aes(x = mo, y = bay_segment, fill = nsigper)) + 
-        geom_tile(color = 'darkgrey') +
-        geom_text(aes(label = perlab), color = 'white', fontface = 'bold') +
-        scale_x_discrete(expand = c(0, 0)) + 
-        scale_y_discrete(expand = c(0, 0)) + 
-        scale_fill_gradientn(leglab, limits = c(-100, 100), colors = c('blue', 'grey', 'tomato1')) +
-        facet_wrap(~ varsimp, ncol = 1, scales = 'free_x') + 
-        theme(
-          strip.background = element_blank(), 
-          strip.text = element_text(hjust = 0, size = 12), 
-          legend.position = 'none',
-          axis.text = element_text(size = 10)
-        ) + 
-        labs(
-          x = NULL, 
-          y = 'Bay segment'
-        )
-      
-      return(p)
-
-    })
-  )
-
-# basemap
-dat_ext <- unname(st_bbox(st_buffer(tbseg, dist = 2000)))
-bsmap1 <- get_stamenmap(bbox = dat_ext, maptype = 'terrain-background', zoom = 11)
-
-# change opacity of basemap
-mapatt <- attributes(bsmap1)
-bsmap1_transparent <- matrix(adjustcolor(bsmap1,
-                                         alpha.f = 0.4),
-                             nrow = nrow(bsmap1))
-attributes(bsmap1_transparent) <- mapatt
-
-leglab <- expression(paste(yr^{-1}))
-colrng <- range(sktres$slos) %>% 
-  abs %>% 
-  max
-colrng <- c(-1 * colrng, colrng)
-
-toplo <- sktres %>%
-  mutate(
-    pvalcol = ifelse(pval < 0.05, T, F),
-    coefsgn = sign(slos),
-    coefsgn = factor(coefsgn, levels = c('1', '-1'), labels = c('inc', 'dec')), 
-    loc =  gsub("^.*_(.*)_.*$", "\\1", var),
-    var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
-    var = factor(var, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
-    loc = factor(loc, levels = c('Top', 'Bottom'))
-  )
-
-pthm <- theme_bw(base_family = 'serif') +
-  theme(
-    legend.position = c(0.9, 0.1), 
-    # legend.box = 'horizontal',
-    strip.background = element_blank(),
-    axis.title = element_blank(),
-    axis.text = element_text(size = 8),
-    strip.text = element_text(size = 12),
-    panel.grid.minor = element_blank(),
-    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
-    legend.text = element_text(size = 8),
-    legend.background = element_rect(fill = NA)
-  )
-
-p1 <- ggmap(bsmap1_transparent) +
-  geom_sf(data = tbseg, inherit.aes = F) +
-  geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
-  facet_grid(loc ~ var) +
-  # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
-  scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
-  scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
-  # coord_map() +
-  scale_shape_manual(values = c(24, 25), drop = FALSE, guide = 'none') +
-  pthm +
-  scale_size(range = c(0.75, 4), guide = 'none') +
-  guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
-  labs(
-    title = paste0('(a) Change per year, ', yrsel[1], '-', yrsel[2]),
-    caption = 'Outlines indicate p < 0.05'
-  )
-
-p2 <- ktresplo %>% 
-  filter(loc == 'Top') %>% 
-  pull(plo) %>% 
-  .[[1]] + labs(title = '(b) Top, % stations with significant trends by month')
-
-p3 <- ktresplo %>% 
-  filter(loc == 'Bottom') %>% 
-  pull(plo) %>% 
-  .[[1]] + labs(title = '(c) Bottom, % stations with significant trends by month')
-
-p <- p1 + (p2 + p3 + plot_layout(ncol = 1)) + plot_layout(ncol = 2, width = c(0.9, 1))
-
-png(here('figs/kendall.png'), height = 7, width = 9.5, family = 'serif', units = 'in', res = 300)
-print(p)
-dev.off()
-
-leglab <- expression(paste(yr^{-1}))
-
-# kendall all years
-sktres <- epcdata %>% 
-  select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
-         mo, matches('Top|Bottom')) %>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
-  pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
-  nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat')) %>% 
-  mutate(
-    skt = purrr::pmap(list(station, var, data), function(station, var, data){
-      
-      cat(station, var, '\n')
-      
-      # yr selection
-      tomod <- data %>% 
-        arrange(yr, mo) %>% 
-        na.omit()
-      
-      # run tests
-      ests <- kendallSeasonalTrendTest(val ~ mo + yr, data = tomod)
-      
-      out <- tibble(
-        pval = ests$p.value[2][[1]], 
-        slos = ests$estimate[2][[1]],
-        n = nrow(tomod)
-      )
-      
-      return(out)
-      
-    })
-  ) %>% 
-  select(-data) %>% 
-  unnest(skt)
-
-#kendall by month
-ktres <- epcdata %>% 
-  select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
-         mo, matches('Top|Bottom')) %>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2]) %>% 
+  filter(yr >= yrsel2[1] & yr <= yrsel2[2]) %>% 
   pivot_longer(matches('Top|Bottom'), names_to = 'var', values_to = 'val') %>% 
   nest(.by = c('bay_segment', 'var', 'station', 'lon', 'lat', 'mo')) %>% 
   mutate(
@@ -1033,7 +829,7 @@ p1 <- ggmap(bsmap1_transparent) +
   scale_size(range = c(0.75, 4), guide = 'none') +
   guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
   labs(
-    title = paste0('(a) Change per year, ', yrsel[1], '-', yrsel[2]),
+    title = paste0('(a) Change per year, ', yrsel2[1], '-', yrsel2[2]),
     caption = 'Outlines indicate p < 0.05'
   )
 
@@ -1113,7 +909,7 @@ toplo1 <- suppmixmodprds %>%
   filter(
     !(cnt > 100 & thrtyp == 'Both') # outliers
   ) %>% 
-  filter(yr >= yrsel[1] & yr <= yrsel[2])
+  filter(yr >= yrsel2[1] & yr <= yrsel2[2])
 toplo2 <- suppmixmodprds %>% 
   select(-mod, -data, -slo) %>% 
   unnest('fix')
