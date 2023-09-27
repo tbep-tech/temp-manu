@@ -1097,67 +1097,77 @@ png(here('figs/flowtemp.png'), height = 4, width = 6, family = 'serif', units = 
 print(p)
 dev.off()
 
-# # ports data threshold counts -----------------------------------------------------------------
-# 
-# load(file = here('data/portsdat.RData'))
-# 
-# # thresholds to count by year, temp is above
-# thrs <- tibble(
-#   temp = c(29, 30, 31)
-# )
-# 
-# # get T/F vectors for predictions above/below thresholds by day
-# sumdat <- portsdat %>%
-#   group_nest(name) %>%
-#   crossing(thrs) %>%
-#   mutate(
-#     data = purrr::pmap(list(data, temp), function(data, temp){
-# 
-#       out <- data %>%
-#         mutate(
-#           cnt = temp_c >= temp
-#         )
-# 
-#       return(out)
-# 
-#     })
-#   ) %>%
-#   unnest('data') %>%
-#   summarise(
-#     runcnt = runfunc(cnt),
-#     sumcnt = sum(cnt),
-#     .by = c(name, yr, temp)
-#   )
-# 
-# ggplot(sumdat, aes(x = yr, y = runcnt, col = factor(temp))) +
-#   geom_point() +
-#   geom_smooth(se = F, method = 'lm', formula = y ~ x) +
-#   facet_wrap(~name)
-# 
-# ggplot(portsdat, aes(x = date, y = temp_c)) +
-#   geom_line() +
-#   facet_wrap(~name, ncol = 1)
-# 
-# ##
-# # one epc station closest to st pete gage
-# 
-# library(dygraphs)
-# 
-# load(file = here('data/MTB_82_tempbot.RData'))
-# load(file = here('data/portsdat.RData'))
-# 
-# mod <- MTB_82_tempbot
-# stp <- portsdat %>% 
-#   filter(name == 'stpete') %>% 
-#   select(date, portstemp = temp_c)
-# 
-# dyprd <- anlz_prdday(mod) %>% 
-#   filter(date %in% stp$date) %>% 
-#   select(date, epctemp = value)
-# 
-# cmbdat <- full_join(stp, dyprd, by = 'date')
-# 
-# dygraph(cmbdat)
-# 
-# # run rle function for comparison
+# ports data threshold counts -----------------------------------------------------------------
 
+load(file = here('data/portsdat.RData'))
+
+# thresholds to count by year, temp is above
+thrs <- tibble(
+  temp = c(29, 30, 31)
+)
+
+# get T/F vectors for predictions above/below thresholds by day
+sumdat <- portsdat %>%
+  group_nest(name) %>%
+  crossing(thrs) %>%
+  mutate(
+    data = purrr::pmap(list(data, temp), function(data, temp){
+
+      out <- data %>%
+        mutate(
+          cnt = temp_c >= temp
+        )
+
+      return(out)
+
+    })
+  ) %>%
+  unnest('data') %>%
+  summarise(
+    runcnt = runfunc(cnt),
+    sumcnt = sum(cnt),
+    .by = c(name, yr, temp)
+  )
+
+ggplot(sumdat, aes(x = yr, y = runcnt, col = factor(temp))) +
+  geom_point() +
+  geom_smooth(se = F, method = 'lm', formula = y ~ x) +
+  facet_wrap(~name)
+
+ggplot(portsdat, aes(x = date, y = temp_c)) +
+  geom_line() +
+  facet_wrap(~name, ncol = 1)
+
+##
+# one epc station closest to st pete gage
+
+library(dygraphs)
+
+load(file = here('data/MTB_82_temptop.RData'))
+load(file = here('data/portsdat.RData'))
+
+mod <- MTB_82_temptop
+stp <- portsdat %>%
+  filter(name == 'stpete') %>%
+  select(date, portstemp = temp_c)
+
+dyprd <- anlz_prdday(mod) %>%
+  filter(date %in% stp$date) %>%
+  select(date, epctemp = value)
+
+cmbdat <- full_join(stp, dyprd, by = 'date') 
+
+cmbsumdat <- cmbdat %>% 
+  mutate(
+    yr = year(date), 
+    portscnt = portstemp > 30, 
+    epccnt = epctemp > 30
+  ) %>% 
+  summarise(
+    portscnt = runfunc(portscnt),
+    epccnt = runfunc(epccnt),
+    .by = yr
+  )
+
+dygraph(cmbdat)
+plot(portscnt ~ epccnt, cmbsumdat)
