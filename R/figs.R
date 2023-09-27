@@ -1097,77 +1097,137 @@ png(here('figs/flowtemp.png'), height = 4, width = 6, family = 'serif', units = 
 print(p)
 dev.off()
 
-# ports data threshold counts -----------------------------------------------------------------
-
-load(file = here('data/portsdat.RData'))
-
-# thresholds to count by year, temp is above
-thrs <- tibble(
-  temp = c(29, 30, 31)
-)
-
-# get T/F vectors for predictions above/below thresholds by day
-sumdat <- portsdat %>%
-  group_nest(name) %>%
-  crossing(thrs) %>%
-  mutate(
-    data = purrr::pmap(list(data, temp), function(data, temp){
-
-      out <- data %>%
-        mutate(
-          cnt = temp_c >= temp
-        )
-
-      return(out)
-
-    })
-  ) %>%
-  unnest('data') %>%
-  summarise(
-    runcnt = runfunc(cnt),
-    sumcnt = sum(cnt),
-    .by = c(name, yr, temp)
-  )
-
-ggplot(sumdat, aes(x = yr, y = runcnt, col = factor(temp))) +
-  geom_point() +
-  geom_smooth(se = F, method = 'lm', formula = y ~ x) +
-  facet_wrap(~name)
-
-ggplot(portsdat, aes(x = date, y = temp_c)) +
-  geom_line() +
-  facet_wrap(~name, ncol = 1)
-
-##
-# one epc station closest to st pete gage
-
-library(dygraphs)
-
-load(file = here('data/MTB_82_temptop.RData'))
-load(file = here('data/portsdat.RData'))
-
-mod <- MTB_82_temptop
-stp <- portsdat %>%
-  filter(name == 'stpete') %>%
-  select(date, portstemp = temp_c)
-
-dyprd <- anlz_prdday(mod) %>%
-  filter(date %in% stp$date) %>%
-  select(date, epctemp = value)
-
-cmbdat <- full_join(stp, dyprd, by = 'date') 
-
-cmbsumdat <- cmbdat %>% 
-  mutate(
-    yr = year(date), 
-    portscnt = portstemp > 30, 
-    epccnt = epctemp > 30
-  ) %>% 
-  summarise(
-    portscnt = runfunc(portscnt),
-    epccnt = runfunc(epccnt),
-    .by = yr
-  )
-
-dygraph(cmbdat)
-plot(portscnt ~ epccnt, cmbsumdat)
+# # ports data threshold counts -----------------------------------------------------------------
+# 
+# load(file = here('data/portsdat.RData'))
+# 
+# # thresholds to count by year, temp is above
+# thrs <- tibble(
+#   temp = c(29, 30, 31)
+# )
+# 
+# # get T/F vectors for predictions above/below thresholds by day
+# portscnt <- portsdat %>%
+#   group_nest(name) %>%
+#   crossing(thrs) %>%
+#   mutate(
+#     data = purrr::pmap(list(data, temp), function(data, temp){
+# 
+#       out <- data %>%
+#         mutate(
+#           cnt = temp_c >= temp
+#         )
+# 
+#       return(out)
+# 
+#     })
+#   ) %>%
+#   unnest('data') %>%
+#   summarise(
+#     runcnt = runfunc(cnt),
+#     sumcnt = sum(cnt),
+#     .by = c(name, yr, temp)
+#   )
+# 
+# # ggplot(portscnt, aes(x = yr, y = runcnt, col = factor(temp))) +
+# #   geom_point() +
+# #   geom_smooth(se = F, method = 'lm', formula = y ~ x) +
+# #   facet_wrap(~name)
+# 
+# ggplot(portsdat, aes(x = date, y = temp_c)) +
+#   geom_line() +
+#   facet_wrap(~name, ncol = 1)
+# 
+# ##
+# # epc stations closes to gages (verified from maps)
+# 
+# epccnts <- tibble(
+#     fl = c('MTB_28_tempbot', 'LTB_90_temptop', 'HB_52_temptop', 'OTB_36_temptop'),
+#     name = c('stpete', 'manatee', 'mckay', 'oldporttampa')
+#   ) %>% 
+#   group_nest(name) %>% 
+#   mutate(
+#     mod = purrr::map(data, function(x){
+#   
+#       load(file = here(paste0('data/', x, '.RData')))
+#       
+#       out <- get(x[[1]])
+#       
+#       return(out)
+#       
+#     }),
+#     prd = purrr::map(mod, anlz_prdday)
+#   ) %>% 
+#   crossing(
+#     temp = c(29, 30, 31)
+#   ) %>%
+#   mutate(
+#     cnt = purrr::pmap(list(prd, temp), function(prd, temp){
+# 
+#       out <- prd %>% 
+#         mutate(
+#           cnt = value > temp
+#         ) %>% 
+#         summarise(
+#           modsumcnt = sum(cnt),
+#           modruncnt = runfunc(cnt),
+#           .by = yr
+#         )
+#       
+#       return(out)
+#       
+#     })
+#   ) %>% 
+#   select(-prd, -mod) %>% 
+#   unnest(data) %>% 
+#   unnest(cnt)
+# 
+# cmbcnts <- inner_join(portscnt, epccnts, by = c('name', 'temp', 'yr')) 
+# 
+# toplo <- cmbcnts %>%
+#   select(-runcnt, -modruncnt) %>% 
+#   pivot_longer(names_to = 'var', values_to = 'val', cols = c(sumcnt, modsumcnt))
+# 
+# # 1:1 scatterplots  
+# ggplot(cmbcnts, aes(x = sumcnt, y = modsumcnt, group = temp, color = factor(temp))) + 
+#   geom_point() + 
+#   geom_smooth(method = 'lm', se = F) +
+#   facet_wrap(~name)
+# 
+# # line plot by year
+# ggplot(toplo, aes(x = yr, y = val, group = var, color = var)) + 
+#   geom_point() +
+#   # geom_line() + 
+#   geom_smooth(method = 'lm', se = F) + 
+#   facet_wrap(temp ~ name)
+# 
+# # comparing ports data to bay segment averages
+# data(thrdat)
+# 
+# modcnt2 <- thrdat %>% 
+#   filter(thrtyp == 'tempcnt') %>% 
+#   summarise(
+#     modcnt = mean(cnt), 
+#     .by = c(bay_segment, yr, tempthr)
+#   ) %>% 
+#   mutate(
+#     temp = as.numeric(sub('^temp_', '', tempthr)),
+#     name = case_when(
+#       bay_segment == 'HB' ~ 'mckay', 
+#       bay_segment == 'LTB' ~ 'manatee', 
+#       bay_segment == 'OTB' ~ 'oldporttampa', 
+#       bay_segment == 'MTB' ~ 'stpete'
+#     )
+#   ) %>% 
+#   select(name, temp, yr, modcnt)
+# 
+# cmbcnt2 <- inner_join(portscnt, modcnt2, by = c('name', 'temp', 'yr'))
+# 
+# toplo <- cmbcnt2 %>% 
+#   select(-runcnt) %>% 
+#   pivot_longer(names_to = 'var', values_to = 'val', sumcnt:modcnt)
+# 
+# ggplot(toplo, aes(x = yr, y = val, color = var)) + 
+#   geom_point() + 
+#   geom_line() +
+#   facet_wrap(temp~name)
