@@ -21,6 +21,9 @@ library(mgcv)
 
 source(here('R/funcs.R'))
 
+seglng <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
+segshr <- c('OTB', 'HB', 'MTB', 'LTB')
+
 yrsel1 <- c(1975, 2022)
 yrsel2 <- c(1998, 2022)
 tempthr <- c(29, 30, 31)

@@ -1369,7 +1369,7 @@ fimtempdat <- phydat %>%
 habdat <- habraw %>% 
   filter(Reference %in% fimtempdat$Reference) %>% 
   mutate(
-    sgpres = BottomVeg %in% c('GM', 'GU', 'HA', 'HC', 'HE', 'HI', 'RU', 'SY', 'TH') # seagrass codes
+    sgpres = BottomVeg %in% c('GM', 'GU', 'HA', 'HC', 'HE', 'HI', 'RU', 'SY', 'TH') & BottomVegRatio > 5, # seagrass codes
   ) %>%
   summarise(
     sgpres = any(sgpres), 

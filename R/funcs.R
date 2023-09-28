@@ -28,25 +28,25 @@ runfunc <- function(cnt){
 }
 
 # get model predictions for 
-getprd_fun <- function(modin){
+getprd_fun <- function(modin, depvar = 'Sal'){
   
-  salfitotb <- visreg(modin, 'Sal', by = 'yrcat', cond = list(bay_segment = 'OTB'), scale = 'response', plot = F) %>% 
+  fitotb <- visreg(modin, depvar, by = 'yrcat', cond = list(bay_segment = 'OTB'), scale = 'response', plot = F) %>% 
     .$fit %>%  
     mutate(
       bay_segment = 'OTB'
     )
-  salfithb <- visreg(modin, 'Sal', by = 'yrcat', cond = list(bay_segment = 'HB'), scale = 'response', plot = F) %>% 
+  fithb <- visreg(modin, depvar, by = 'yrcat', cond = list(bay_segment = 'HB'), scale = 'response', plot = F) %>% 
     .$fit %>% 
     mutate(
       bay_segment = 'HB'
     ) 
-  salfitmtb <- visreg(modin, 'Sal', by = 'yrcat', cond = list(bay_segment = 'MTB'), scale = 'response', plot = F) %>% 
+  fitmtb <- visreg(modin, depvar, by = 'yrcat', cond = list(bay_segment = 'MTB'), scale = 'response', plot = F) %>% 
     .$fit %>% 
     mutate(
       bay_segment = 'MTB'
     )
   
-  out <- bind_rows(salfitotb, salfithb, salfitmtb) %>% 
+  out <- bind_rows(fitotb, fithb, fitmtb) %>% 
     mutate(
       bay_segment = factor(bay_segment, levels = segshr)
     )
