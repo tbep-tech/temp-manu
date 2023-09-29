@@ -4,6 +4,8 @@ segshr <- c('OTB', 'HB', 'MTB', 'LTB')
 
 load(file = here('data/fimsgtempdat.RData'))
 
+# relating sg presence to temp/sal ------------------------------------------------------------
+
 toplo1 <- fimsgtempdat %>% 
   st_set_geometry(NULL) %>% 
   mutate(
@@ -146,3 +148,152 @@ p3 <- ggplot(toplo3, aes(x = Sal)) +
     strip.background = element_blank(), 
     panel.grid.minor = element_blank()
   )
+
+
+# temp/sal trends -----------------------------------------------------------------------------
+
+load(file = here('data/fimsgtempdat.RData'))
+
+col_fun <- function(data, min_val, max_val, n = 100) {
+  # Normalize the data to be between -1 and 1
+  normalized_data <- (data - min_val) / (max_val - min_val) * 2 - 1
+  
+  # Create a divergent color palette
+  palette <- colorRampPalette(c('blue', 'grey', 'tomato1'))(n)
+  
+  # Map normalized data to colors
+  color_values <- ifelse(normalized_data < 0,
+                         palette[ceiling((normalized_data + 1) * (n / 2))],
+                         palette[ceiling(normalized_data * (n / 2) + (n / 2))])
+  
+  return(color_values)
+}
+
+# aggregate by bay segment
+sumfimdat <- fimsgtempdat %>% 
+  st_set_geometry(NULL) %>% 
+  mutate(
+    yr = year(date), 
+    mo = month(date)
+  ) %>% 
+  summarise(
+    temp = mean(temp), 
+    sal = mean(sal),
+    .by = c(yr, mo, bay_segment)
+  ) %>% 
+  pivot_longer(names_to = 'var', values_to = 'val', temp:sal)
+
+# kendall all years
+sktres <- sumfimdat %>% 
+  nest(.by = c('bay_segment', 'var')) %>% 
+  mutate(
+    skt = purrr::pmap(list(bay_segment, var, data), function(bay_segment, var, data){
+      
+      cat(bay_segment, var, '\n')
+      
+      # yr selection
+      tomod <- data %>% 
+        arrange(yr, mo) %>% 
+        na.omit()
+      
+      # run tests
+      ests <- kendallSeasonalTrendTest(val ~ mo + yr, data = tomod)
+      
+      out <- tibble(
+        pval = ests$p.value[2][[1]], 
+        slos = ests$estimate[2][[1]],
+        n = nrow(tomod)
+      )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(skt)
+
+totab <- sktres %>% 
+  mutate(
+    pval = p_ast(pval), 
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  arrange(var, bay_segment)
+
+reactable(
+  totab,
+  columns = list(
+    slos = colDef(
+      style =  function(value) {
+        color <- col_fun(value, min_val = -0.201, max_val = 0.201)
+        list(background = color)
+      }, 
+      format = colFormat(digits = 2)
+    )
+  )
+)
+
+##
+# by sg pres/abs
+
+# aggregate by bay segment, uneven month distribution across sg management areas
+sumfimdat <- fimdat %>% 
+  st_set_geometry(NULL) %>% 
+  mutate(
+    yr = year(date), 
+    mo = month(date)
+  ) %>% 
+  summarise(
+    temp = mean(temp), 
+    sal = mean(sal),
+    .by = c(yr, mo, bay_segment, sgpres)
+  ) %>% 
+  pivot_longer(names_to = 'var', values_to = 'val', temp:sal)
+
+# kendall all years by sg pres/abs
+sktres <- sumfimdat %>% 
+  nest(.by = c('bay_segment', 'sgpres', 'var')) %>% 
+  mutate(
+    skt = purrr::pmap(list(bay_segment, sgpres, var, data), function(bay_segment, sgpres,var, data){
+      
+      cat(bay_segment, sgpres, var, '\n')
+      
+      # yr selection
+      tomod <- data %>% 
+        arrange(yr, mo) %>% 
+        na.omit()
+      
+      # run tests
+      ests <- kendallSeasonalTrendTest(val ~ mo + yr, data = tomod)
+      
+      out <- tibble(
+        pval = ests$p.value[2][[1]], 
+        slos = ests$estimate[2][[1]],
+        n = nrow(tomod)
+      )
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(skt)
+
+totab <- sktres %>% 
+  mutate(
+    pval = p_ast(pval), 
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  arrange(var, sgpres, bay_segment)
+
+reactable(
+  totab,
+  columns = list(
+    slos = colDef(
+      style =  function(value) {
+        color <- col_fun(value, min_val = -0.201, max_val = 0.201)
+        list(background = color)
+      }, 
+      format = colFormat(digits = 2)
+    )
+  )
+)
