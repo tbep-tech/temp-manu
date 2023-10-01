@@ -297,3 +297,22 @@ reactable(
     )
   )
 )
+
+# proportion sg pres/abs by temp/sal thresholds -----------------------------------------------
+
+fimsgtempdat$year <- year(fimsgtempdat$date)
+
+toplo <- fimsgtempdat %>% 
+  # filter(depth < 2) %>% 
+  filter(month(date) == 8) %>% 
+  mutate(
+    year = year(date),
+    yrcat = cut(year, 
+                breaks = c(-Inf, 2010, 2015, Inf), 
+                labels = c('1996 - 2010', '2011 - 2015', '2016 - 2021')), 
+    bay_segment = factor(bay_segment, levels = segshr)
+  ) 
+
+ggplot(toplo, aes(x = temp, fill = sgpres)) + 
+  geom_density(alpha = 0.5) +
+  facet_grid(yrcat ~ bay_segment)
