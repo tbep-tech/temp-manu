@@ -1340,12 +1340,11 @@ hydraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/ra
 habraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_habitat.sas7bdat')
 fimraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/fim_codes.sas7bdat')
 
-# codes from fimraw 
+# codes from fimraw, these are inclusive of bottom veg, not bycatch, latter would include more floating macro 
 sgcode <- c('GM', 'GU', 'HA', 'HC', 'HE', 'HI', 'HJ', 'RU', 'SY', 'TH')
 mccode <- c("AB", "AC", "AG", "AM", "AR", "AT", "AU", "BA", "CA", 
             "GR", "HM", "LA")
 
-  mc
 # physical data
 # filter zones A-E for TB proper, then clip by TB segments
 # filter gear type 20 (nearshore seine)
@@ -1379,24 +1378,38 @@ fimtempdat <- phydat %>%
   filter(year(date) > 1995) %>% # only spring/fall sampling prior to 1996
   st_intersection(tbseg[, 'bay_segment']) 
 
-# seagrass data (see fimraw$Code for fimraw$FieldName as BottomVeg)
+# habitat data, summarized as sg present/abs
+# must multiple total bottom veg cover from hydat by bottom veg ratio to get true cover
+# sites with > 50% sg are T, otherwise F, none is truly no seagrass
+# sites with only macro are not included
 habdat <- habraw %>% 
   filter(Reference %in% fimtempdat$Reference) %>% 
   mutate(
-    sav = case_when(
+    bvegcat = case_when(
       BottomVeg %in% sgcode ~ 'sg', # seagrass codes
-      BottomVeg %in% mccode ~ 'mc'
+      BottomVeg %in% mccode ~ 'mc', # mc codes
       BottomVeg %in% c('NO', 'N') ~ 'none'
-      
+    ) 
   ) %>%
+  select(Reference, BottomVeg, BottomVegRatio, bvegcat) %>% 
+  filter(!is.na(bvegcat) | bvegcat == 'mc') %>% 
+  left_join(phydat, by = 'Reference') %>% 
+  select(-geometry) %>% 
+  mutate(
+    vegcov = BottomVegRatio * BottomVegCover / 10
+  ) %>% 
   summarise(
-    sgpres = any(sgpres), 
+    sgpres = case_when(
+      all(is.na(vegcov)) ~ 0, 
+      sum(vegcov, na.rm = T) > 50 ~ 1,
+      sum(vegcov, na.rm = T) <= 50 ~ 0
+    ),
     .by = Reference
   )
 
 # combine seagrass p/a with fimtempdat
 fimsgtempdat <- fimtempdat %>% 
   left_join(habdat, by = 'Reference') %>% 
-  filter(!is.na(sgpres)) # 12 as na, just remove
+  filter(!is.na(sgpres)) # will still include those with algae only
 
 save(fimsgtempdat, file = here('data/fimsgtempdat.RData'), compress = 'xz')
