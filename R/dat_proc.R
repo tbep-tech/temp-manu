@@ -1340,18 +1340,32 @@ hydraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/ra
 habraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/tbm_habitat.sas7bdat')
 fimraw <- read_sas('https://github.com/tbep-tech/fim-macroalgae/raw/main/data/raw/fim_codes.sas7bdat')
 
+# codes from fimraw 
+sgcode <- c('GM', 'GU', 'HA', 'HC', 'HE', 'HI', 'HJ', 'RU', 'SY', 'TH')
+mccode <- c("AB", "AC", "AG", "AM", "AR", "AT", "AU", "BA", "CA", 
+            "GR", "HM", "LA")
+
+  mc
 # physical data
-# select AM projects (monhtly FIM sampling)
-# zones A-E for TB proper, then clip by TB segments
-# year >= 1998, but make sure to use only 2005 to present for trawls (300/301)
+# filter zones A-E for TB proper, then clip by TB segments
+# filter gear type 20 (nearshore seine)
+# filter referenc with loc info
+
 phydat <- phyraw %>% 
-  mutate(date = ymd(date)) %>% 
-  # filter(Project_1 == 'AM'| Project_2 == 'AM' | Project_3 == 'AM') %>% 
+  mutate(
+    date = ymd(date), 
+    starttime = as.character(starttime),
+    hr = gsub('^([[:digit:]]+):.*$', '\\1', starttime),
+    hr = as.numeric(hr)
+  ) %>% 
   filter(Zone %in% c('A', 'B', 'C', 'D', 'E')) %>% 
+  filter(Gear == 20) %>% 
   filter(!is.na(Longitude) | !is.na(Latitude)) %>% 
+  filter(!is.na(BottomVegCover)) %>% 
   st_as_sf(coords = c('Longitude', 'Latitude'), crs = prj, remove = F) %>% 
   .[tbseg, ] %>% 
-  select(date, Reference)
+  select(Reference, date, hr, BottomVegCover)
+  
 
 # sal, temp data (no location)
 hyddat <- hydraw %>% 
@@ -1369,7 +1383,11 @@ fimtempdat <- phydat %>%
 habdat <- habraw %>% 
   filter(Reference %in% fimtempdat$Reference) %>% 
   mutate(
-    sgpres = BottomVeg %in% c('GM', 'GU', 'HA', 'HC', 'HE', 'HI', 'RU', 'SY', 'TH') & BottomVegRatio > 5, # seagrass codes
+    sav = case_when(
+      BottomVeg %in% sgcode ~ 'sg', # seagrass codes
+      BottomVeg %in% mccode ~ 'mc'
+      BottomVeg %in% c('NO', 'N') ~ 'none'
+      
   ) %>%
   summarise(
     sgpres = any(sgpres), 
