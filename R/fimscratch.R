@@ -13,8 +13,7 @@ toplo1 <- fimsgtempdat %>%
     yrgroup = ifelse(year < 2000, '1996 - 1999', '2000 - 2022'),
     mo = month(date, label = T, abbr = F)
   ) %>% 
-  filter(depth < 2) %>% 
-  filter(mo %in% c('February', 'August')) %>% 
+  filter(mo %in% c('February', 'August')) %>%
   pivot_longer(names_to = 'var', values_to = 'val', c(temp, sal)) %>% 
   summarise(
     avev = mean(val),
@@ -24,7 +23,7 @@ toplo1 <- fimsgtempdat %>%
   )
 
 wd <- 0.5
-ggplot(toplo1[toplo1$var == 'temp', ], aes(x = yrgroup, color = sgpres)) + 
+ggplot(toplo1[toplo1$var == 'temp', ], aes(x = yrgroup, color = factor(sgpres))) + 
   geom_point(aes(y = avev), position = position_dodge(width = wd), size = 1) + 
   geom_errorbar(aes(ymin = lov, ymax = hiv), position = position_dodge(width = wd), width = 0) +
   facet_grid(mo~bay_segment, scales = 'free_y')
@@ -304,7 +303,7 @@ fimsgtempdat$year <- year(fimsgtempdat$date)
 
 toplo <- fimsgtempdat %>% 
   # filter(depth < 2) %>% 
-  filter(month(date) == 8) %>% 
+  # filter(month(date) == 8) %>% 
   mutate(
     year = year(date),
     yrcat = cut(year, 
@@ -313,6 +312,49 @@ toplo <- fimsgtempdat %>%
     bay_segment = factor(bay_segment, levels = segshr)
   ) 
 
-ggplot(toplo, aes(x = temp, fill = sgpres)) + 
-  geom_density(alpha = 0.5) +
-  facet_grid(yrcat ~ bay_segment)
+ggplot(toplo, aes(x = temp, color = factor(sgpres))) + 
+  stat_ecdf(alpha = 0.5) + 
+  facet_wrap(~bay_segment)
+
+# gam sg pres abs -----------------------------------------------------------------------------
+
+tomod <- fimsgtempdat %>%
+  filter(!bay_segment %in% c('LTB')) %>%
+  mutate(
+    yrcat = case_when(
+      year(date) <= 2015 ~ 'early',
+      T ~ 'present'
+    ), 
+    yrcat = factor(yrcat),
+    bay_segment = factor(bay_segment), 
+    fctcrs = fct_cross(yrcat, bay_segment)
+  )
+
+# also try sgcov
+mod <- gam(sgpres ~ bay_segment * yrcat + te(sal, temp, by = fctcrs), data = tomod,
+           family = binomial('logit'), method = 'REML')
+
+prds <- unique(tomod[, c('bay_segment', 'yrcat')]) %>% 
+  group_by(bay_segment, yrcat) %>% 
+  nest() %>% 
+  mutate(
+    data = purrr::pmap(list(bay_segment, yrcat), function(bay_segment, yrcat){
+      
+      condls <- list(bay_segment = bay_segment, yrcat = yrcat, fctcrs = paste(yrcat, bay_segment, sep = ':'))
+      prd <- visreg(mod, xvar = 'sal', by = 'temp', breaks = c(20, 25, 30), cond = condls, plot = F, scale = 'response')
+      
+      out <- prd$fit %>% 
+        select(-bay_segment, -yrcat)
+      
+      return(out)
+      
+    })
+  ) %>% 
+  unnest(data)
+
+
+# separate plots by bay segment
+ggplot(prds, aes(x = sal, y = visregFit)) + 
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = 0.2) +
+  geom_line() +
+  facet_grid(fctcrs ~ temp) 

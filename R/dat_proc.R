@@ -1364,7 +1364,6 @@ phydat <- phyraw %>%
   st_as_sf(coords = c('Longitude', 'Latitude'), crs = prj, remove = F) %>% 
   .[tbseg, ] %>% 
   select(Reference, date, hr, BottomVegCover)
-  
 
 # sal, temp data (no location)
 hyddat <- hydraw %>% 
@@ -1404,12 +1403,18 @@ habdat <- habraw %>%
       sum(vegcov, na.rm = T) > 50 ~ 1,
       sum(vegcov, na.rm = T) <= 50 ~ 0
     ),
+    sgcov = sum(vegcov, na.rm = T),
     .by = Reference
   )
 
 # combine seagrass p/a with fimtempdat
 fimsgtempdat <- fimtempdat %>% 
   left_join(habdat, by = 'Reference') %>% 
-  filter(!is.na(sgpres)) # will still include those with algae only
+  filter(!is.na(sgpres)) %>% # will still include those with algae only
+  mutate(
+    lon = st_coordinates(.)[, 1], 
+    lat = st_coordinates(.)[, 2]
+  ) %>% 
+  st_set_geometry(NULL)
 
 save(fimsgtempdat, file = here('data/fimsgtempdat.RData'), compress = 'xz')
