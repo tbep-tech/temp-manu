@@ -1060,6 +1060,60 @@ png(here('figs/sgmod.png'), height = 7, width = 9, family = 'serif', units = 'in
 print(p)
 dev.off()
 
+# fim gam plots -------------------------------------------------------------------------------
+
+load(file = here("data/fimsalmod.RData"))
+load(file = here("data/fimtempmod.RData"))
+
+toplo1 <- getprd_fun2(fimsalmod, 'sal') %>% 
+  filter(sal > 10 & sal < 30)
+toplo2 <- getprd_fun2(fimtempmod, 'temp')
+
+thm <- theme_bw() + 
+  theme(
+    panel.grid.minor = element_blank(), 
+    strip.background = element_blank(),
+    strip.text = element_text(size = 12), 
+    axis.text = element_text(size = 11), 
+    axis.title = element_text(size = 12)
+  )
+
+# separate plots by bay segment
+p1 <- ggplot(toplo1, aes(x = sal, y = visregFit)) + 
+  geom_point(data = fimsalmod$model, aes(y = sgcov), size = 0.5, alpha = 0.25) +
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'dodgerblue2', alpha = 0.2) +
+  geom_line(color = 'dodgerblue2', size = 1) +
+  coord_cartesian(
+    ylim = c(0, max(toplo1$visregUpr)),
+    xlim = c(10, 30)
+  ) +
+  facet_grid(bay_segment ~ yrcat, scales = 'free_y') +
+  thm + 
+  labs(
+    x = 'Salinity (psu)', 
+    y = 'Seagrass % cover', 
+    title = '(a) Seagrass cover vs salinity'
+  )
+
+p2 <- ggplot(toplo2, aes(x = temp, y = visregFit)) + 
+  geom_point(data = fimtempmod$model, aes(y = sgcov), size = 0.5, alpha = 0.25) +
+  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'red2', alpha = 0.2) +
+  geom_line(color = 'red2', size = 1) +
+  coord_cartesian(ylim = c(0, max(toplo2$visregUpr))) +
+  facet_grid(bay_segment ~ yrcat, scales = 'free_y') +
+  thm + 
+  labs(
+    x = 'Water temp. (\u00B0 C)', 
+    y = 'Seagrass % cover',
+    title = '(b) Seagrass cover vs temperature'
+  )
+
+p <- p1 + p2 + plot_layout(ncol = 2)
+
+png(here('figs/sggammod.png'), height = 7, width = 9, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
 # hillsborough flow v temp over time ----------------------------------------------------------
 
 load(file = here('data/gagedat.RData'))

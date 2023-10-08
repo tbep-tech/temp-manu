@@ -1418,3 +1418,30 @@ fimsgtempdat <- fimtempdat %>%
   st_set_geometry(NULL)
 
 save(fimsgtempdat, file = here('data/fimsgtempdat.RData'), compress = 'xz')
+
+# fim models ----------------------------------------------------------------------------------
+
+load(file = here('data/fimsgtempdat.RData'))
+
+tomod <- fimsgtempdat %>%
+  filter(!bay_segment %in% c('LTB')) %>%
+  mutate(
+    yrcat = case_when(
+      year(date) <= 2015 ~ 'Recovery (pre - 2016)',
+      T ~ 'Decline (2016 - present)'
+    ), 
+    yrcat = factor(yrcat, levels = c('Recovery (pre - 2016)', 'Decline (2016 - present)')),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB')), 
+    fctcrs = fct_cross(yrcat, bay_segment)
+  )
+
+# models
+fimsalmod <- gam(sgcov ~ bay_segment * yrcat + s(sal, by = fctcrs), data = tomod,
+           method = 'REML')
+
+fimtempmod <- gam(sgcov ~ bay_segment * yrcat + s(temp, by = fctcrs), data = tomod,
+           method = 'REML')
+
+save(fimsalmod, file = here('data/fimsalmod.RData'))
+save(fimtempmod, file = here('data/fimtempmod.RData'))
+

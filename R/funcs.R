@@ -27,7 +27,7 @@ runfunc <- function(cnt){
   return(out)
 }
 
-# get model predictions for 
+# get model predictions glm
 getprd_fun <- function(modin, depvar = 'Sal'){
   
   fitotb <- visreg(modin, depvar, by = 'yrcat', cond = list(bay_segment = 'OTB'), scale = 'response', plot = F) %>% 
@@ -51,6 +51,33 @@ getprd_fun <- function(modin, depvar = 'Sal'){
       bay_segment = factor(bay_segment, levels = segshr)
     )
   
+  return(out)
+  
+}
+
+# get model predictions gam
+getprd_fun2 <- function(mod, indvar = c('sal', 'temp')){
+  
+  indvar <- match.arg(indvar)
+  
+  out <- unique(mod$model[, c('bay_segment', 'yrcat')]) %>% 
+    group_by(bay_segment, yrcat) %>% 
+    nest() %>% 
+    mutate(
+      data = purrr::pmap(list(bay_segment, yrcat), function(bay_segment, yrcat){
+        
+        condls <- list(bay_segment = bay_segment, yrcat = yrcat, fctcrs = paste(yrcat, bay_segment, sep = ':'))
+        prd <- visreg(mod, xvar = indvar, cond = condls, plot = F, scale = 'response')
+        
+        out <- prd$fit %>% 
+          select(-bay_segment, -yrcat)
+        
+        return(out)
+        
+      })
+    ) %>% 
+    unnest(data)
+
   return(out)
   
 }

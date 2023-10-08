@@ -324,7 +324,7 @@ tomod <- fimsgtempdat %>%
   filter(!bay_segment %in% c('LTB')) %>%
   mutate(
     yrcat = case_when(
-      year(date) <= 2015 ~ 'early',
+      year(date) <= 2015 ~ 'Recovery (pre - 2016)',
       T ~ 'present'
     ), 
     yrcat = factor(yrcat),
@@ -333,8 +333,8 @@ tomod <- fimsgtempdat %>%
   )
 
 # also try sgcov, maybe create separate models for just temp and sal individually, two plots total
-mod <- gam(sgpres ~ bay_segment * yrcat + s(sal, by = fctcrs), data = tomod,
-           family = binomial('logit'), method = 'REML')
+mod <- gam(sgcov ~ bay_segment * yrcat + s(sal, by = fctcrs), data = tomod,
+          method = 'REML')
 
 mod <- gam(sgcov ~ bay_segment * yrcat + s(temp, by = fctcrs), data = tomod,
           method = 'REML')
@@ -346,7 +346,7 @@ prds <- unique(tomod[, c('bay_segment', 'yrcat')]) %>%
     data = purrr::pmap(list(bay_segment, yrcat), function(bay_segment, yrcat){
       
       condls <- list(bay_segment = bay_segment, yrcat = yrcat, fctcrs = paste(yrcat, bay_segment, sep = ':'))
-      prd <- visreg(mod, xvar = 'temp', cond = condls, plot = F, scale = 'response')
+      prd <- visreg(mod, xvar = 'sal', cond = condls, plot = F, scale = 'response')
       
       out <- prd$fit %>% 
         select(-bay_segment, -yrcat)
@@ -360,7 +360,7 @@ prds <- unique(tomod[, c('bay_segment', 'yrcat')]) %>%
 toplo <- prds %>% filter(sal > 10 & sal < 30)
 
 # separate plots by bay segment
-ggplot(toplo, aes(x = temp, y = visregFit)) + 
+ggplot(toplo, aes(x = sal, y = visregFit)) + 
   geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), alpha = 0.2) +
   geom_line() +
   facet_grid(bay_segment ~ yrcat, scales = 'free_y')# +
