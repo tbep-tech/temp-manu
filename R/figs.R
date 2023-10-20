@@ -246,7 +246,10 @@ p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) +
   facet_grid(~ bay_segment) +
   scale_color_manual(values = c( 'steelblue4', 'steelblue1')) +
   thm +
-  theme(strip.text = element_blank()) +
+  theme(
+    strip.text = element_text(size = 12),
+    axis.text.x = element_blank()
+  ) +
   labs(
     x = NULL, 
     y = 'Water temp. (\u00B0C)', 
@@ -264,8 +267,7 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
   scale_color_manual(values = c('steelblue4', 'steelblue1')) +
   thm +
   theme(
-    axis.text.x = element_blank(), 
-    strip.text = element_text(size = 12)
+    strip.text = element_blank()
   ) +
   labs(
     x = NULL, 
@@ -406,7 +408,10 @@ p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) +
   facet_grid(~ bay_segment) +
   scale_color_manual(values = c( 'steelblue4', 'steelblue1')) +
   thm +
-  theme(strip.text = element_blank()) +
+  theme(
+    axis.text.x = element_blank(),
+    strip.text = element_text(size = 12)
+    ) +
   labs(
     x = NULL, 
     y = 'Water temp. (\u00B0C)', 
@@ -424,8 +429,7 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
   scale_color_manual(values = c('steelblue4', 'steelblue1')) +
   thm +
   theme(
-    axis.text.x = element_blank(), 
-    strip.text = element_text(size = 12)
+    strip.text = element_blank()
   ) +
   labs(
     x = NULL, 
