@@ -856,6 +856,59 @@ png(here('figs/suppkendall.png'), height = 7, width = 9.5, family = 'serif', uni
 print(p)
 dev.off()
 
+# supp fim temp, sal trends -------------------------------------------------------------------
+
+load(file = here('data/fimsgtempdat.RData'))
+
+toplo <- fimsgtempdat %>% 
+  select(date, temp, sal, bay_segment) %>% 
+  mutate(
+    yr = year(date), 
+    mo = month(date)
+  ) %>% 
+  pivot_longer(temp:sal) %>% 
+  summarise(
+    avev = mean(value, na.rm = T), 
+    lov = t.test(value)$conf.int[1], 
+    hiv = t.test(value)$conf.int[2], 
+    cnt = n(),
+    .by = c(bay_segment, yr, name)
+  ) %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')),
+    name = factor(name, levels = c('temp', 'sal'), labels = c('Water temp. (\u00B0C)', 'Salinity (ppt)'))
+  )
+
+thm <- theme_minimal() + 
+  theme(
+    strip.placement = 'outside', 
+    panel.grid.minor = element_blank(), 
+    axis.text.y = element_text(size = 11), 
+    legend.text = element_text(size= 12), 
+    axis.text.x = element_text(size = 7)
+  )
+
+p <- ggplot(toplo, aes(x = yr, y = avev)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7, color = 'steelblue4') + 
+  geom_point(size = 0.75, color = 'steelblue4') +
+  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = F, color = 'steelblue4') +
+  facet_grid(name ~ bay_segment, switch = 'y', scales = 'free_y') +
+  thm +
+  theme(
+    strip.text = element_text(size = 12)
+  ) +
+  labs(
+    x = NULL, 
+    y = NULL,
+    color = NULL, 
+    shape = NULL
+  )
+
+png(here('figs/suppfimtrnds.png'), height = 3.5, width = 7, family = 'serif', units = 'in', res = 500)
+print(p)
+dev.off()
+
 # mixeff example plot -------------------------------------------------------------------------
 
 load(file = here('data/mixmodprds.RData'))

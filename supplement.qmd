@@ -44,7 +44,12 @@ load(file = here('tabs/supp2daytab.RData'))
 
 {{< pagebreak >}}
 
+![Water temperature and salinity trends from 1996 to 2021 for stations from the Fisheries Independent Monitoring program. Points show the average (95% confidence interval) across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppfimtrnds.png){#fig-suppfimtrnds}
+
+{{< pagebreak >}}
+
 ![Trends from 1998 to 2022 for temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the water column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1). Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant increasing (temperature) or decreasing (salinity) trends. Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppkendall.png){#fig-suppkendall}
+
 {{< pagebreak >}}
 
 ![Example of mixed effects models for the estimated number of days by year that temperature (red) or salinity (blue) were above or below thresholds of 30 degrees C or 25 psu, respectively, from 1998 to 2022. The bottom row (black) shows the number of days when both temperature and salinity were above or below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom right of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmixeff.png){#fig-suppmixeff}
