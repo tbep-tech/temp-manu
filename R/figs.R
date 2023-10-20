@@ -909,6 +909,57 @@ png(here('figs/suppfimtrnds.png'), height = 3.5, width = 7, family = 'serif', un
 print(p)
 dev.off()
 
+# supp pinco temp, sal trends -----------------------------------------------------------------
+
+load(file = here('data/pincotemp.RData'))
+
+toplo <- pincotemp %>% 
+  summarise(
+    avev = mean(val, na.rm = T), 
+    lov = t.test(val)$conf.int[1], 
+    hiv = t.test(val)$conf.int[2], 
+    cnt = n(),
+    nmo = length(unique(mo)),
+    .by = c(bay_segment, yr, var)
+  ) %>% 
+  filter(yr < 2023) %>%
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')),
+    var = factor(var, levels = c('temp', 'sal'), labels = c('Water temp. (\u00B0C)', 'Salinity (ppt)'))
+  ) %>% 
+  filter(!bay_segment %in% c('MTB', 'HB'))
+
+thm <- theme_minimal() + 
+  theme(
+    strip.placement = 'outside', 
+    panel.grid.minor = element_blank(), 
+    axis.text.y = element_text(size = 11), 
+    legend.text = element_text(size= 12), 
+    axis.text.x = element_text(size = 7)
+  )
+
+# MTB sampling gap? month coverage? change in sample design?
+p <- ggplot(toplo, aes(x = yr, y = avev)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7, color = 'steelblue4') + 
+  geom_point(size = 0.75, color = 'steelblue4') +
+  # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
+  geom_smooth(method = 'lm', formula = y ~ x, se = F, color = 'steelblue4') +
+  facet_grid(var ~ bay_segment, switch = 'y', scales = 'free_y') +
+  thm +
+  theme(
+    strip.text = element_text(size = 12)
+  ) +
+  labs(
+    x = NULL, 
+    y = NULL,
+    color = NULL, 
+    shape = NULL
+  )
+
+# png(here('figs/supppincotrnds.png'), height = 3.5, width = 7, family = 'serif', units = 'in', res = 500)
+# print(p)
+# dev.off()
+
 # mixeff example plot -------------------------------------------------------------------------
 
 load(file = here('data/mixmodprds.RData'))

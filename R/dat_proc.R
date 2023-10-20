@@ -13,6 +13,7 @@ library(mgcv)
 library(SPEI)
 library(rnoaa)
 library(dataRetrieval)
+library(readxl)
 
 source(here('R/funcs.R'))
 yrsel <- c(1998, 2022)
@@ -1445,3 +1446,50 @@ fimtempmod <- gam(sgcov ~ bay_segment * yrcat + s(temp, by = fctcrs), data = tom
 save(fimsalmod, file = here('data/fimsalmod.RData'))
 save(fimtempmod, file = here('data/fimtempmod.RData'))
 
+# pinellas data -------------------------------------------------------------------------------
+
+# dat <- read_importwqp('21FLPDEM_WQX', type = 'wq')
+# 
+# pincotemp <- dat %>% 
+#   select(
+#     pinco_station, 
+#     SampleTime, 
+#     yr, 
+#     mo, 
+#     lat = Latitude, 
+#     lon = Longitude, 
+#     var, 
+#     val
+#   ) %>% 
+#   filter(var %in% c('temp', 'sal')) %>% 
+#   st_as_sf(coords = c('lon', 'lat'), crs = 4326, remove = F) %>% 
+#   st_intersection(tbseg) %>% 
+#   st_set_geometry(NULL)
+
+tmp <- read_excel(here('data-raw/pinellas_water_atlas.xlsx'))
+
+pincotemp <- tmp %>% 
+  select(
+    pinco_station = Actual_StationID, 
+    SampleTime = SampleDate,
+    lat = Actual_Latitude, 
+    lon = Actual_Longitude, 
+    var = Parameter, 
+    val = Result_Value, 
+    uni = Result_Unit
+  ) %>%  
+  mutate(
+    SampleTime = force_tz(SampleTime, 'America/Jamaica'), 
+    yr = year(SampleTime), 
+    mo = month(SampleTime), 
+    var = case_when(
+      grepl('^Sal', var) ~ 'sal', 
+      grepl('^Temp', var) ~ 'temp'
+    )
+  ) %>% 
+  st_as_sf(coords = c('lon', 'lat'), crs = 4326, remove = F) %>% 
+  st_intersection(tbseg) %>% 
+  filter(bay_segment != 'HB') %>% 
+  st_set_geometry(NULL)
+
+save(pincotemp, file = here('data/pincotemp.RData'))
