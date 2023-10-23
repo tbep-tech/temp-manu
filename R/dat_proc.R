@@ -1448,48 +1448,67 @@ save(fimtempmod, file = here('data/fimtempmod.RData'))
 
 # pinellas data -------------------------------------------------------------------------------
 
-# dat <- read_importwqp('21FLPDEM_WQX', type = 'wq')
-# 
-# pincotemp <- dat %>% 
-#   select(
-#     pinco_station, 
-#     SampleTime, 
-#     yr, 
-#     mo, 
-#     lat = Latitude, 
-#     lon = Longitude, 
-#     var, 
-#     val
-#   ) %>% 
-#   filter(var %in% c('temp', 'sal')) %>% 
-#   st_as_sf(coords = c('lon', 'lat'), crs = 4326, remove = F) %>% 
-#   st_intersection(tbseg) %>% 
-#   st_set_geometry(NULL)
-
-tmp <- read_excel(here('data-raw/pinellas_water_atlas.xlsx'))
+# all otb samples
+# four sites (polygons) E1:E4, 32 samples per year (eight per site)
+tmp <- read_excel(here('data-raw/pinellas_from_sd.xlsx'))
 
 pincotemp <- tmp %>% 
   select(
-    pinco_station = Actual_StationID, 
-    SampleTime = SampleDate,
-    lat = Actual_Latitude, 
-    lon = Actual_Longitude, 
-    var = Parameter, 
-    val = Result_Value, 
-    uni = Result_Unit
+    site = Site, 
+    sample = Sample,
+    date = Date,
+    hr = Time, 
+    lat = Latitude, 
+    lon = Longitude, 
+    level = Level, 
+    temp  = Temp_Water, 
+    sal = Salinity, 
+    SAV, 
+    SAV_Type
   ) %>%  
   mutate(
-    SampleTime = force_tz(SampleTime, 'America/Jamaica'), 
-    yr = year(SampleTime), 
-    mo = month(SampleTime), 
-    var = case_when(
-      grepl('^Sal', var) ~ 'sal', 
-      grepl('^Temp', var) ~ 'temp'
-    )
+    date = ymd(date), 
+    hr = hour(hr), 
+    SAV = case_when(
+      SAV %in% c('n', 'N') ~ 0, 
+      SAV %in% c('T', 'Y') ~ 1, 
+      T ~ NaN
+    ), 
+    level = factor(level, levels = c('Surface', 'Middle', 'Bottom')), 
+    levelint = as.numeric(level)
   ) %>% 
-  st_as_sf(coords = c('lon', 'lat'), crs = 4326, remove = F) %>% 
-  st_intersection(tbseg) %>% 
-  filter(bay_segment != 'HB') %>% 
-  st_set_geometry(NULL)
+  filter(SAV %in% c(0, 1))
 
-save(pincotemp, file = here('data/pincotemp.RData'))
+# get salinity, temperature by lowest level (not always bottom)
+saltemp <- pincotemp %>% 
+  select(-SAV, -SAV_Type) %>% 
+  mutate(
+    levelmax = max(levelint), 
+    .by = c(site, sample, date)
+  ) %>% 
+  filter(levelint == levelmax) %>% 
+  select(-levelint, -levelmax)
+
+# identify sites w/ and w/o seagrass (sav 1 could also include macro)
+# allsg sites are those with only sg species found (will be zero if any macro found)
+sav <- pincotemp %>% 
+  select(-temp, -sal, -level, -levelint) %>% 
+  unique() %>% 
+  mutate(SAV_Type = strsplit(SAV_Type, ',|,\\s')) %>% 
+  unnest('SAV_Type') %>% 
+  mutate(
+    allsg = case_when(
+      any(!SAV_Type %in% c('H', 'Halophila', 'Hd', 'Hs', 'Hw', 'HW', 'R', 'Rm', 'RM', 'S', 'Sf', 'SF', 'T', 'Tt')) ~ 0, 
+      all(is.na(SAV_Type)) ~ 0,
+      T ~ 1
+      ), 
+    .by = c('site', 'sample', 'date')
+  ) %>% 
+  select(-SAV, -SAV_Type) %>% 
+  unique()
+
+
+# pincotemp <-  saltemp %>% 
+#   inner_join(sav, by = c('site', 'sample', 'date', ....))
+  
+# save(pincotemp, file = here('data/pincotemp.RData'))
