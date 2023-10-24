@@ -1466,10 +1466,14 @@ pincotemp <- tmp %>%
     sal = Salinity, 
     SAV, 
     SAV_Type
-  ) %>%  
+  ) %>%
   mutate(
-    date = mdy(date), 
-    hr = hour(hr), 
+    date = mdy(date),
+    hr = gsub('\\:.*$', '', hr), 
+    hr = case_when(
+      as.numeric(hr) %% 1 != 0 ~ round(as.numeric(hr) * 24),
+      T ~ as.numeric(hr)
+    ),
     SAV = case_when(
       SAV %in% c('n', 'N') ~ 0, 
       SAV %in% c('T', 'Y') ~ 1, 
@@ -1478,7 +1482,8 @@ pincotemp <- tmp %>%
     level = factor(level, levels = c('Surface', 'Middle', 'Bottom')), 
     levelint = as.numeric(level)
   ) %>% 
-  filter(SAV %in% c(0, 1))
+  filter(SAV %in% c(0, 1)) %>% 
+  mutate_at(vars(lat, lon, temp, sal), as.numeric)
 
 # get salinity, temperature by lowest level (not always bottom)
 saltemp <- pincotemp %>% 
@@ -1512,4 +1517,4 @@ sav <- pincotemp %>%
 pincotemp <-  saltemp %>%
   inner_join(sav, by = c('site', 'sample', 'date', 'hr', 'lat', 'lon'))
   
-# save(pincotemp, file = here('data/pincotemp.RData'))
+save(pincotemp, file = here('data/pincotemp.RData'))
