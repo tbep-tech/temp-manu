@@ -1450,7 +1450,8 @@ save(fimtempmod, file = here('data/fimtempmod.RData'))
 
 # all otb samples
 # four sites (polygons) E1:E4, 32 samples per year (eight per site)
-tmp <- read_excel(here('data-raw/pinellas_from_sd.xlsx'))
+tmp <- read_excel(here('data-raw/pinellas_from_sd.xlsx'), 
+                  col_types = 'text')
 
 pincotemp <- tmp %>% 
   select(
@@ -1467,7 +1468,7 @@ pincotemp <- tmp %>%
     SAV_Type
   ) %>%  
   mutate(
-    date = ymd(date), 
+    date = mdy(date), 
     hr = hour(hr), 
     SAV = case_when(
       SAV %in% c('n', 'N') ~ 0, 
@@ -1507,8 +1508,8 @@ sav <- pincotemp %>%
   select(-SAV, -SAV_Type) %>% 
   unique()
 
-
-# pincotemp <-  saltemp %>% 
-#   inner_join(sav, by = c('site', 'sample', 'date', ....))
+# rejoin temp, sal with sav ifno
+pincotemp <-  saltemp %>%
+  inner_join(sav, by = c('site', 'sample', 'date', 'hr', 'lat', 'lon'))
   
 # save(pincotemp, file = here('data/pincotemp.RData'))
