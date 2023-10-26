@@ -31,7 +31,10 @@ execute:
 library(knitr)
 library(here)
 library(flextable)
+library(dplyr)
+library(tibble)
 
+load(file = here('data/gamfit.RData'))
 load(file = here('tabs/mixdaytab.RData'))
 ```
 
@@ -95,11 +98,22 @@ Formal trend tests were used to assess station-level changes in water temperatur
 
 ### Links to seagrass
 
+```{r}
+# r2 range for gam daily  models
+fitest <- gamfit %>% 
+  summarise(
+    minr2 = min(R2), 
+    maxr2 = max(R2), 
+    .by = parameter
+  ) %>% 
+  split(.$parameter)
+```
+
 The second goal of the analysis was to evaluate if seagrass changes were linked to long-term changes in water temparerature and salinity, with particular attention on the time periods before and after 2016 (pre/post recovery). The conceptual model for evaluating these changes follows simple niche space theory where seagrass growth and reproduction is hypothesized to be greatest within optimal ranges for forcing factors that are present in the environment [@hutchinson1957; @vandermeer1972]. In the simplest form, this can conceptualized as a bell curve with optimal conditions defined with a range of values (e.g., minimum and maximum temperatures where a species is typically observed), where reduced growth or mortality is observed outside of these ranges. Because both water temperature and salinity are evaluated herein, the same model can be conceptualized in two-dimensional space [@fig-concept]. Seagrass growth can be limited when temperature is below or above the optimum range, when salinity is below or above the optimum, or when both temperature and salinity conditions are outside of the optimum range. Using this conceptual model, we can evaluate whether seagrasses are individually stressed by either temperature or salinity, or whether seagrasses are jointly stressed by both temperature and salinity. Based on the results of the trend tests, we hypothesized that seagrasses are likely stressed by both high temperature and low salinity. The statistical models described below were constructed specifically to assess these hypotheses following the conceptual model in @fig-concept. Of course, the optimal niche space can be defined in n-dimensions, but we focus on water temperature and salinity given that other dominant forcing factors, i.e., light availability, have generally not been limiting for growth in recent years.
 
 A fundamental challenge in describing niche space is identifying the boundaries within which the space occurs. In reality, the boundaries are typically not discrete and organisms can be found outside of these ranges, although at reduced abundances. Regardless, discrete limits are often used and substantial efforts have been made to identify these boundaries for seagrasses. In Tampa Bay, three dominant seagrass species are observed that include *Halodule wrightii* (shoal grass), *Syringodium filiforme* (manatee grass), and *Thalassia testudinium* (turtle grass) [@lewis1985]. These species co-occur often in mixed beds, although differences in abundance are observed across salinity ranges. Shoal grass is tolerant of a wide range of salinity [@lirman2003], but is more abundant in oligohaline portions of Tampa Bay. Conversely, turtle grass is most often found in more euryhaline conditions near the mouth of Tampa Bay. Reported salinity ranges for each of these species varies depending on location, season, and other co-occurring factors like temperature [@phillips1960; @mcmillan1967; @zieman1975; @lewis1985], although most studies place lower limits of salinity in the range of 15-25 ppt. Optimal temperature ranges are similar between species, with reduced growth observed at temperatures above 30$^\circ$ C [@zieman1975;@lewis1985].
 
-Because of the uncertainty in defining thresholds for optimal temperature and salinity ranges, multiple thresholds were evaluated to both describe the potential for stress and how it may be related to changes in seagrass. Distinctions were not made between species, primarily due to lack of consensus between studies and the likely site-specific ranges that affect seagrass growth in Tampa Bay. First, we developed metrics of potential temperature and salinity stress by quantifying the maximum number of continuous days each year when temperature was above or salinity was below a given threshold. This approach assumed that stress could be observed based on duration of exposure (i.e., maximum number of continuous days each year) relative to a threshold that may are may not be outside of the optimum range for seagrasses. These metrics were quantified from the monthly long-term observation in the EPC data. To quantify daily counts each year, a continuous prediction of temperature or stress over time was estimated using Generalized Additive Models (GAMs) fit to the response variable and a single predictor for decimal year. The smoothing spline for decimal year had sufficient knots to capture the seasonal signal within each year and the long-term inter-annual trends [@beck2022a]. Model fit for each station was sufficient to calculate daily predictions for assessing the stressor metrics.
+Because of the uncertainty in defining thresholds for optimal temperature and salinity ranges, multiple thresholds were evaluated to both describe the potential for stress and how it may be related to changes in seagrass. Distinctions were not made between species, primarily due to lack of consensus between studies and the likely site-specific ranges that affect seagrass growth in Tampa Bay. First, we developed metrics of potential temperature and salinity stress by quantifying the maximum number of continuous days each year when temperature was above or salinity was below a given threshold. This approach assumed that stress could be observed based on duration of exposure (i.e., maximum number of continuous days each year) relative to a threshold that may are may not be outside of the optimum range for seagrasses. These metrics were quantified from the monthly long-term observation in the EPC data. To quantify daily counts each year, a continuous prediction of temperature or stress over time was estimated using Generalized Additive Models (GAMs) fit to the response variable and a single predictor for decimal year. The smoothing spline for decimal year had sufficient knots to capture the seasonal signal within each year and the long-term inter-annual trends [@beck2022a]. Model fit for each station was sufficient to calculate daily predictions for assessing the stressor metrics (see supplement, R$^2$ ranged from `r fitest$temp$minr2` to `r fitest$temp$maxr2` for temperature models, `r fitest$sal$minr2` to `r fitest$sal$maxr2` for salinity models).
 
 Counts of the maximum number of days each year that temperature was above or salinity was below a thresold were obtained from the GAMs. This was done at each of 45 stations in the EPC data using temperature thresholds of 29, 30, and 31$^\circ$ C and salinity thresholds of 15, 20, and 25 ppt.
 

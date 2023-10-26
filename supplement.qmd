@@ -32,6 +32,8 @@ library(knitr)
 library(here)
 library(flextable)
 
+load(file = here('tabs/supptempfittab.RData'))
+load(file = here('tabs/suppsalifittab.RData'))
 load(file = here('tabs/supp1mixtab.RData'))
 load(file = here('tabs/supp2mixtab.RData'))
 load(file = here('tabs/supp1daytab.RData'))
@@ -57,6 +59,22 @@ load(file = here('tabs/supp2daytab.RData'))
 {{< pagebreak >}}
 
 ## Tables {.unnumbered}
+
+```{r}
+#| tbl-cap: "Summary statistics for Generalized Additive Model fits to bottom water temperature data at all stations in Tampa Bay monitored by the Environmental Protection Commission of Hillsborough County. Models were fit on monthly data from 1975 to 2022 using decimal year as the single predictor. Fit statistics are Akaike Information Criterion (AIC), Generalized Cross-Validation (GCV) scores, and R-squared values of observed to predicted. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay."
+#| label: tbl-supptempfittab
+supptempfittab
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| tbl-cap: "Summary statistics for Generalized Additive Model fits to bottom salinity data at all stations in Tampa Bay monitored by the Environmental Protection Commission of Hillsborough County. Models were fit on monthly data from 1975 to 2022 using decimal year as the single predictor. Fit statistics are Akaike Information Criterion (AIC), Generalized Cross-Validation (GCV) scores, and R-squared values of observed to predicted. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay."
+#| label: tbl-suppsalifittab
+suppsalifittab
+```
+
+{{< pagebreak >}}
 
 Summary of mixed-effects models evaluating increases in the number of days each year from 1975 to 2022 when temperature or salinity were above or below critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both temperature and salinity were above or below critical thresholds. \*\* p \< 0.005, \* p \< 0.05, - no model. OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 

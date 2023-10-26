@@ -48,6 +48,40 @@ mixdaytab <- totab %>%
 
 save(mixdaytab, file = here('tabs/mixdaytab.RData'))
 
+# supp gam performance, temp/sal only ---------------------------------------------------------
+
+load(file = here('data/gamfit.RData'))
+
+fittab <- gamfit %>% 
+  mutate(
+    bay_segment = as.character(bay_segment),
+    bay_segment = ifelse(duplicated(bay_segment), '', bay_segment), 
+    .by = 'parameter'
+  ) %>% 
+  group_nest(parameter) %>% 
+  mutate(
+    data = purrr::map(data, function(x){
+      
+      x %>% 
+        knitr::kable(
+          col.names = c('Bay Segment', 'Station', 'Lon', 'Lat', 'AIC', 'GCV', 'R$^2$')
+        ) 
+      
+    })
+  )
+
+supptempfittab <- fittab %>% 
+  filter(parameter == 'temp') %>% 
+  pull('data') %>% 
+  .[[1]]
+suppsalifittab <- fittab %>% 
+  filter(parameter == 'sal') %>% 
+  pull('data') %>% 
+  .[[1]]
+
+save(supptempfittab, file = here('tabs/supptempfittab.RData'))
+save(suppsalifittab, file = here('tabs/suppsalifittab.RData'))
+
 # supp1 mixef mod summary table ----------------------------------------------------------------
 
 load(file = here('data/mixmods.RData'))

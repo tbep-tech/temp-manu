@@ -326,6 +326,45 @@ chlaprd <- chlaprd %>%
 
 save(chlaprd, file = here('data/chlaprd.RData'))
 
+
+# gam performance, temp/sal only --------------------------------------------------------------
+
+fls <- list.files(here('data'), 'salibot|tempbot')
+
+gamfitnest <- fls %>% 
+  tibble(fl = .) %>% 
+  group_nest(fl) %>% 
+  mutate(
+    data = purrr::pmap(list(fl, data), function(fl, data){
+      
+      cat(fl, '\n')
+      
+      obj <- gsub('\\.RData', '', fl)
+      load(file = paste0('data/', fl))
+      mod <- get(obj)
+      anlz_fit(mod)
+      
+    })
+  )
+
+gamfit <- gamfitnest %>% 
+  unnest('data') %>% 
+  separate(fl, into = c('bay_segment', 'epchc_station', 'parameter'), sep = '_', convert = T) %>% 
+  left_join(stations, by = c('bay_segment', 'epchc_station')) %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    parameter = factor(parameter, levels = c('tempbot.RData', 'salibot.RData'), 
+                       labels = c('temp', 'sal')
+    ), 
+    AIC = round(AIC, 0)
+  ) %>% 
+  mutate_at(vars(GCV, R2), round, 2) %>% 
+  mutate_at(vars(Latitude, Longitude), round, 3) %>% 
+  arrange(parameter, bay_segment, epchc_station) %>% 
+  select(parameter, bay_segment, epchc_station, Longitude, Latitude, everything()) 
+
+save(gamfit, file = here('data/gamfit.RData'))
+
 # count of days per year per station above/below thresholds -----------------------------------
 
 # thresholds to count by year, temp is above, salinity is below
