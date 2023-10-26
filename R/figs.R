@@ -4,7 +4,6 @@ library(tidyverse)
 library(lubridate)
 library(EnvStats)
 library(tbeptools)
-library(ggmap)
 library(sf)
 library(patchwork)
 library(here)
@@ -574,17 +573,6 @@ ktresplo <- ktres %>%
     })
   )
 
-# basemap
-dat_ext <- unname(st_bbox(st_buffer(tbseg, dist = 2000)))
-bsmap1 <- get_stamenmap(bbox = dat_ext, maptype = 'terrain-background', zoom = 11)
-
-# change opacity of basemap
-mapatt <- attributes(bsmap1)
-bsmap1_transparent <- matrix(adjustcolor(bsmap1,
-                                         alpha.f = 0.4),
-                             nrow = nrow(bsmap1))
-attributes(bsmap1_transparent) <- mapatt
-
 leglab <- expression(paste(yr^{-1}))
 colrng <- range(sktres$slos) %>% 
   abs %>% 
@@ -600,7 +588,8 @@ toplo <- sktres %>%
     var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
     var = factor(var, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
     loc = factor(loc, levels = c('Top', 'Bottom'))
-  )
+  ) %>% 
+  st_as_sf(coords = c('lon', 'lat'), crs = 4326)
 
 pthm <- theme_bw(base_family = 'serif') +
   theme(
@@ -616,9 +605,10 @@ pthm <- theme_bw(base_family = 'serif') +
     legend.background = element_rect(fill = NA)
   )
 
-p1 <- ggmap(bsmap1_transparent) +
+p1 <- ggplot() + 
+  annotation_map_tile('cartolight', zoom = 11) +
   geom_sf(data = tbseg, inherit.aes = F) +
-  geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
+  geom_sf(data = toplo, aes(size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
   facet_grid(loc ~ var) +
   # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
   scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
@@ -781,17 +771,6 @@ ktresplo <- ktres %>%
     })
   )
 
-# basemap
-dat_ext <- unname(st_bbox(st_buffer(tbseg, dist = 2000)))
-bsmap1 <- get_stamenmap(bbox = dat_ext, maptype = 'terrain-background', zoom = 11)
-
-# change opacity of basemap
-mapatt <- attributes(bsmap1)
-bsmap1_transparent <- matrix(adjustcolor(bsmap1,
-                                         alpha.f = 0.4),
-                             nrow = nrow(bsmap1))
-attributes(bsmap1_transparent) <- mapatt
-
 leglab <- expression(paste(yr^{-1}))
 colrng <- range(sktres$slos) %>% 
   abs %>% 
@@ -807,7 +786,8 @@ toplo <- sktres %>%
     var = gsub('^(.*?)_.*$', '\\1', var, perl = T),
     var = factor(var, levels = c('Temp', 'Sal'), labels = c('Temperature', 'Salinity')),
     loc = factor(loc, levels = c('Top', 'Bottom'))
-  )
+  ) %>% 
+  st_as_sf(coords = c('lon', 'lat'), crs = 4326)
 
 pthm <- theme_bw(base_family = 'serif') +
   theme(
@@ -823,9 +803,10 @@ pthm <- theme_bw(base_family = 'serif') +
     legend.background = element_rect(fill = NA)
   )
 
-p1 <- ggmap(bsmap1_transparent) +
+p1 <- ggplot() +
+  annotation_map_tile('cartolight', zoom = 11) +
   geom_sf(data = tbseg, inherit.aes = F) +
-  geom_point(data = toplo, aes(x = lon, y = lat, size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
+  geom_sf(data = toplo, aes(fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
   facet_grid(loc ~ var) +
   # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
   scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
@@ -964,6 +945,8 @@ p <- ggplot(toplo, aes(x = yr, y = avev)) +
 
 load(file = here('data/mixmodprds.RData'))
 
+tmpthr <- '30'
+
 toplo1 <- mixmodprds %>% 
   select(-mod, -fix, -slo) %>% 
   unnest('data') %>% 
@@ -1010,6 +993,8 @@ dev.off()
 # supp mixeff example plot --------------------------------------------------------------------
 
 load(file = here('data/suppmixmodprds.RData'))
+
+tmpthr <- '30'
 
 toplo1 <- suppmixmodprds %>% 
   select(-mod, -fix, -slo) %>% 
