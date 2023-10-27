@@ -6,6 +6,157 @@ library(broom)
 
 source(here('R/funcs.R'))
 
+# linear trend summaries ----------------------------------------------------------------------
+
+data(epcdata)
+data(fimsgtempdat)
+data(pincotemp)
+
+epctmp <- epcdata %>% 
+  select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
+  filter(yr < 2023) %>% 
+  pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
+  mutate(
+    var = factor(var, 
+                 levels = c(c("Sal_Top_ppth", "Sal_Bottom_ppth", "Temp_Water_Top_degC", "Temp_Water_Bottom_degC"
+                 )), 
+                 labels = c("Sal_Top", "Sal_Bottom", "Temp_Top", "Temp_Bottom")
+    ),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  separate(var, c('var', 'loc')) %>% 
+  mutate(
+    var = factor(var, levels = c('Temp', 'Sal'), labels = c('temp', 'sal'))
+  ) %>% 
+  filter(loc %in% 'Bottom') %>% 
+  filter(!is.na(val)) %>% 
+  summarise(
+    avev = mean(val, na.rm = T),
+    .by = c('bay_segment', 'yr', 'var') 
+  ) %>% 
+  mutate(
+    org = 'EPC'
+  )
+
+fimtmp <- fimsgtempdat %>% 
+  select(date, temp, sal, bay_segment) %>% 
+  mutate(
+    yr = year(date), 
+    mo = month(date)
+  ) %>% 
+  pivot_longer(temp:sal, names_to = 'var', values_to = 'val') %>% 
+  summarise(
+    avev = mean(val, na.rm = T),
+    .by = c(bay_segment, yr, var)
+  ) %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')),
+    var = factor(var, levels = c('temp', 'sal')), 
+    org = 'FIM'
+  )
+
+pincotmp <- pincotemp %>% 
+  pivot_longer(temp:sal, names_to = 'var', values_to = 'val') %>% 
+  summarise(
+    avev = mean(val, na.rm = T), 
+    .by = c(yr, var)
+  ) %>% 
+  mutate(
+    var = factor(var, levels = c('temp', 'sal')), 
+    bay_segment = 'OTB', 
+    org = 'PDEM'
+  )
+
+trnds <- bind_rows(epctmp, fimtmp, pincotmp) %>% 
+  group_nest(org, bay_segment, var) %>% 
+  crossing(yrstr = c(1976, 1996, 2004)) %>% 
+  mutate(
+    i = 1:n(),
+    data = purrr::pmap(list(i, yrstr, data), function(i, yrstr, data){
+      
+      cat(i, '\n')
+      
+      out <- tibble(
+        slo = NA, 
+        pval = NA, 
+        strvest = NA,
+        endvest = NA
+      )
+      
+      if(!yrstr %in% unique(data$yr))
+        return(out)
+      
+      tomod <- data %>% 
+        filter(yr >= yrstr) %>% 
+        arrange(yr)
+      
+      # model fit and results
+      mod <- lm(avev ~ yr, data = tomod)
+      coef <- summary(mod)$coefficients
+      prds <- data.frame(predict(mod, se = T))
+      prds$ci <- 1.96 * prds$se.fit
+      strv <- prds[1, ]
+      endv <- prds[nrow(prds), ]
+      
+      # output
+      out$slo <- coef[2, 1]
+      out$pval <- coef[2, 4]
+      out$strvest <- strv$fit
+      out$endvest <- endv$fit
+      
+      return(out)
+      
+    })
+  ) %>% 
+  unnest('data')
+
+totab <- trnds %>% 
+  mutate_at(vars(strvest, endvest), round, 1) %>% 
+  mutate(
+    chng = endvest - strvest,
+    slo = round(slo, 2), 
+    pval = p_ast(pval), 
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
+    org = factor(org, levels = c('EPC', 'FIM', 'PDEM'))
+  ) %>% 
+  unite('slo', slo, pval, sep = '') %>% 
+  select(
+    var, 
+    `Start year` = yrstr,
+    `Bay segment` = bay_segment, 
+    Dataset = org, 
+    `Change / year` = slo,
+    `Start value` = strvest, 
+    `End value` = endvest, 
+    `Total change` = chng
+  ) %>% 
+  arrange(var, `Start year`, `Bay segment`, Dataset) %>% 
+  filter(`Change / year` != 'NANA') %>% 
+  mutate(
+    `Bay segment` = ifelse(duplicated(`Bay segment`), '', as.character(`Bay segment`)), 
+    .by = c(var, `Start year`)
+  ) %>% 
+  mutate(
+    `Start year` = ifelse(duplicated(`Start year`), '', as.character(`Start year`)),
+    .by = var
+  )
+
+# save temp and sali trend tables  
+tab <- totab %>% 
+  group_nest(var) %>% 
+  deframe() %>% 
+  iwalk(function(data, ind){
+    
+    outnm <- paste0(ind, 'trndtab')
+    
+    out <- knitr::kable(data)
+      
+    assign(outnm, out)
+    fl <- here(paste0('tabs/', outnm, '.RData'))
+    save(list = outnm, file = fl, compress = 'xz')
+    
+  })
+
 # mixef mod summary table and start/end -------------------------------------------------------
 
 load(file = here('data/mixmods.RData'))

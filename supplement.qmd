@@ -46,15 +46,23 @@ load(file = here('tabs/supp2daytab.RData'))
 
 {{< pagebreak >}}
 
-![Examples of Generalized Additive Models of bottom water temperature and salinity for station 66 in Old Tampa Bay.  Models were fit using a continuous smoothing spline for decimal year.  Monthly observations are shown as points and daily predictions from the models as lines.](figs/suppgamex.png){#fig-supgamex}
-
-{{< pagebreak >}}
-
 ![Water temperature and salinity trends from 1996 to 2021 for stations from the Fisheries Independent Monitoring program. Points show the average (95% confidence interval) across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppfimtrnds.png){#fig-suppfimtrnds}
 
 {{< pagebreak >}}
 
+![Water temperature and salinity trends from 2004 to 2022 for stations from the Pinellas County Department of Environmental Management in Old Tampa Bay. Points show the average (95% confidence interval) across all stations and sampling months for each year in each bay segment.](figs/supppincotrnds.png){#fig-supppincotrnds}
+
+{{< pagebreak >}}
+
 ![Trends from 1998 to 2022 for temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for (a) seasonal Kendall tests by station and monitoring location (top or bottom of the water column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr-1). Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant increasing (temperature) or decreasing (salinity) trends. Bay segment outlines are shown in (a); OTB (northwest): Old Tampa Bay, HB (northeast): Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppkendall.png){#fig-suppkendall}
+
+{{< pagebreak >}}
+
+![Relationship between water temperature and discharge in the Hillsborough River (USGS gage 02303000) over time. The relationship is shown for February (dry month) and August (wet month) grouped by historic (1975-1999) and contemporary (2000-2022) time periods. Regression lines with 95% confidence intervals for each temporal grouping are shown.](figs/suppflowtemp.png){#fig-suppflowtemp}
+
+{{< pagebreak >}}
+
+![Examples of Generalized Additive Models of bottom water temperature and salinity for station 66 in Old Tampa Bay.  Models were fit using a continuous smoothing spline for decimal year.  Monthly observations are shown as points and daily predictions from the models as lines.](figs/suppgamex.png){#fig-supgamex}
 
 {{< pagebreak >}}
 

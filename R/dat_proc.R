@@ -1519,10 +1519,12 @@ pincotemp <- tmp %>%
       T ~ NaN
     ), 
     level = factor(level, levels = c('Surface', 'Middle', 'Bottom')), 
-    levelint = as.numeric(level)
+    levelint = as.numeric(level), 
+    lon = ifelse(sign(as.numeric(lon)) == 1, -1 * as.numeric(lon), as.numeric(lon))
   ) %>% 
   filter(SAV %in% c(0, 1)) %>% 
-  mutate_at(vars(lat, lon, temp, sal), as.numeric)
+  mutate_at(vars(lat, lon, temp, sal), as.numeric) %>% 
+  filter(lat < 35) # one outlier at 72
 
 # get salinity, temperature by lowest level (not always bottom)
 saltemp <- pincotemp %>% 
@@ -1554,6 +1556,11 @@ sav <- pincotemp %>%
 
 # rejoin temp, sal with sav ifno
 pincotemp <-  saltemp %>%
-  inner_join(sav, by = c('site', 'sample', 'date', 'hr', 'lat', 'lon'))
+  inner_join(sav, by = c('site', 'sample', 'date', 'hr', 'lat', 'lon')) %>% 
+  mutate(
+    yr = year(date), 
+    mo = month(date)
+  ) %>% 
+  filter(yr > 2003) # only a few
   
 save(pincotemp, file = here('data/pincotemp.RData'))

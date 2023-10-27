@@ -17,6 +17,7 @@ library(scales)
 library(visreg)
 library(car)
 library(mgcv)
+library(mixmeta)
 
 source(here('R/funcs.R'))
 
@@ -226,10 +227,31 @@ toplo <- epcdata %>%
   filter(!is.na(val)) %>% 
   summarise(
     avev = mean(val, na.rm = T),
+    se = sd(val, na.rm = T)^2,
     lov = t.test(val, na.rm = T)$conf.int[1],
     hiv = t.test(val, na.rm = T)$conf.int[2],
     .by = c('bay_segment', 'yr', 'var', 'loc') 
   )
+
+# # get mixed-effect meta-analysis linear preds
+# mixmets <- toplo %>% 
+#   group_nest(bay_segment, var, loc) %>% 
+#   mutate(
+#     data = purrr::map(data, function(x){
+#       
+#       mod <- mixmeta(avev ~ yr, S = se, random = ~1|yr, data = x, method = 'reml')
+#       
+#       out <- x %>% 
+#         mutate(
+#           prd = predict(mod)
+#         ) %>% 
+#         select(yr, prd)
+#       
+#       return(out)
+#       
+#     }) 
+#   ) %>% 
+#   unnest(data)
 
 wd <- 0.5
 
@@ -241,7 +263,8 @@ p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) +
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
   geom_point(position = position_dodge2(width = wd), size = 0.5) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
-  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  geom_smooth(method = 'lm', se = F, formula = y ~ x) +
+  # geom_line(data = mixmets %>% filter(var == 'Water temp. (\u00B0C)'), aes(y = prd)) +
   facet_grid(~ bay_segment) +
   scale_color_manual(values = c( 'steelblue4', 'steelblue1')) +
   thm +
@@ -261,7 +284,8 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
   geom_point(position = position_dodge2(width = wd), size = 0.5) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
-  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  # geom_line(data = mixmets %>% filter(var == 'Salinity (ppt)'), aes(y = prd)) +
+  geom_smooth(method = 'lm', se = F, formula = y ~ x) +
   facet_grid(~ bay_segment) +
   scale_color_manual(values = c('steelblue4', 'steelblue1')) +
   thm +
@@ -275,9 +299,9 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.5)) & theme(legend.position = 'top')
+p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 3)) & theme(legend.position = 'top')
 
-png(here('figs/meteowqraw.png'), height = 8.5, width = 7, family = 'serif', units = 'in', res = 500)
+png(here('figs/meteowqraw.png'), height = 8, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
 dev.off()
 
@@ -388,10 +412,31 @@ toplo <- epcdata %>%
   filter(!is.na(val)) %>% 
   summarise(
     avev = mean(val, na.rm = T),
+    se = sd(val, na.rm = T)^2,
     lov = t.test(val, na.rm = T)$conf.int[1],
     hiv = t.test(val, na.rm = T)$conf.int[2],
     .by = c('bay_segment', 'yr', 'var', 'loc') 
   )
+
+# # get mixed-effect meta-analysis linear preds
+# mixmets <- toplo %>% 
+#   group_nest(bay_segment, var, loc) %>% 
+#   mutate(
+#     data = purrr::map(data, function(x){
+#       
+#       mod <- mixmeta(avev ~ yr, S = se, random = ~1|yr, data = x, method = 'reml')
+#       
+#       out <- x %>% 
+#         mutate(
+#           prd = predict(mod)
+#         ) %>% 
+#         select(yr, prd)
+#       
+#       return(out)
+#       
+#     }) 
+#   ) %>% 
+#   unnest(data)
 
 wd <- 0.5
 
@@ -403,7 +448,8 @@ p5 <- ggplot(toplo5, aes(x = yr, y = avev, group = loc, color = loc)) +
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
   geom_point(position = position_dodge2(width = wd), size = 0.5) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
-  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  # geom_line(data = mixmets %>% filter(var == 'Water temp. (\u00B0C)'), aes(y = prd)) + 
+  geom_smooth(method = 'lm', se = F, formula = y ~ x) +
   facet_grid(~ bay_segment) +
   scale_color_manual(values = c( 'steelblue4', 'steelblue1')) +
   thm +
@@ -423,7 +469,8 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
   geom_linerange(aes(ymin = lov, ymax = hiv), position = position_dodge2(width = wd), show.legend = F, alpha = 0.7) + 
   geom_point(position = position_dodge2(width = wd), size = 0.5) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
-  geom_smooth(method = 'lm', formula = y ~ x, se = F) +
+  # geom_line(data = mixmets %>% filter(var == 'Salinity (ppt)'), aes(y = prd)) +
+  geom_smooth(method = 'lm', se = F, formula = y ~ x) +
   facet_grid(~ bay_segment) +
   scale_color_manual(values = c('steelblue4', 'steelblue1')) +
   thm +
@@ -437,9 +484,9 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.5)) & theme(legend.position = 'top')
+p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 3)) & theme(legend.position = 'top')
 
-png(here('figs/suppmeteowqraw.png'), height = 8.5, width = 7, family = 'serif', units = 'in', res = 500)
+png(here('figs/suppmeteowqraw.png'), height = 8, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
 dev.off()
 
@@ -873,6 +920,7 @@ toplo <- fimsgtempdat %>%
   pivot_longer(temp:sal) %>% 
   summarise(
     avev = mean(value, na.rm = T), 
+    se = sd(value, na.rm = T)^2,
     lov = t.test(value)$conf.int[1], 
     hiv = t.test(value)$conf.int[2], 
     cnt = n(),
@@ -882,6 +930,26 @@ toplo <- fimsgtempdat %>%
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')),
     name = factor(name, levels = c('temp', 'sal'), labels = c('Water temp. (\u00B0C)', 'Salinity (ppt)'))
   )
+
+# # get mixed-effect meta-analysis linear preds
+# mixmets <- toplo %>% 
+#   group_nest(bay_segment, name) %>% 
+#   mutate(
+#     data = purrr::map(data, function(x){
+#       
+#       mod <- mixmeta(avev ~ yr, S = se, random = ~1|yr, data = x, method = 'reml')
+#       
+#       out <- x %>% 
+#         mutate(
+#           prd = predict(mod)
+#         ) %>% 
+#         select(yr, prd)
+#       
+#       return(out)
+#       
+#     }) 
+#   ) %>% 
+#   unnest(data)
 
 thm <- theme_minimal() + 
   theme(
@@ -896,7 +964,8 @@ p <- ggplot(toplo, aes(x = yr, y = avev)) +
   geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7, color = 'steelblue4') + 
   geom_point(size = 0.75, color = 'steelblue4') +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
-  geom_smooth(method = 'lm', formula = y ~ x, se = F, color = 'steelblue4') +
+  # geom_line(data = mixmets, aes(y = prd), color = 'steelblue4') +
+  geom_smooth(method = 'lm', se = F, formula = y ~ x) +
   facet_grid(name ~ bay_segment, switch = 'y', scales = 'free_y') +
   thm +
   theme(
@@ -918,28 +987,47 @@ dev.off()
 load(file = here('data/pincotemp.RData'))
 
 toplo <- pincotemp %>% 
+  pivot_longer(temp:sal, names_to = 'var', values_to = 'val') %>% 
   summarise(
     avev = mean(val, na.rm = T), 
+    se = sd(val, na.rm = T)^2,
     lov = t.test(val)$conf.int[1], 
     hiv = t.test(val)$conf.int[2], 
     cnt = n(),
     nmo = length(unique(mo)),
-    .by = c(bay_segment, yr, var)
+    .by = c(yr, var)
   ) %>% 
-  filter(yr < 2023) %>%
   mutate(
-    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')),
     var = factor(var, levels = c('temp', 'sal'), labels = c('Water temp. (\u00B0C)', 'Salinity (ppt)'))
-  ) %>% 
-  filter(!bay_segment %in% c('MTB', 'HB'))
+  )
+
+# # get mixed-effect meta-analysis linear preds
+# mixmets <- toplo %>% 
+#   group_nest(var) %>% 
+#   mutate(
+#     data = purrr::map(data, function(x){
+#       
+#       mod <- mixmeta(avev ~ yr, S = se, random = ~1|yr, data = x, method = 'reml')
+#       
+#       out <- x %>% 
+#         mutate(
+#           prd = predict(mod)
+#         ) %>% 
+#         select(yr, prd)
+#       
+#       return(out)
+#       
+#     }) 
+#   ) %>% 
+#   unnest(data)
 
 thm <- theme_minimal() + 
   theme(
     strip.placement = 'outside', 
     panel.grid.minor = element_blank(), 
-    axis.text.y = element_text(size = 11), 
+    axis.text.y = element_text(size = 10), 
     legend.text = element_text(size= 12), 
-    axis.text.x = element_text(size = 7)
+    axis.text.x = element_text(size = 10)
   )
 
 # MTB sampling gap? month coverage? change in sample design?
@@ -947,8 +1035,9 @@ p <- ggplot(toplo, aes(x = yr, y = avev)) +
   geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7, color = 'steelblue4') + 
   geom_point(size = 0.75, color = 'steelblue4') +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
-  geom_smooth(method = 'lm', formula = y ~ x, se = F, color = 'steelblue4') +
-  facet_grid(var ~ bay_segment, switch = 'y', scales = 'free_y') +
+  # geom_line(data = mixmets, aes(y = prd), color = 'steelblue4', method = 'lm', se =) +
+  geom_smooth(formula = y ~ x, method = 'lm', se = F) +
+  facet_grid(var ~ ., switch = 'y', scales = 'free_y') +
   thm +
   theme(
     strip.text = element_text(size = 12)
@@ -960,9 +1049,9 @@ p <- ggplot(toplo, aes(x = yr, y = avev)) +
     shape = NULL
   )
 
-# png(here('figs/supppincotrnds.png'), height = 3.5, width = 7, family = 'serif', units = 'in', res = 500)
-# print(p)
-# dev.off()
+png(here('figs/supppincotrnds.png'), height = 3.5, width = 3.5, family = 'serif', units = 'in', res = 400)
+print(p)
+dev.off()
 
 # mixeff example plot -------------------------------------------------------------------------
 
@@ -1230,7 +1319,7 @@ png(here('figs/sggammod.png'), height = 7, width = 9, family = 'serif', units = 
 print(p)
 dev.off()
 
-# hillsborough flow v temp over time ----------------------------------------------------------
+# supp hillsborough flow v temp over time -----------------------------------------------------
 
 load(file = here('data/gagedat.RData'))
 
@@ -1266,7 +1355,7 @@ p <- ggplot(toplo, aes(x = flow_m3d / 1e6, y = temp_c, group = yrgroup, fill = y
     fill = 'Time period'
   )
 
-png(here('figs/flowtemp.png'), height = 4, width = 6, family = 'serif', units = 'in', res = 600)
+png(here('figs/suppflowtemp.png'), height = 4, width = 6, family = 'serif', units = 'in', res = 600)
 print(p)
 dev.off()
 
