@@ -443,6 +443,29 @@ png(here('figs/suppmeteowqraw.png'), height = 8.5, width = 7, family = 'serif', 
 print(p)
 dev.off()
 
+# supp gam temp, sali example -----------------------------------------------------------------
+
+fl <- 'OTB_66_tempbot'
+load(file = here(paste0('data/', fl, '.RData')))
+
+toplo <- get(fl)
+
+p1 <- show_prdseries(toplo, ylab = 'Bottom temperature (\u00B0C)') + 
+  labs(subtitle ='Station 66, OTB')
+
+fl <- 'OTB_66_salibot'
+load(file = here(paste0('data/', fl, '.RData')))
+
+toplo <- get(fl)
+
+p2 <- show_prdseries(toplo, ylab = 'Bottom salinity (ppt)')
+
+p <- p1 + p2 + plot_layout(ncol = 1)
+
+png(here('figs/suppgamex.png'), height = 5, width = 6, family = 'serif', units = 'in', res = 300)
+print(p)
+dev.off()
+
 # kendall -------------------------------------------------------------------------------------
 
 leglab <- expression(paste(yr^{-1}))

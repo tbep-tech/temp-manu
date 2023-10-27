@@ -46,6 +46,10 @@ load(file = here('tabs/supp2daytab.RData'))
 
 {{< pagebreak >}}
 
+![Examples of Generalized Additive Models of bottom water temperature and salinity for station 66 in Old Tampa Bay.  Models were fit using a continuous smoothing spline for decimal year.  Monthly observations are shown as points and daily predictions from the models as lines.](figs/suppgamex.png){#fig-supgamex}
+
+{{< pagebreak >}}
+
 ![Water temperature and salinity trends from 1996 to 2021 for stations from the Fisheries Independent Monitoring program. Points show the average (95% confidence interval) across all stations and sampling months for each year in each bay segment. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppfimtrnds.png){#fig-suppfimtrnds}
 
 {{< pagebreak >}}
