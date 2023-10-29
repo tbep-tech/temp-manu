@@ -11,6 +11,20 @@ p_ast <- function(x){
   
 }
 
+# function for formatting p-values in text
+p_txt <- function(x){
+  
+  sig_cats <- c('p < 0.005', 'p < 0.05', 'ns')
+  sig_vals <- c(-Inf, 0.005, 0.05, Inf)
+  
+  out <- cut(x, breaks = sig_vals, labels = sig_cats, right = FALSE)
+  out <- as.character(out)
+  
+  return(out)
+  
+}
+
+
 # run length encoding for vector of TF, return longest run of T
 runfunc <- function(cnt){
   lngth <- length(na.omit(cnt))
