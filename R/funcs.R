@@ -69,7 +69,7 @@ getprd_fun <- function(modin, depvar = 'Sal'){
   
 }
 
-# get model predictions gam
+# get model predictions gam, fim
 getprd_fun2 <- function(mod, indvar = c('sal', 'temp')){
   
   indvar <- match.arg(indvar)
@@ -92,6 +92,32 @@ getprd_fun2 <- function(mod, indvar = c('sal', 'temp')){
     ) %>% 
     unnest(data)
 
+  return(out)
+  
+}
+
+
+# get model predictions gam, pinco
+getprd_fun3 <- function(mod, indvar = c('sal', 'temp')){
+  
+  out <- unique(mod$model) %>% 
+    group_by(yrcat) %>% 
+    nest() %>% 
+    mutate(
+      data = purrr::pmap(list(yrcat), function(yrcat){
+        
+        condls <- list(yrcat = yrcat)
+        prd <- visreg(mod, xvar = indvar, cond = condls, plot = F, scale = 'response')
+        
+        out <- prd$fit %>% 
+          select(-yrcat)
+        
+        return(out)
+        
+      })
+    ) %>% 
+    unnest(data)
+  
   return(out)
   
 }
