@@ -1,6 +1,5 @@
 library(tidyverse)
 library(here)
-library(flextable)
 library(mgcv)
 library(broom)
 
@@ -190,12 +189,10 @@ totab <- mixmods %>%
   arrange(bay_segment, thrtyp)
 
 mixdaytab <- totab %>% 
-  as_grouped_data(groups = 'bay_segment') %>% 
-  flextable() %>% 
-  set_header_labels(i = 1, values = c('Bay Segment', 'Threshold', 'Slope', 'Start', 'End')) %>% 
-  padding(padding = 0, part = 'all') %>% 
-  width(j = 2, width = 1.5) %>% 
-  font(part = 'all', fontname = 'Times New Roman')
+  mutate(
+    bay_segment = ifelse(duplicated(bay_segment), '', as.character(bay_segment))
+  ) %>%
+  knitr::kable(col.names = c('Bay Segment', 'Threshold', 'Slope', 'Start', 'End'))
 
 save(mixdaytab, file = here('tabs/mixdaytab.RData'))
 
