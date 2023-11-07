@@ -1153,32 +1153,21 @@ cmbdat <- fodat %>%
     Temp = tempcnt, 
     Both = bothcnt
   ) %>% 
-  arrange(bay_segment, Year) %>% 
-  mutate(
-    chng = c(NA, sign(diff(total))), 
-    chng = ifelse(chng == -1, 1, 0), 
-    .by = 'bay_segment'
-  ) %>% 
-  filter(!is.na(chng))
+  arrange(bay_segment, Year)
 
 tomod <- cmbdat %>% 
   mutate(
-    pchg = (total - lag(total)) / lag(total), 
-    chg = c(NA, sign(diff(total))), 
-    chg = ifelse(chg == -1, 1, 0),
-    .by = bay_segment, 
     yrcat = cut(Year, breaks = c(-Inf, 2016, Inf), labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)'), right = F)
   ) %>% 
-  filter(!is.na(pchg)) %>% 
   filter(bay_segment != 'LTB')
 
-pchgmod <- glm(pchg ~ bay_segment*Sal*yrcat + bay_segment*Temp*yrcat, data = tomod) %>% 
-  step(trace = 0)
-binomod <- glm(chg ~ bay_segment*Sal*yrcat + bay_segment*Temp*yrcat, data = tomod, family = binomial('logit')) %>% 
-  step(trace = 0) 
+tempsalmod <- lm(total ~ bay_segment*yrcat*Temp*Sal, data = tomod) %>% 
+  step()
+bothmod <- mod <- lm(total ~ bay_segment*yrcat*Both, data = tomod) %>% 
+  step()
 
-save(pchgmod, file = here('data/pchgmod.RData'))
-save(binomod, file = here('data/binomod.RData'))
+save(tempsalmod, file = here('data/tempsalmod.RData'))
+save(bothmod, file = here('data/bothmod.RData'))
 
 # USGS gage data ------------------------------------------------------------------------------
 

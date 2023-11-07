@@ -1214,21 +1214,30 @@ dev.off()
 
 # seagrass decline models ---------------------------------------------------------------------
 
-load(file = here('data/pchgmod.RData'))
-load(file = here('data/binomod.RData'))
+load(file = here('data/tempsalmod.RData'))
+load(file = here('data/bothmod.RData'))
 
-toplo1 <- getprd_fun(pchgmod)
-toplo2 <- getprd_fun(binomod)
+toplo1a <- visreg(tempsalmod, xvar = 'Sal', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'OTB'))$fit
+toplo1b <- visreg(tempsalmod, xvar = 'Sal', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'HB'))$fit
+toplo1c <- visreg(tempsalmod, xvar = 'Sal', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'MTB'))$fit
+toplo1 <- bind_rows(toplo1a, toplo1b, toplo1c)
+toplo2a <- visreg(tempsalmod, xvar = 'Temp', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'OTB'))$fit
+toplo2b <- visreg(tempsalmod, xvar = 'Temp', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'HB'))$fit
+toplo2c <- visreg(tempsalmod, xvar = 'Temp', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'MTB'))$fit
+toplo2 <- bind_rows(toplo2a, toplo2b, toplo2c)
+
+tomod <- tempsalmod$model
 
 p1 <- ggplot(toplo1, aes(x = Sal)) + 
   geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'lightgrey', alpha = 0.5) + 
   geom_line(aes(y = visregFit)) + 
-  geom_point(data = tomod, aes(x = Sal, y = pchg), color = 'dodgerblue2') +
-  facet_grid(bay_segment ~ yrcat) + 
+  geom_point(data = tomod, aes(x = Sal, y = total), color = 'dodgerblue2') +
+  facet_grid(bay_segment ~ yrcat, scales = 'free_y') + 
+  coord_cartesian(ylim = c(0, 1)) +
   labs(
-    y = '% change in seagrass', 
+    y = 'Frequency Occurrence', 
     x = '# days salinity < threshold', 
-    title = '(a) Percent change in seagrass between years'
+    subtitle = '(a) Seagrass pre, post recovery by salinity metric'
   ) + 
   theme_bw() + 
   theme(
@@ -1236,17 +1245,16 @@ p1 <- ggplot(toplo1, aes(x = Sal)) +
     panel.grid.minor = element_blank()
   )
 
-p2 <- ggplot(toplo2, aes(x = Sal)) + 
+p2 <- ggplot(toplo2, aes(x = Temp)) + 
   geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'lightgrey', alpha = 0.5) + 
   geom_line(aes(y = visregFit)) + 
-  geom_rug(data = tomod[tomod$chg == 0,], aes(x = Sal, y = chg), sides = 'b', linewidth = 1, color = 'blue') +
-  geom_rug(data = tomod[tomod$chg == 1,], aes(x = Sal, y = chg), sides = 't', linewidth = 1, color = 'red') +
-  facet_grid(bay_segment ~ yrcat) + 
-  scale_y_continuous(labels = scales::percent) +
+  geom_point(data = tomod, aes(x = Temp, y = total), color = 'red2') +
+  facet_grid(bay_segment ~ yrcat, scales = 'free_y') + 
+  coord_cartesian(ylim = c(0, 1)) +
   labs(
-    y = 'Probability of seagrass decline', 
-    x = '# days salinity < threshold', 
-    title = '(b) Probability of seagrass decline between years'
+    y = 'Frequency Occurrence', 
+    x = '# days temperature > threshold', 
+    subtitle = '(b) Seagrass pre, post recovery by temperature metric'
   ) + 
   theme_bw() + 
   theme(
@@ -1261,7 +1269,7 @@ p <- p1 + p2 + plot_layout(ncol = 2) &
     axis.text = element_text(size = 11)
     )
 
-png(here('figs/sgmod.png'), height = 7, width = 9, family = 'serif', units = 'in', res = 300)
+png(here('figs/tempsalmod.png'), height = 7, width = 9, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 
