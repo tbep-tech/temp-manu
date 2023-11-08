@@ -230,6 +230,42 @@ suppsalifittab <- fittab %>%
 save(supptempfittab, file = here('tabs/supptempfittab.RData'))
 save(suppsalifittab, file = here('tabs/suppsalifittab.RData'))
 
+
+# glm performance -----------------------------------------------------------------------------
+
+load(file = here("data/sgmods.RData"))
+
+# epcmod1
+modtab <- sgmods %>% 
+  lapply(tidy) %>% 
+  enframe() %>% 
+  unnest(value) %>%
+  filter(term != '(Intercept)') %>% 
+  mutate(p.value = p_ast2(p.value)) %>% 
+  mutate_if(is.numeric, formatC, digits = 2) %>% 
+  mutate(
+    std.error = paste0('(', std.error, ')'), 
+    name = case_when(
+      name == 'epcmod1' ~ 'EPC 1', 
+      name == 'epcmod2' ~ 'EPC 2',
+      name == 'fimmod' ~ 'FIM',
+      name == 'pincomod' ~ 'PDEM'
+    ), 
+    term = gsub('temp', 'Temp', term), 
+    term = gsub('sal', 'Sal', term),
+    term = gsub('both', 'Both', term),
+    term = gsub('yrcatDecline \\(post - 2016\\)', 'Time_post', term),
+    term = gsub('yrcatDecline \\(post - 2016\\)', 'Time_post', term), 
+    term = gsub('bay_segment', 'Baysegment_', term),
+    name = ifelse(duplicated(name), '', name)
+  ) %>% 
+  unite('estimate', estimate, std.error, sep = ' ') %>% 
+  unite('statistic', statistic, p.value, sep = '') %>%
+  select(Model = name, Term = term, Estimate = estimate, `t-statistic` = statistic) %>% 
+  knitr::kable()
+
+save(modtab, file = here('tabs/modtab.RData'))
+
 # supp1 mixef mod summary table ----------------------------------------------------------------
 
 load(file = here('data/mixmods.RData'))

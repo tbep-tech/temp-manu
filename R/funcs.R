@@ -11,6 +11,19 @@ p_ast <- function(x){
   
 }
 
+# function for formatting p-values in tables
+p_ast2 <- function(x){
+  
+  sig_cats <- c('**', '*', '$^.$', '')
+  sig_vals <- c(-Inf, 0.005, 0.05, 0.1, Inf)
+  
+  out <- cut(x, breaks = sig_vals, labels = sig_cats, right = FALSE)
+  out <- as.character(out)
+  
+  return(out)
+  
+}
+
 # function for formatting p-values in text
 p_txt <- function(x){
   
@@ -69,7 +82,8 @@ modprep <- function(dat){
         yr > 2016 ~ 'post'
       ), 
       yrcat = factor(yrcat, levels = c('pre', 'post'), 
-                     labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)'))
+                     labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)')), 
+      bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB'))
     )
   
 }
