@@ -178,9 +178,9 @@ Times when both temperature was above a threshold and salinity was below a thres
 
 ### Seagrass response
 
-NMS results in @fig-nms
+"Both" model did not include a year category and the interaction of temp/sal in the first model was negligible (fig holds temp/sal at mean? for respective plots).
 
-Seagrass decline results in @fig-sgmod, @fig-sggammod
+Seagrass decline results in @fig-tempsalmod, @fig-sggammod
 
 ## Discussion
 

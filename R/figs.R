@@ -1152,66 +1152,6 @@ png(here('figs/suppmixeff.png'), height = 6, width = 7, family = 'serif', units 
 print(p)
 dev.off()
 
-# nms -----------------------------------------------------------------------------------------
-
-load(file = here('data/cmbdat.RData'))
-
-cmbdat <- cmbdat %>% 
-  filter(!bay_segment %in% 'LTB')
-
-toord1 <- cmbdat %>% 
-  dplyr::select(-Year, -Chla, -bbave, -Both, -bay_segment) %>% 
-  mutate_all(rescale, to = c(0, 1))
-
-orddat1 <- metaMDS(toord1, k = 2, trymax = 100)
-
-toord2 <- cmbdat %>% 
-  dplyr::select(-Year, -Chla, -bbave, -Sal, -Temp, -bay_segment) %>% 
-  mutate_all(rescale, to = c(0, 1))
-
-orddat2 <- metaMDS(toord2, k = 2, trymax = 100)
-
-grps <- factor(cmbdat$bay_segment)
-
-vec_ext <- 1.75
-coord_fix <- F
-size <- toord1$total
-repel <- F
-force <- T
-arrow <- 0.2
-txt <- 3
-alpha <- 0.8
-ext <- 1.25
-exp <- 0.1
-parse <- F
-ellipse <- T
-cols <- c("#3B9AB2", "#EBCC2A", "#F21A00")# c("#1F78B4", "#33A02C", "#E31A1C")
-vec_lab <- list(
-  'total'= 'Freq Occ',
-  'Sal' = 'Sal', 
-  'Temp' = 'Temp', 
-  'Both' = 'Both'
-)
-grp_title <- 'Bay segment'
-sizelab <- 'Freq Occ'
-
-p1 <- ggord(orddat1, axes = c('1', '2'), cols = cols, ellipse = ellipse, grp_in = grps,
-            parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
-            repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
-            exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
-            force = force)
-p2 <- ggord(orddat2, axes = c('1', '2'), cols = cols, ellipse = ellipse, grp_in = grps,
-            parse = parse, vec_ext = vec_ext, coord_fix = coord_fix, size = size, 
-            repel = repel, arrow = arrow, txt = txt, alpha = alpha, ext = ext, 
-            exp = exp, grp_title = grp_title, sizelab = sizelab, vec_lab = vec_lab, 
-            force = force)
-
-p <- p1 + p2 + plot_layout(ncol = 2, guides = 'collect')
-
-png(here('figs/nms.png'), height = 4, width = 9, family = 'serif', units = 'in', res = 300)
-print(p)
-dev.off()
-
 # seagrass decline models ---------------------------------------------------------------------
 
 load(file = here('data/tempsalmod.RData'))
