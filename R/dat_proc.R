@@ -1280,7 +1280,7 @@ habdat <- habraw %>%
     ) 
   ) %>%
   select(Reference, BottomVeg, BottomVegRatio, bvegcat) %>% 
-  filter(!is.na(bvegcat) | bvegcat == 'mc') %>% 
+  filter(!(is.na(bvegcat) | bvegcat == 'mc')) %>% 
   left_join(phydat, by = 'Reference') %>% 
   select(-geometry) %>% 
   mutate(
@@ -1294,7 +1294,8 @@ habdat <- habraw %>%
     ),
     sgcov = sum(vegcov, na.rm = T),
     .by = Reference
-  )
+  ) %>% 
+  filter(sgcov <= 100) # some above 100, probably an error
 
 # combine seagrass p/a with fimtempdat
 fimsgtempdat <- fimtempdat %>% 
@@ -1305,7 +1306,9 @@ fimsgtempdat <- fimtempdat %>%
     lat = st_coordinates(.)[, 2], 
     yr = year(date)
   ) %>% 
-  st_set_geometry(NULL)
+  st_set_geometry(NULL) %>% 
+  filter(!is.na(temp)) %>% 
+  filter(!is.na(sal))
 
 save(fimsgtempdat, file = here('data/fimsgtempdat.RData'), compress = 'xz')
 
@@ -1386,8 +1389,10 @@ pincotemp <-  saltemp %>%
     mo = month(date), 
     bay_segment = 'OTB'
   ) %>% 
-  filter(yr > 2003) # only a few
-  
+  filter(yr > 2003) %>% # only a few
+  filter(!is.na(temp)) %>%
+  filter(!is.na(sal))
+
 save(pincotemp, file = here('data/pincotemp.RData'))
 
 # seagrass declines models, epc, fim, and pinco -----------------------------------------------
@@ -1405,23 +1410,28 @@ modprep <- function(dat){
         yr <= 2016 ~ 'pre', 
         yr > 2016 ~ 'post'
       ), 
-      yrcat = factor(yrcat, levels = c('pre', 'post'))
+      yrcat = factor(yrcat, levels = c('pre', 'post'), 
+                     labels = c('Recovery (pre - 2016)', 'Decline (post - 2016)'))
     )
 
 }
 
 epctomod <- modprep(epccmbdat)
-fimtomod <- modprep(fimsgtempdat)
-pincotomod <- modprep(pincotemp)
+fimtomod <- modprep(fimsgtempdat) %>% 
+  filter(month(date) %in% c(7:10))
+pincotomod <- modprep(pincotemp) %>% 
+  filter(month(date) %in% c(7:10))
 
-epcmod <- lm(total ~ sal * temp * yrcat + bay_segment, data = epctomod) %>% 
+epcmod1 <- lm(total ~ sal * temp * yrcat + bay_segment, data = epctomod) %>% 
+  step()
+epcmod2 <- lm(total ~ both * yrcat + bay_segment, data = epctomod) %>% 
   step()
 fimmod <- lm(sgcov ~ sal * temp * yrcat + bay_segment, data = fimtomod) %>% 
   step()
 pincomod <- glm(allsg ~ sal * temp * yrcat, data = pincotomod, family = binomial(link = 'logit')) %>%
   step()
 
-sgmods <- list(epcmod = epcmod, fimmod = fimmod, pincomo = pincomod)
+sgmods <- list(epcmod1 = epcmod1, epcmod2 = epcmod2, fimmod = fimmod, pincomod = pincomod)
 
 save(sgmods, file = here('data/sgmods.RData'))
 

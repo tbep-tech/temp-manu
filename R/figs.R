@@ -1152,118 +1152,52 @@ png(here('figs/suppmixeff.png'), height = 6, width = 7, family = 'serif', units 
 print(p)
 dev.off()
 
-# seagrass decline models ---------------------------------------------------------------------
+# seagrass change plots -----------------------------------------------------------------------
 
-load(file = here('data/tempsalmod.RData'))
-load(file = here('data/bothmod.RData'))
+load(file = here('data/sgmods.RData'))
 
-toplo1a <- visreg(tempsalmod, xvar = 'Sal', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'OTB'))$fit
-toplo1b <- visreg(tempsalmod, xvar = 'Sal', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'HB'))$fit
-toplo1c <- visreg(tempsalmod, xvar = 'Sal', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'MTB'))$fit
-toplo1 <- bind_rows(toplo1a, toplo1b, toplo1c)
-toplo2a <- visreg(tempsalmod, xvar = 'Temp', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'OTB'))$fit
-toplo2b <- visreg(tempsalmod, xvar = 'Temp', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'HB'))$fit
-toplo2c <- visreg(tempsalmod, xvar = 'Temp', by = 'yrcat', scale = 'response', plot = F, cond = list(bay_segment = 'MTB'))$fit
-toplo2 <- bind_rows(toplo2a, toplo2b, toplo2c)
+epcmod1 <- sgmods$epcmod1
+fimmod <- sgmods$fimmod
+pincomod <- sgmods$pincomod
 
-tomod <- tempsalmod$model
+##
+# epc model plot
 
-p1 <- ggplot(toplo1, aes(x = Sal)) + 
-  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'lightgrey', alpha = 0.5) + 
-  geom_line(aes(y = visregFit)) + 
-  geom_point(data = tomod, aes(x = Sal, y = total), color = 'dodgerblue2') +
-  facet_grid(bay_segment ~ yrcat, scales = 'free_y') + 
-  coord_cartesian(ylim = c(0, 1)) +
-  labs(
-    y = 'Frequency Occurrence', 
-    x = '# days salinity < threshold', 
-    subtitle = '(a) Seagrass pre, post recovery by salinity metric'
-  ) + 
-  theme_bw() + 
-  theme(
-    strip.background = element_blank(), 
-    panel.grid.minor = element_blank()
-  )
+epcplo <- modplo_fun(
+  mod = epcmod1, 
+  xlab1 = 'days temperature > 30 \u00B0C', 
+  ylab1 = 'Frequency occurrence', 
+  xlab2 = 'days salinity < 25 ppt',
+  title1 = '(a) EPC', 
+  ismetric = T
+)
 
-p2 <- ggplot(toplo2, aes(x = Temp)) + 
-  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'lightgrey', alpha = 0.5) + 
-  geom_line(aes(y = visregFit)) + 
-  geom_point(data = tomod, aes(x = Temp, y = total), color = 'red2') +
-  facet_grid(bay_segment ~ yrcat, scales = 'free_y') + 
-  coord_cartesian(ylim = c(0, 1)) +
-  labs(
-    y = 'Frequency Occurrence', 
-    x = '# days temperature > threshold', 
-    subtitle = '(b) Seagrass pre, post recovery by temperature metric'
-  ) + 
-  theme_bw() + 
-  theme(
-    strip.background = element_blank(), 
-    panel.grid.minor = element_blank()
-  )
+## 
+# fim model plot
 
-p <- p1 + p2 + plot_layout(ncol = 2) & 
-  theme(
-    strip.text = element_text(size = 12), 
-    axis.title = element_text(size = 13), 
-    axis.text = element_text(size = 11)
-    )
+fimplo <- modplo_fun(
+  mod = fimmod, 
+  xlab1 = 'Temperature (\u00B0C)', 
+  ylab1 = '% cover', 
+  xlab2 = 'Salinity (ppt)',
+  title1 = '(b) FIM'
+)
 
-png(here('figs/tempsalmod.png'), height = 7, width = 9, family = 'serif', units = 'in', res = 300)
-print(p)
-dev.off()
+# ## 
+# # pinco model plot, only yrcat significant
+# 
+# pincoplo <- modplo_fun(
+#   mod = pincomod, 
+#   xlab1 = 'Temperature (\u00B0C)', 
+#   ylab1 = 'Probability of occurrence', 
+#   xlab2 = 'Salinity (ppt)', 
+#   isbinom = T,
+#   title1 = '(c) PDEM'
+# )
 
-# fim gam plots -------------------------------------------------------------------------------
+p <- epcplo / fimplo 
 
-load(file = here("data/fimsalmod.RData"))
-load(file = here("data/fimtempmod.RData"))
-
-toplo1 <- getprd_fun2(fimsalmod, 'sal') %>% 
-  filter(sal > 10 & sal < 30)
-toplo2 <- getprd_fun2(fimtempmod, 'temp')
-
-thm <- theme_bw() + 
-  theme(
-    panel.grid.minor = element_blank(), 
-    strip.background = element_blank(),
-    strip.text = element_text(size = 12), 
-    axis.text = element_text(size = 11), 
-    axis.title = element_text(size = 12)
-  )
-
-# separate plots by bay segment
-p1 <- ggplot(toplo1, aes(x = sal, y = visregFit)) + 
-  geom_point(data = fimsalmod$model, aes(y = sgcov), size = 0.5, alpha = 0.25) +
-  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'dodgerblue2', alpha = 0.2) +
-  geom_line(color = 'dodgerblue2', size = 1) +
-  coord_cartesian(
-    ylim = c(0, max(toplo1$visregUpr)),
-    xlim = c(10, 30)
-  ) +
-  facet_grid(bay_segment ~ yrcat, scales = 'free_y') +
-  thm + 
-  labs(
-    x = 'Salinity (psu)', 
-    y = 'Seagrass % cover', 
-    title = '(a) Seagrass cover vs salinity'
-  )
-
-p2 <- ggplot(toplo2, aes(x = temp, y = visregFit)) + 
-  geom_point(data = fimtempmod$model, aes(y = sgcov), size = 0.5, alpha = 0.25) +
-  geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'red2', alpha = 0.2) +
-  geom_line(color = 'red2', size = 1) +
-  coord_cartesian(ylim = c(0, max(toplo2$visregUpr))) +
-  facet_grid(bay_segment ~ yrcat, scales = 'free_y') +
-  thm + 
-  labs(
-    x = 'Water temp. (\u00B0 C)', 
-    y = 'Seagrass % cover',
-    title = '(b) Seagrass cover vs temperature'
-  )
-
-p <- p1 + p2 + plot_layout(ncol = 2)
-
-png(here('figs/sggammod.png'), height = 7, width = 9, family = 'serif', units = 'in', res = 300)
+png(here('figs/sgmods.png'), height = 6, width = 7, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 

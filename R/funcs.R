@@ -41,83 +41,99 @@ runfunc <- function(cnt){
   return(out)
 }
 
-# get model predictions glm
-getprd_fun <- function(modin, depvar = 'Sal'){
+# prep epc, fim, pinco data prior to modelign 
+modprep <- function(dat){
   
-  fitotb <- visreg(modin, depvar, by = 'yrcat', cond = list(bay_segment = 'OTB'), scale = 'response', plot = F) %>% 
-    .$fit %>%  
+  dat %>% 
+    filter(!bay_segment %in% c('LTB')) %>% 
     mutate(
-      bay_segment = 'OTB'
+      yrcat = case_when(
+        yr <= 2016 ~ 'pre', 
+        yr > 2016 ~ 'post'
+      ), 
+      yrcat = factor(yrcat, levels = c('pre', 'post'), 
+                     labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)'))
     )
-  fithb <- visreg(modin, depvar, by = 'yrcat', cond = list(bay_segment = 'HB'), scale = 'response', plot = F) %>% 
-    .$fit %>% 
-    mutate(
-      bay_segment = 'HB'
-    ) 
-  fitmtb <- visreg(modin, depvar, by = 'yrcat', cond = list(bay_segment = 'MTB'), scale = 'response', plot = F) %>% 
-    .$fit %>% 
-    mutate(
-      bay_segment = 'MTB'
-    )
-  
-  out <- bind_rows(fitotb, fithb, fitmtb) %>% 
-    mutate(
-      bay_segment = factor(bay_segment, levels = segshr)
-    )
-  
-  return(out)
   
 }
 
-# get model predictions gam, fim
-getprd_fun2 <- function(mod, indvar = c('sal', 'temp')){
-  
-  indvar <- match.arg(indvar)
-  
-  out <- unique(mod$model[, c('bay_segment', 'yrcat')]) %>% 
-    group_by(bay_segment, yrcat) %>% 
-    nest() %>% 
-    mutate(
-      data = purrr::pmap(list(bay_segment, yrcat), function(bay_segment, yrcat){
-        
-        condls <- list(bay_segment = bay_segment, yrcat = yrcat, fctcrs = paste(yrcat, bay_segment, sep = ':'))
-        prd <- visreg(mod, xvar = indvar, cond = condls, plot = F, scale = 'response')
-        
-        out <- prd$fit %>% 
-          select(-bay_segment, -yrcat)
-        
-        return(out)
-        
-      })
-    ) %>% 
-    unnest(data)
+# plotting function for glm mods of seagrass change
+modplo_fun <- function(mod, xlab1, ylab1, subtitle1 = NULL, title1 = NULL, 
+                       xlab2, ylab2 = NULL, subtitle2 = NULL, title2 = NULL, isbinom = F, ismetric = F) {
 
-  return(out)
+  if(ismetric){
+    salcond <- quantile(mod$model$sal, 0.5)
+    tempcond <- quantile(mod$model$temp, 0.5)
+  }
   
-}
-
-
-# get model predictions gam, pinco
-getprd_fun3 <- function(mod, indvar = c('sal', 'temp')){
+  if(!ismetric){
+    salcond <- quantile(mod$model$sal, 0.5)
+    tempcond <- quantile(mod$model$temp, 0.5)
+  }
   
-  out <- unique(mod$model) %>% 
-    group_by(yrcat) %>% 
-    nest() %>% 
-    mutate(
-      data = purrr::pmap(list(yrcat), function(yrcat){
-        
-        condls <- list(yrcat = yrcat)
-        prd <- visreg(mod, xvar = indvar, cond = condls, plot = F, scale = 'response')
-        
-        out <- prd$fit %>% 
-          select(-yrcat)
-        
-        return(out)
-        
-      })
-    ) %>% 
-    unnest(data)
+  toplo1 <- visreg(mod, xvar = 'temp', by = 'yrcat', plot = F, scale = 'response', cond = list(sal = salcond), data = mod$model)
+  toplo1a <- toplo1$fit
   
-  return(out)
+  toplo2 <- visreg(mod, xvar = 'sal', by = 'yrcat', plot = F, scale = 'response', cond = list(temp = tempcond), data = mod$model)
+  toplo2a <- toplo2$fit
+  
+  ylim <- c(min(toplo1a$visregLwr, toplo2a$visregLwr), max(toplo1a$visregUpr, toplo2a$visregUpr))
+  
+  p1 <- ggplot(toplo1a, aes(x = temp)) + 
+    geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'red2', alpha = 0.5) + 
+    geom_line(aes(y = visregFit), color = 'red2') + 
+    facet_grid(~ yrcat, scales = 'free_y') + 
+    coord_cartesian(ylim = ylim) +
+    labs(
+      y = ylab1,
+      x = xlab1,
+      subtitle = subtitle1, 
+      title = title1
+    ) + 
+    theme_bw() + 
+    theme(
+      strip.background = element_blank(), 
+      panel.grid.minor = element_blank()
+    )
+  
+  p2 <- ggplot(toplo2a, aes(x = sal)) + 
+    geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'dodgerblue2', alpha = 0.5) + 
+    geom_line(aes(y = visregFit), color = 'dodgerblue2') + 
+    facet_grid(~ yrcat, scales = 'free_y') + 
+    coord_cartesian(ylim = ylim) +
+    labs(
+      y = ylab2,
+      x = xlab2,
+      subtitle = subtitle2, 
+      title = title2
+    ) + 
+    theme_bw() + 
+    theme(
+      strip.background = element_blank(), 
+      panel.grid.minor = element_blank()
+    )
+  
+  if(!isbinom){
+    toplo1b <- toplo1$res
+    toplo2b <- toplo2$res
+    p1 <- p1 +
+      geom_point(data = toplo1b, aes(x = temp, y = visregRes), size = 0.5, alpha = 0.5)
+    p2 <- p2 +
+      geom_point(data = toplo2b, aes(x = sal, y = visregRes), size = 0.5, alpha = 0.5)
+  }
+  
+  if(isbinom){
+    rawdat <- mod$model
+    p1 <- p1 +
+      geom_rug(data = rawdat[rawdat$allsg == 0, ], aes(x = temp), sides = 'b', alpha = 0.5) +
+      geom_rug(data = rawdat[rawdat$allsg == 1, ], aes(x = temp), sides = 't', alpha = 0.5) 
+    p2 <- p2 +
+      geom_rug(data = rawdat[rawdat$allsg == 0, ], aes(x = sal), sides = 'b', alpha = 0.5) +
+      geom_rug(data = rawdat[rawdat$allsg == 1, ], aes(x = sal), sides = 't', alpha = 0.5)
+  }
+  
+  p <- p1 + p2 + plot_layout(ncol = 2)
+  
+  return(p)
   
 }
