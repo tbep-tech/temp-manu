@@ -880,134 +880,7 @@ suppmixmodprds <- thrdat %>%
 
 save(suppmixmodprds, file = here('data/suppmixmodprds.RData'))
 
-# combined transect, chl, sal, temp data ------------------------------------------------------
-
-load(file = here('data/thrdat.RData'))
-load(file = here('data/chlthrdat.RData'))
-load(file = here('data/mixmodprds.RData'))
-
-seglng <- c('Old Tampa Bay', 'Hillsborough Bay', 'Middle Tampa Bay', 'Lower Tampa Bay')
-segshr <- c('OTB', 'HB', 'MTB', 'LTB')
-
-##
-# seagrass fo
-transectocc <- anlz_transectocc(transect)
-transectave <- anlz_transectave(transectocc)
-
-fodat <- transectave %>% 
-  select(bay_segment, yr, total = foest) %>% 
-  filter(bay_segment %in% segshr) %>% 
-  mutate(
-    total = total / 100
-  ) %>% 
-  ungroup()
-
-trnptsshed <- trnpts %>% 
-  sf::st_set_geometry(NULL) %>% 
-  select(Transect = TRAN_ID, bay_segment) %>% 
-  unique()
-
-bbdat <- transectocc %>% 
-  ungroup() %>% 
-  filter(Savspecies %in% c('Halodule', 'Syringodium', 'Thalassia')) %>% 
-  filter(
-    bbest > 0, 
-    .by = c('Date', 'Transect')
-  ) %>% 
-  inner_join(trnptsshed, by = 'Transect') %>% 
-  filter(!bay_segment %in% c('BCB', 'TCB', 'MR')) %>% 
-  mutate(
-    yr = year(Date)
-  ) %>% 
-  summarise(
-    bbave = mean(bbest),
-    .by = c('bay_segment', 'yr')
-  )
-
-# ##
-# # coverage data
-# 
-# load(file = url('https://github.com/tbep-tech/tbep-os-presentations/raw/master/data/sgsegest.RData'))
-# 
-# sgsegest <- sgsegest %>% 
-#   mutate(
-#     segment = factor(segment, 
-#                      levels = c("Old Tampa Bay", "Hillsborough Bay", "Middle Tampa Bay", "Lower Tampa Bay", 
-#                                 "Boca Ciega Bay", "Terra Ceia Bay", "Manatee River"),
-#                      labels = c('OTB', 'HB', 'MTB', 'LTB', 'BCB', 'TCB', 'MR'))
-#   ) %>% 
-#   filter(segment %in% segshr) %>% 
-#   select(
-#     bay_segment = segment,
-#     yr = year, 
-#     acres
-#   )
-
-##
-# threshold count data
-
-# these had strong models
-salthr <- '25'
-tmpthr <- '30'
-
-cntsaltmp <- thrdat %>% 
-  filter(salithr == paste0('sali_', salthr)) %>% 
-  filter(tempthr == paste0('temp_', tmpthr)) %>% 
-  summarise(
-    cnt = mean(cnt),
-    .by = c('thrtyp', 'bay_segment', 'yr')
-  )
-
-cntchla <- chlthrdat %>% 
-  summarise(
-    cnt = mean(cnt), 
-    .by = c('thrtyp', 'bay_segment', 'yr')
-  )
-
-cntdat <- bind_rows(cntsaltmp, cntchla) %>% 
-  pivot_wider(names_from = thrtyp, values_from = cnt)
-
-##
-# threshold prediction data
-
-prddat <- mixmodprds %>% 
-  select(bay_segment, thrtyp, fix) %>% 
-  unnest('fix') %>% 
-  mutate(
-    thrtyp = case_when(
-      grepl('^Sal', thrtyp) ~ 'saliprd', 
-      grepl('^Temp', thrtyp) ~ 'tempprd', 
-      grepl('Both', thrtyp) ~ 'bothprd'
-    )
-  ) %>% 
-  pivot_wider(names_from = thrtyp, values_from = prd)
-
-##
-# combine
-
-cmbdat <- fodat %>% 
-  inner_join(cntdat, by = c('yr', 'bay_segment')) %>% 
-  inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
-  inner_join(prddat, by = c('yr', 'bay_segment')) %>% 
-  mutate(
-    bay_segment = factor(bay_segment, 
-                         levels = segshr)
-  ) %>% 
-  rename(
-    Year = yr,
-    Sal = salicnt, 
-    Temp = tempcnt, 
-    Both = bothcnt, 
-    Chla = chlacnt,
-    Tempprd = tempprd, 
-    Salprd = saliprd, 
-    Bothprd = bothprd
-  )
-
-save(cmbdat, file = here('data/cmbdat.RData'))
-
-
-# seagrass decline models ---------------------------------------------------------------------
+# combined epc metric, chl, sal, temp data ----------------------------------------------------
 
 load(file = here('data/thralltrndat.RData'))
 
@@ -1139,7 +1012,7 @@ thrtrndat <- thralltrndat %>%
   ) %>% 
   rename(yr = trnyr)
 
-cmbdat <- fodat %>% 
+epccmbdat <- fodat %>% 
   inner_join(thrtrndat, by = c('yr', 'bay_segment')) %>% 
   inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
   mutate(
@@ -1148,26 +1021,13 @@ cmbdat <- fodat %>%
   ) %>% 
   pivot_wider(names_from = 'thrtyp', values_from = 'cnt') %>% 
   rename(
-    Year = yr,
-    Sal = salicnt, 
-    Temp = tempcnt, 
-    Both = bothcnt
+    sal = salicnt, 
+    temp = tempcnt, 
+    both = bothcnt
   ) %>% 
-  arrange(bay_segment, Year)
+  arrange(bay_segment, yr)
 
-tomod <- cmbdat %>% 
-  mutate(
-    yrcat = cut(Year, breaks = c(-Inf, 2016, Inf), labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)'), right = F)
-  ) %>% 
-  filter(bay_segment != 'LTB')
-
-tempsalmod <- lm(total ~ bay_segment*yrcat*Temp*Sal, data = tomod) %>% 
-  step()
-bothmod <- mod <- lm(total ~ bay_segment*yrcat*Both, data = tomod) %>% 
-  step()
-
-save(tempsalmod, file = here('data/tempsalmod.RData'))
-save(bothmod, file = here('data/bothmod.RData'))
+save(epccmbdat, file = here('data/epccmbdat.RData'))
 
 # USGS gage data ------------------------------------------------------------------------------
 
@@ -1442,37 +1302,12 @@ fimsgtempdat <- fimtempdat %>%
   filter(!is.na(sgpres)) %>% # will still include those with algae only
   mutate(
     lon = st_coordinates(.)[, 1], 
-    lat = st_coordinates(.)[, 2]
+    lat = st_coordinates(.)[, 2], 
+    yr = year(date)
   ) %>% 
   st_set_geometry(NULL)
 
 save(fimsgtempdat, file = here('data/fimsgtempdat.RData'), compress = 'xz')
-
-# fim models ----------------------------------------------------------------------------------
-
-load(file = here('data/fimsgtempdat.RData'))
-
-tomod <- fimsgtempdat %>%
-  filter(!bay_segment %in% c('LTB')) %>%
-  mutate(
-    yrcat = case_when(
-      year(date) <= 2015 ~ 'Recovery (pre - 2016)',
-      T ~ 'Decline (2016 - present)'
-    ), 
-    yrcat = factor(yrcat, levels = c('Recovery (pre - 2016)', 'Decline (2016 - present)')),
-    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB')), 
-    fctcrs = fct_cross(yrcat, bay_segment)
-  )
-
-# models
-fimsalmod <- gam(sgcov ~ bay_segment * yrcat + s(sal, by = fctcrs), data = tomod,
-           method = 'REML')
-
-fimtempmod <- gam(sgcov ~ bay_segment * yrcat + s(temp, by = fctcrs), data = tomod,
-           method = 'REML')
-
-save(fimsalmod, file = here('data/fimsalmod.RData'))
-save(fimtempmod, file = here('data/fimtempmod.RData'))
 
 # pinellas data -------------------------------------------------------------------------------
 
@@ -1548,8 +1383,45 @@ pincotemp <-  saltemp %>%
   inner_join(sav, by = c('site', 'sample', 'date', 'hr', 'lat', 'lon')) %>% 
   mutate(
     yr = year(date), 
-    mo = month(date)
+    mo = month(date), 
+    bay_segment = 'OTB'
   ) %>% 
   filter(yr > 2003) # only a few
   
 save(pincotemp, file = here('data/pincotemp.RData'))
+
+# seagrass declines models, epc, fim, and pinco -----------------------------------------------
+
+load(file  = here('data/epccmbdat.RData'))
+load(file = here('data/fimsgtempdat.RData'))
+load(file = here('data/pincotemp.RData'))
+
+modprep <- function(dat){
+
+  dat %>% 
+    filter(!bay_segment %in% c('LTB')) %>% 
+    mutate(
+      yrcat = case_when(
+        yr <= 2016 ~ 'pre', 
+        yr > 2016 ~ 'post'
+      ), 
+      yrcat = factor(yrcat, levels = c('pre', 'post'))
+    )
+
+}
+
+epctomod <- modprep(epccmbdat)
+fimtomod <- modprep(fimsgtempdat)
+pincotomod <- modprep(pincotemp)
+
+epcmod <- lm(total ~ sal * temp * yrcat + bay_segment, data = epctomod) %>% 
+  step()
+fimmod <- lm(sgcov ~ sal * temp * yrcat + bay_segment, data = fimtomod) %>% 
+  step()
+pincomod <- glm(allsg ~ sal * temp * yrcat, data = pincotomod, family = binomial(link = 'logit')) %>%
+  step()
+
+sgmods <- list(epcmod = epcmod, fimmod = fimmod, pincomo = pincomod)
+
+save(sgmods, file = here('data/sgmods.RData'))
+
