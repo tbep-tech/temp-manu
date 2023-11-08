@@ -179,11 +179,19 @@ Times when both temperature was above a threshold and salinity was below a thres
 
 ### Seagrass response
 
-GLMs for the "Both" model did not include a year category and the interaction of temp/sal in the first model was negligible (fig holds temp/sal at mean? for respective plots).
+```{r}
+epcmodsum1 <- modtxt_fun(sgmods$epcmod1)
+epcmodsum2 <- modtxt_fun(sgmods$epcmod2)
+fimmodsum <- modtxt_fun(sgmods$fimmod)
+```
 
-Seagrass decline results in @fig-tempsalmod, @fig-sggammod
+Linear models to assess the potential effects of temperature and salinity on seagrass changes provided modest evidence that seagrass loss after 2016 was driven by climate stressors. The most parsimonious model for the EPC data included the temperature and salinity metrics as potentially important for explaining inter-annual variation in seagrass frequency occurrence (`r epcmodsum1`). An interaction of the metrics with time period was also observed, with notable differences by predictor (Figure [-@fig-sgmod]a). For the period prior to 2016, frequency occurrence of seagrass increased as the number of days where temperature was above 30\$\^\\circ\$ increased, whereas no relationship was observed after 2016. However, the interaction between time period and temperature was not significant, suggesting no difference between time periods. The opposite trend was observed for the number of days when salinity was below 25 ppt, where no relationship was observed prior to 2016 and a decreasing relationship was observed after 2016 (p \< 0.01), Figure [-@fig-sgmod]a). The interaction between the temperature and salinity metric was included in the most parsimonious model (p \< 0.1), although the shape of the relationship of temperature with time period or salinity with time period did not noticeably change using different condition values for salinity or temperature, respectively. The second model for the EPC data that evaluated the number of days when both temperature was above and salinity was below the threshold was also significant (`r epcmodsum2`), although the interaction term between the both metric and time period was not included in the most parsimonious model, suggesting no effect of this metric in describing seagrass change after 2016.
+
+The most parsimonious model for the FIM dataset also showed potential temperature and salinity associations with seagrass change after 2016, although explanatory power was lower than the EPC models likely due to the larger spread of data (`r fimmodsum`). Increases in temperature and decreases in salinity were both associated with reductions in percent cover after 2016, whereas no relationships were observed prior to 2016 (p \< 0.05 and p \< 0.1 for the interactions between temperature, salinity with time period, respectively, Figure [-@fig-sgmod]b). The interaction between salinity and temperature was not included as a significant term in the final model. Lastly, the most parsimonious model for the PDEM dataset only included time period as a marginally significant variable and the overall model fit was not significant.
 
 ## Discussion
+
+Takehome results: notable temp, salinity changes, some evidence of association with seagrass change. Of the limited evidence, effects of high temp, low salinity may just be additive, no support for interactions. This was shown by the FIM models and lack of significance for the "both" EPC model. Also, note that the PDEM data may have had low power, limited spatially (only west side of bay segment) and even shorter time period (supp fig, sal trends support this).
 
 Other areas showing seagrass loss - Florida Bay is different, less water flowing out of everglades and compounding SLR has elevated salinity and likely stress in other direction. Also, Biscayne Bay and IRL is a lot like OTB, poor flushing for example.
 

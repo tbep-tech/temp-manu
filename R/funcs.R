@@ -24,6 +24,23 @@ p_txt <- function(x){
   
 }
 
+#define function to extract overall p-value of model
+overall_p <- function(my_model) {
+  f <- summary(my_model)$fstatistic
+  p <- pf(f[1],f[2],f[3],lower.tail=F)
+  attributes(p) <- NULL
+  return(p)
+}
+
+# summarize lm for inline text
+modtxt_fun <- function(mod){
+  r2 <- paste0('Adj. R$^2$ = ', round(summary(mod)$adj.r.squared, 2))
+  fv <- round(summary(mod)$fstatistic, 2)
+  fv <- paste0('F = ', fv[1], ', df = ', fv[2], ', ', fv[3])
+  pv <- p_txt(overall_p(mod))
+  out <- paste(r2, fv, pv, sep = ', ')
+  return(out)
+}
 
 # run length encoding for vector of TF, return longest run of T
 runfunc <- function(cnt){

@@ -1165,9 +1165,9 @@ pincomod <- sgmods$pincomod
 
 epcplo <- modplo_fun(
   mod = epcmod1, 
-  xlab1 = 'days temperature > 30 \u00B0C', 
+  xlab1 = '# days temperature > 30 \u00B0C', 
   ylab1 = 'Frequency occurrence', 
-  xlab2 = 'days salinity < 25 ppt',
+  xlab2 = '# days salinity < 25 ppt',
   title1 = '(a) EPC', 
   ismetric = T
 )
