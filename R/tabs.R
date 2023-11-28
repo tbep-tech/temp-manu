@@ -2,6 +2,7 @@ library(tidyverse)
 library(here)
 library(mgcv)
 library(broom)
+library(tbeptools)
 
 source(here('R/funcs.R'))
 
