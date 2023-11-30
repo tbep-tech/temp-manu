@@ -58,9 +58,9 @@ load(file = here('tabs/supp2daytab.RData'))
 
 {{< pagebreak >}}
 
-![Relationship between water temperature and discharge in the Hillsborough River (USGS gage 02303000) over time. The relationship is shown for February (dry month) and August (wet month) grouped by historic (1975-1999) and contemporary (2000-2022) time periods. Regression lines with 95% confidence intervals for each temporal grouping are shown.](figs/suppflowtemp.png){#fig-suppflowtemp}
+<!-- ![Relationship between water temperature and discharge in the Hillsborough River (USGS gage 02303000) over time. The relationship is shown for February (dry month) and August (wet month) grouped by historic (1975-1999) and contemporary (2000-2022) time periods. Regression lines with 95% confidence intervals for each temporal grouping are shown.](figs/suppflowtemp.png){#fig-suppflowtemp} -->
 
-{{< pagebreak >}}
+<!-- {{< pagebreak >}} -->
 
 ![Examples of Generalized Additive Models of bottom water temperature and salinity for station 66 in Old Tampa Bay.  Models were fit using a continuous smoothing spline for decimal year.  Monthly observations are shown as points and daily predictions from the models as lines.](figs/suppgamex.png){#fig-supgamex}
 
