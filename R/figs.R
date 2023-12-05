@@ -18,6 +18,7 @@ library(visreg)
 library(car)
 library(mgcv)
 library(mixmeta)
+library(maps)
 
 source(here('R/funcs.R'))
 
@@ -30,6 +31,132 @@ tempthr <- c(29, 30, 31)
 tempcol <- c('coral', 'red2', 'darkred')
 salithr <- c(20, 25, 30)
 salicol <- c('navyblue', 'dodgerblue2', 'slategray3')
+
+# map -----------------------------------------------------------------------------------------
+
+fl <- paste0(tempdir(), '/sgdat2022.RData')
+download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/sgdat2022.RData', destfile = fl)
+load(file = fl)
+
+data(pincotemp)
+data(fimsgtempdat)
+data(epcdata)
+
+sgdat <- sgdat2022 %>% 
+  filter(FLUCCSCODE %in% c(9113, 9116)) %>% 
+  st_simplify(5, preserveTopology = F)
+
+flpoly <- map_data('state', 'florida') %>% 
+  st_as_sf(coords = c('long', 'lat'), crs = 4326) %>% 
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+bbox <- st_bbox(tbseg)
+
+minset <- ggplot() + 
+  geom_sf(data = flpoly, fill = 'grey', color = NA) + 
+  geom_sf(data = st_as_sfc(bbox), fill = NA, color = 'black', linewidth = 1) + 
+  theme_void() +
+  theme( 
+    panel.background = element_rect(fill = '#FFFFFF', colour = 'white'), 
+    panel.border = element_rect(colour = 'black', fill = 'transparent')
+  ) 
+
+segcent <- tbseg %>% 
+  st_centroid() 
+
+thm <- theme(
+  panel.grid = element_blank(), 
+  axis.title = element_blank(), 
+  axis.text.y = element_text(size = 6),
+  axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 6), 
+  axis.ticks = element_blank()
+)
+
+m1 <- ggplot() + 
+  ggspatial::annotation_map_tile(zoom = 11, type = 'cartolight', cachedir = system.file("rosm.cache", package = "ggspatial")) +
+  geom_sf(data = sgdat, fill = 'darkgreen', color = NA, inherit.aes = F) +
+  geom_sf(data = trnpts, color = 'tomato1', inherit.aes = F) +
+  annotation_north_arrow(location = 'tl', style = north_arrow_orienteering(fill = c('black', 'black'), text_col = NA), 
+                         height = unit(0.5, "cm"), width = unit(0.5, "cm")) +
+  annotation_scale(location = 'br', text_cex = 1) +
+  geom_sf(data = tbseg, fill = NA, color = NA, inherit.aes = F) +
+  geom_sf(data = tbseglines, color = 'black', inherit.aes = F) +
+  geom_sf_text(data = segcent, aes(label = bay_segment), size = 4, color = 'black', inherit.aes = F) +
+  # annotation_custom(ggplotGrob(minset), xmin = -9.185e6, xmax = -9.17e6, ymin = 3.22e6, ymax = 3.28e6) + 
+  annotation_custom(ggplotGrob(minset), xmin = bbox[3] - 0.1, xmax = bbox[3] + 0.015, ymin = bbox[4] - 0.1, ymax = bbox[4] + 0.06) + 
+  coord_sf(xlim = bbox[c('xmin', 'xmax')], ylim = bbox[c('ymin', 'ymax')], crs = 4326) +
+  labs(
+    subtitle = '(a) Bay segments, seagrass'
+  ) +
+  thm + 
+  theme(
+    axis.text.x = element_blank()
+  )
+
+# xnrg <- ggplot_build(m1)$layout$panel_scales_x[[1]]$range$range
+# yrng <- ggplot_build(m1)$layout$panel_scales_y[[1]]$range$range
+
+epcpts <- epcdata %>% 
+  select(long = Longitude, lat = Latitude) %>% 
+  unique() %>% 
+  st_as_sf(coords = c('long', 'lat'), crs = 4326) 
+
+m2 <- ggplot() + 
+  ggspatial::annotation_map_tile(zoom = 11, type = 'cartolight', cachedir = system.file("rosm.cache", package = "ggspatial")) +
+  # geom_sf(data = sgdat, fill = 'darkgreen', color = NA, inherit.aes = F) +
+  geom_sf(data = tbseg, fill = NA, color = NA, inherit.aes = F) +
+  geom_sf(data = epcpts, color = 'black', inherit.aes = F) + 
+  coord_sf(xlim = bbox[c('xmin', 'xmax')], ylim = bbox[c('ymin', 'ymax')], crs = 4326) +
+  labs(
+    subtitle = '(b) EPC'
+  ) +
+  thm +  
+  theme(
+    axis.text.y = element_blank(), 
+    axis.text.x = element_blank()
+  )
+
+fimpts <- fimsgtempdat %>% 
+  select(long = lon, lat) %>% 
+  unique() %>% 
+  st_as_sf(coords = c('long', 'lat'), crs = 4326) 
+
+m3 <- ggplot() + 
+  ggspatial::annotation_map_tile(zoom = 11, type = 'cartolight', cachedir = system.file("rosm.cache", package = "ggspatial")) +
+  # geom_sf(data = sgdat, fill = 'darkgreen', color = NA, inherit.aes = F) +
+  geom_sf(data = tbseg, fill = NA, color = NA, inherit.aes = F) +
+  geom_sf(data = fimpts, color = 'black', inherit.aes = F, size = 0.5, alpha = 0.5) + 
+  coord_sf(xlim = bbox[c('xmin', 'xmax')], ylim = bbox[c('ymin', 'ymax')], crs = 4326) +
+  labs(
+    subtitle = '(c) FIM'
+  ) +
+  thm
+
+pdempts <- pincotemp %>% 
+  select(long = lon, lat) %>% 
+  unique() %>% 
+  st_as_sf(coords = c('long', 'lat'), crs = 4326)
+
+m4 <- ggplot() + 
+  ggspatial::annotation_map_tile(zoom = 11, type = 'cartolight', cachedir = system.file("rosm.cache", package = "ggspatial")) +
+  # geom_sf(data = sgdat, fill = 'darkgreen', color = NA, inherit.aes = F) +
+  geom_sf(data = tbseg, fill = NA, color = NA, inherit.aes = F) +
+  geom_sf(data = pdempts, color = 'black', inherit.aes = F, size = 0.5, alpha = 0.5) + 
+  coord_sf(xlim = bbox[c('xmin', 'xmax')], ylim = bbox[c('ymin', 'ymax')], crs = 4326) +
+  labs(
+    subtitle = '(d) PDEM'
+  ) +
+  thm + 
+  theme(
+    axis.text.y = element_blank()
+  )
+
+m <- m1 + m2 + m3 + m4 + plot_layout(ncol = 2)
+
+png(here('figs/map.png'), height = 7, width = 4.25, family = 'serif', units = 'in', res = 300)
+print(m)
+dev.off()
 
 # seagrass loss -------------------------------------------------------------------------------
 
