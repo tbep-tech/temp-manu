@@ -64,15 +64,11 @@ load(file = here('data/sgmods.RData'))
 
 ## Introduction
 
--   Importance of seagrass as foundation species
--   Tampa Bay context
--   Climate change stressors
--   Goals/objectives
-    -   Describe
+The monitoring and management of seagrasses in coastal environments has received substantial attention at a global scale. Seagrasses are fundamental indicators of ecosystem health [@roca2016; @orth2017], while also serving as foundational species that provide numerous ecosystem services[@fourqurean2012; @orth2020; @orth2023]. Seagrasses have been in global decline with rapid development of coastal environments, particularly in the latter half of the 20th century with accelerating losses estimated at a rate of 110 km$^2$ yr$^{-1}$ in areal cover since the 1980s [@waycott2009]. These losses are comparable, if not more, than other critical coastal environments, which represents an existential threat to the natural and economic services that these habitats provide. Losses have been attributed to numerous stressors including decline in light environments with nutrient enrichment, sedimentation, and physical disturbance primarily from human activities, whereas natural disturbances such as storm events and disease have also been implicated. Management actions and interventions aimed at mitigating loss and ultimately supporting restoration require an adaptive approaches to address the effects of multiple stressors that have contributed to seagrass decline.
 
-Background: SST trends in Tampa Bay w/ EPC data, WFS, and deep GOM [@nickerson2023] showed that 1975 to 2022 trend for EPC was notable, but less so from 1998 to 2022. Also noted the trend was most pronounced in the winter, see Fig 3
+The sustained coverage or restoration of seagrasses by means other than planting requires management actions that create suitable conditions supportive for growth. A long-standing approach adopted by numerous management entities has been the control of nutrient inputs in systems where excessive phytoplankton growth has created poor light environments for seagrasses. There are limited examples of successful recovery of seagrass through control of nutrient inputs, with notable exceptions including Tampa Bay\... examples in Orth 2023. Lack of recovery of seagrasses through nutrient controls alone suggests insufficient reductions of nutrient inputs to promote restoration, such as for ecosystems where hysteresis may substantially limit the reverse of a trajectory deline. For coastal systems More likely, the role of alternative stressors may also be inadequately considered and addressed in management paradigms.
 
-Good CC references for FL: https://www.mdpi.com/2071-1050/15/14/11364
+Climate change has complicated the understanding of ecosystem response to conventational stressors, presenting new challenges and expectations for how ecological resources will respond to management actions. rising temperature
 
 el nino effects, see Greening and Janicki 2006
 
@@ -80,13 +76,17 @@ Heat stress combined with highlight accelerates decline of *E. acoroides*, used 
 
 Widgeongrass colonization in Chesapeake Bay as an opportunistic, heat-tolerant species that has replaced Eelgrass, although former is sensitive to nutrient pulses. Paper provides an example of implications on climate change and nutrient management on foundation species and system resiliency [@hensel2023].
 
+This study focuses on Tampa Bay...
+
+Background: SST trends in Tampa Bay w/ EPC data, WFS, and deep GOM [@nickerson2023] showed that 1975 to 2022 trend for EPC was notable, but less so from 1998 to 2022. Also noted the trend was most pronounced in the winter, see Fig 3
+
+Good CC references for FL: https://www.mdpi.com/2071-1050/15/14/11364
+
 @lewis1985 review of seagrass in Tampa Bay. @lirman2003 conducted exposure experiments to evaluate seagrass growth in response to a range of salinity conditions. @mcmillan1967 discusses growth of halodule, syringodium, thalassia, and ruppia in response to salinity increases (up to 75 psu), no info on lower limit. Cites @phillips1960 for a salinity range of Thalassia in Florida of 33 - 38 psu. @zieman1975 discusses seasonal variation of thalassia relative to temp and salinity
 
-Focus on two time periods: full record and recent decline
-
-Focus on two physical parameters: temperature and salinity
-
 Temp background for TB: NOAA coastwatch trends
+
+This paper describes a comprehensive assessment of long-term trends in water temperature and salinity in the Tampa Bay Estuary over the last fifty years. Three datasets of varying sample design and temporal coverage were used to assess the primary hypothesis that conditions in Tampa Bay are trending towards hotter and fresher conditions that are likely pushing seagrasses beyond their optimal tolerance ranges. This analysis was supported by 30-year seagrass datasets describing approximate biennial coverage of all seagrasses, annual transect monitoring data describing cover of individual species, and synoptic seagrass data collected with the water quality data. Specific focus was on the period from prior to and after 2016, when seagrasses recovered baywide and then declined by 28% despite water quality conditions remaining relatively stable, suggesting that additional stressors beyond light requirements may explain the recent decline. The long-term recovery of Tampa Bay as primarily shown through the recovery of seagrasses to 2016 is a nationally recognized success story. This analysis provides a more recent assessment of current conditions by examining climate-related stressors and seagrass loss. Our primary goal was to relate recent seagrass changes to climate stressors to provide a motivating example for the management community in the Tampa Bay region that a shifting ecological baseline presents new challenges beyond the known success story. The results are also provided as a cautionary example of the subtle but increasing role of climate-related stressors on the resiliency of estuarine systems, prompting a reassessment of existing management paradigms to accommodate current and anticipated future conditions.
 
 ## Methods
 

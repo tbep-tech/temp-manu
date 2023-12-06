@@ -55,7 +55,7 @@ bbox <- st_bbox(tbseg)
 
 minset <- ggplot() + 
   geom_sf(data = flpoly, fill = 'grey', color = NA) + 
-  geom_sf(data = st_as_sfc(bbox), fill = NA, color = 'black', linewidth = 1) + 
+  geom_sf(data = st_as_sfc(bbox), fill = NA, color = 'black', linewidth = 0.5) + 
   theme_void() +
   theme( 
     panel.background = element_rect(fill = '#FFFFFF', colour = 'white'), 
