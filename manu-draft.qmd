@@ -230,7 +230,7 @@ This work benefited from constructive discussions with the Technical Advisory Co
 
 ## Figures {.unnumbered}
 
-![Map of Tampa Bay and the three datasets used for trend analysis, including (a) bay segments, 2022 seagrass coverage (green), and transect starting points (red), (b) Environmental Protection Commission (EPC) long-term monitoring sites, (c) Fisheries Independent Monitoring (FIM) random sampling for near-shore seine hauls, and (d) OTB portion of Pinellas County Department of Environmental Management (PDEM) random sampling. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/map.png){#fig-map}
+![Map of Tampa Bay and the three datasets used for trend analysis, including (a) bay segments, 2022 seagrass coverage (green), and transect starting points (red), (b) Environmental Protection Commission (EPC) long-term monitoring sites, (c) Fisheries Independent Monitoring (FIM) random sampling for near-shore seine hauls, and (d) OTB portion of Pinellas County Department of Environmental Management (PDEM) random sampling. Date ranges for each dataset are shown in the title. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/map.png){#fig-map}
 
 {{< pagebreak >}}
 

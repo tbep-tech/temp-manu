@@ -109,7 +109,7 @@ m2 <- ggplot() +
   geom_sf(data = epcpts, color = 'black', inherit.aes = F) + 
   coord_sf(xlim = bbox[c('xmin', 'xmax')], ylim = bbox[c('ymin', 'ymax')], crs = 4326) +
   labs(
-    subtitle = '(b) EPC'
+    subtitle = '(b) EPC, 1975-2022'
   ) +
   thm +  
   theme(
@@ -129,7 +129,7 @@ m3 <- ggplot() +
   geom_sf(data = fimpts, color = 'black', inherit.aes = F, size = 0.5, alpha = 0.5) + 
   coord_sf(xlim = bbox[c('xmin', 'xmax')], ylim = bbox[c('ymin', 'ymax')], crs = 4326) +
   labs(
-    subtitle = '(c) FIM'
+    subtitle = '(c) FIM, 1996-2022'
   ) +
   thm
 
@@ -145,7 +145,7 @@ m4 <- ggplot() +
   geom_sf(data = pdempts, color = 'black', inherit.aes = F, size = 0.5, alpha = 0.5) + 
   coord_sf(xlim = bbox[c('xmin', 'xmax')], ylim = bbox[c('ymin', 'ymax')], crs = 4326) +
   labs(
-    subtitle = '(d) PDEM'
+    subtitle = '(d) PDEM, 2004-2022'
   ) +
   thm + 
   theme(
@@ -154,7 +154,7 @@ m4 <- ggplot() +
 
 m <- m1 + m2 + m3 + m4 + plot_layout(ncol = 2)
 
-png(here('figs/map.png'), height = 7, width = 4.25, family = 'serif', units = 'in', res = 300)
+png(here('figs/map.png'), height = 6.5, width = 4, family = 'serif', units = 'in', res = 300)
 print(m)
 dev.off()
 
