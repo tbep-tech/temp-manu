@@ -277,7 +277,8 @@ thm <- theme_minimal() +
   theme(
     strip.placement = 'outside', 
     panel.grid.minor = element_blank(), 
-    axis.text.y = element_text(size = 12), 
+    axis.text.y = element_text(size = 11), 
+    axis.title.y = element_text(size = 10),
     legend.text = element_text(size= 12)
   )
 
@@ -462,7 +463,8 @@ thm <- theme_minimal() +
   theme(
     strip.placement = 'outside', 
     panel.grid.minor = element_blank(), 
-    axis.text.y = element_text(size = 12), 
+    axis.text.y = element_text(size = 11), 
+    axis.title.y = element_text(size = 10),
     legend.text = element_text(size= 12)
   )
 
@@ -613,7 +615,7 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
 
 p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 3)) & theme(legend.position = 'top')
 
-png(here('figs/suppmeteowqraw.png'), height = 8, width = 7, family = 'serif', units = 'in', res = 500)
+png(here('figs/suppmeteowqraw.png'), height = 7, width = 6.125, family = 'serif', units = 'in', res = 500)
 print(p)
 dev.off()
 
