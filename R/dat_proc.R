@@ -1236,8 +1236,10 @@ mccode <- c("AB", "AC", "AG", "AM", "AR", "AT", "AU", "BA", "CA",
 
 # physical data
 # filter zones A-E for TB proper, then clip by TB segments
-# filter gear type 20 (nearshore seine)
-# filter referenc with loc info
+# filter gear type 20 (21.3-m seine)
+# filter by stratum (if wanted) to return shoreline ('S') and/or offshore (>5 m from shore, 'A','B'), we can include both, but will need to add to methods section
+# filter reference with loc info
+# filter by project "AM" to return standard monitoring sites, others are special projects - may not change the output much
 
 phydat <- phyraw %>% 
   mutate(
@@ -1247,7 +1249,9 @@ phydat <- phyraw %>%
     hr = as.numeric(hr)
   ) %>% 
   filter(Zone %in% c('A', 'B', 'C', 'D', 'E')) %>% 
+  #filter(Project =='AM') 
   filter(Gear == 20) %>% 
+  #filter (Stratum %in% c('A','B')) %>% 
   filter(!is.na(Longitude) | !is.na(Latitude)) %>% 
   filter(!is.na(BottomVegCover)) %>% 
   st_as_sf(coords = c('Longitude', 'Latitude'), crs = prj, remove = F) %>% 
@@ -1295,7 +1299,7 @@ habdat <- habraw %>%
     sgcov = sum(vegcov, na.rm = T),
     .by = Reference
   ) %>% 
-  filter(sgcov <= 100) # some above 100, probably an error
+  filter(sgcov <= 100) # some above 100; 101 used when cover is not estimated
 
 # combine seagrass p/a with fimtempdat
 fimsgtempdat <- fimtempdat %>% 
