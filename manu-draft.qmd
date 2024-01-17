@@ -224,7 +224,7 @@ Area managers should consider how these climate-related stressors may alter the 
 
 ## Acknowledgments
 
-This work benefited from constructive discussions with the Technical Advisory Committee of the Tampa Bay Estuary Program (TBEP), Mike Wessel, Ray Pribble, and Dave Tomasko. TBEP funding for this work stems from EPA Section 320 Grant Funds, and the TBEP's local government partners (Hillsborough, Manatee, Pasco, and Pinellas Counties; the Cities of Clearwater, St. Petersburg, and Tampa; Tampa Bay Water; and the Southwest Florida Water Management District) through contributions to the operating budget. We are indebted to the hundreds of field and technical staff for collecting and maintaining the valuable long-term monitoring data used in this study.
+This work benefited from constructive discussions with the Technical Advisory Committee of the Tampa Bay Estuary Program (TBEP), Mike Wessel, Ray Pribble, Brad Furman, and Dave Tomasko. TBEP funding for this work stems from EPA Section 320 Grant Funds, and the TBEP's local government partners (Hillsborough, Manatee, Pasco, and Pinellas Counties; the Cities of Clearwater, St. Petersburg, and Tampa; Tampa Bay Water; and the Southwest Florida Water Management District) through contributions to the operating budget. We are indebted to the hundreds of field and technical staff for collecting and maintaining the valuable long-term monitoring data used in this study.
 
 {{< pagebreak >}}
 
