@@ -14,6 +14,7 @@ library(SPEI)
 library(rnoaa)
 library(dataRetrieval)
 library(readxl)
+library(zoo)
 
 source(here('R/funcs.R'))
 yrsel <- c(1998, 2022)
@@ -60,27 +61,68 @@ resdat <- res %>%
   unnest('data') %>% 
   unnest('ests') %>% 
   ungroup() %>% 
-  select(date, prcp, tmax, tmin) %>% 
+  select(date, tmax, tmin) %>% 
   mutate(
     yr = year(date),
     mo = month(date),
     tavg_c = (tmax + tmin) / 2,
     tavg_c = tavg_c / 10,
-    tavg_c = na.approx(tavg_c),
-    precip_mm = prcp / 10, 
-    precip_in = precip_mm * 0.0393701
+    tavg_c = na.approx(tavg_c)
   ) %>% 
-  select(date, yr, mo, tavg_c, precip_mm, precip_in)
+  select(date, yr, mo, tavg_c)
+
+# monthly rainfall data from swfwmd 
+# https://www.swfwmd.state.fl.us/resources/data-maps/rainfall-summary-data-region
+# file is from the link "USGS watershed"
+download.file(
+  'https://www4.swfwmd.state.fl.us/RDDataImages/surf.xlsx?_ga=2.186665249.868698214.1705929229-785009494.1704644825',
+  here('data-raw/swfwmdrainfall.xlsx'),
+  mode = 'wb'
+  )
+
+raindat <- readxl::excel_sheets(here('data-raw/swfwmdrainfall.xlsx')) %>% 
+  grep('jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec', ., value = TRUE) %>% 
+  tibble(
+    mo = .
+  ) %>% 
+  nest(.by = mo) %>% 
+  mutate(
+    data = purrr::map(mo, function(mo){
+      
+      read_excel(here('data-raw/swfwmdrainfall.xlsx'), sheet = mo, skip = 1) %>% 
+        filter(Year %in% 1975:2022) %>% 
+        select(
+          yr = Year, 
+          precip_in = `Tampa Bay/Coastal Areas`
+        ) %>% 
+        mutate_all(as.numeric)
+
+    })
+  ) %>% 
+  unnest('data') %>% 
+  mutate(
+    mo = gsub('\\-usgsbsn$', '', mo),
+    mo = as.numeric(factor(mo,
+                              levels = c('jan', 'feb', 'mar', 'apr', 'may', 'jun',
+                                         'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),
+                              labels = 1:12)
+                    ),
+    date = as.Date(paste0(yr, '-', mo, '-01')), 
+    precip_mm = precip_in * 25.4
+  )
+
+
 
 # monthly avg, sum
 speidat <- resdat %>% 
   summarise(
-    precip_mm = sum(precip_mm),
-    precip_in = sum(precip_in), 
+    # precip_mm = sum(precip_mm),
+    # precip_in = sum(precip_in), 
     tavg_c = mean(tavg_c),
     date = min(date),
     .by = c('yr', 'mo')
   ) %>% 
+  left_join(raindat, by = c('yr', 'mo', 'date')) %>%
   mutate(
     PET = thornthwaite(tavg_c, stalat),
     BAL = precip_mm - PET,

@@ -266,10 +266,17 @@ hydrodat <- totanndat %>%
   ) 
 
 toplo1 <- speidat %>% 
-  select(yr, precip_mm, tavg_c) %>% 
+  select(yr, tavg_c) %>% 
+  summarise(
+    tavg_c = mean(tavg_c), 
+    .by = 'yr'
+  )
+
+toplo2 <- speidat %>% 
+  filter(mo %in% c(6:8)) %>% 
+  select(yr, precip_mm) %>% 
   summarise(
     precip_mm = sum(precip_mm), 
-    tavg_c = mean(tavg_c), 
     .by = 'yr'
   )
 
@@ -292,10 +299,10 @@ p1 <- ggplot(toplo1, aes(x = yr, y = tavg_c)) +
   ) +
   labs(
     x = NULL, 
-    y = 'Air temp. (\u00B0 C)'
+    y = 'Air temp. (\u00B0C)'
   )
 
-p2 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) + 
+p2 <- ggplot(toplo2, aes(x = yr, y = precip_mm / 1e3)) + 
   geom_line() + 
   geom_point() + 
   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
@@ -305,7 +312,7 @@ p2 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) +
   ) +
   labs(
     x = NULL, 
-    y = 'Precip. (m)'
+    y = 'Jun-Aug prec. (m)'
   )
 
 p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
@@ -319,7 +326,7 @@ p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
   ) +
   labs(
     x = NULL, 
-    y = expression(paste('Hyd. load (', 10^3, ' t/yr)'))
+    y = expression(paste('Hy. load (', 10^3, ' t/y)'))
   )
 
 p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
@@ -427,7 +434,7 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 3)) & theme(legend.position = 'top')
+p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.75)) & theme(legend.position = 'top')
 
 png(here('figs/meteowqraw.png'), height = 8, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
@@ -452,10 +459,17 @@ speidat <- speidat%>%
   filter(yr >= yrsel2[1] & yr <= yrsel2[2])
 
 toplo1 <- speidat %>% 
-  select(yr, precip_mm, tavg_c) %>% 
+  select(yr, tavg_c) %>% 
+  summarise(
+    tavg_c = mean(tavg_c), 
+    .by = 'yr'
+  )
+
+toplo2 <- speidat %>% 
+  filter(mo %in% c(6:8)) %>% 
+  select(yr, precip_mm) %>% 
   summarise(
     precip_mm = sum(precip_mm), 
-    tavg_c = mean(tavg_c), 
     .by = 'yr'
   )
 
@@ -481,7 +495,7 @@ p1 <- ggplot(toplo1, aes(x = yr, y = tavg_c)) +
     y = 'Air temp. (\u00B0 C)'
   )
 
-p2 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) + 
+p2 <- ggplot(toplo2, aes(x = yr, y = precip_mm / 1e3)) + 
   geom_line() + 
   geom_point() + 
   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
@@ -491,7 +505,7 @@ p2 <- ggplot(toplo1, aes(x = yr, y = precip_mm / 1e3)) +
   ) +
   labs(
     x = NULL, 
-    y = 'Precip. (m)'
+    y = 'Jun-Aug prec. (m)'
   )
 
 p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
@@ -505,7 +519,7 @@ p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
   ) +
   labs(
     x = NULL, 
-    y = expression(paste('Hyd. load (', 10^3, ' t/yr)'))
+    y = expression(paste('Hy. load (', 10^3, ' t/y)'))
   )
 
 p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
@@ -613,9 +627,9 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 3)) & theme(legend.position = 'top')
+p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.75)) & theme(legend.position = 'top')
 
-png(here('figs/suppmeteowqraw.png'), height = 7, width = 6.125, family = 'serif', units = 'in', res = 500)
+png(here('figs/suppmeteowqraw.png'), height = 8, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
 dev.off()
 

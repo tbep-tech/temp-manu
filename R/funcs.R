@@ -27,6 +27,11 @@ p_ast2 <- function(x){
 # function for formatting p-values in text
 p_txt <- function(x){
   
+  if(x >= 0.05){
+    out <- paste('p =', round(x, 2))
+    return(out)
+  }
+  
   sig_cats <- c('p < 0.005', 'p < 0.05', 'ns')
   sig_vals <- c(-Inf, 0.005, 0.05, Inf)
   
