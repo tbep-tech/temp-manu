@@ -114,7 +114,7 @@ modplo_fun <- function(mod, xlab1, ylab1, subtitle1 = NULL, title1 = NULL,
   toplo2a <- toplo2$fit
   
   ylim <- c(min(toplo1a$visregLwr, toplo2a$visregLwr), max(toplo1a$visregUpr, toplo2a$visregUpr))
-  
+
   p1 <- ggplot(toplo1a, aes(x = temp)) + 
     geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'red2', alpha = 0.5) + 
     geom_line(aes(y = visregFit), color = 'red2') + 
