@@ -640,7 +640,7 @@ load(file = here(paste0('data/', fl, '.RData')))
 
 toplo <- get(fl)
 
-p1 <- show_prdseries(toplo, ylab = 'Bottom temperature (\u00B0C)') + 
+p1 <- show_prdseries(toplo, ylab = 'Bottom temperature (\u00B0C)', col = 'red2') + 
   labs(subtitle ='Station 66, OTB')
 
 fl <- 'OTB_66_salibot'
@@ -648,7 +648,7 @@ load(file = here(paste0('data/', fl, '.RData')))
 
 toplo <- get(fl)
 
-p2 <- show_prdseries(toplo, ylab = 'Bottom salinity (ppt)')
+p2 <- show_prdseries(toplo, ylab = 'Bottom salinity (ppt)', col = 'dodgerblue2')
 
 p <- p1 + p2 + plot_layout(ncol = 1)
 
@@ -1060,14 +1060,16 @@ thm <- theme_minimal() +
     panel.grid.minor = element_blank(), 
     axis.text.y = element_text(size = 11), 
     legend.text = element_text(size= 12), 
-    axis.text.x = element_text(size = 7)
+    axis.text.x = element_text(size = 7), 
+    legend.position = 'none'
   )
 
-p <- ggplot(toplo, aes(x = yr, y = avev)) + 
-  geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7, color = 'steelblue4') + 
-  geom_point(size = 0.75, color = 'steelblue4') +
+p <- ggplot(toplo, aes(x = yr, y = avev, color = name)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7) + 
+  geom_point(size = 0.75) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
   # geom_line(data = mixmets, aes(y = prd), color = 'steelblue4') +
+  scale_color_manual(values = c('red2', 'dodgerblue2')) +
   geom_smooth(method = 'lm', se = F, formula = y ~ x) +
   facet_grid(name ~ bay_segment, switch = 'y', scales = 'free_y') +
   thm +
@@ -1130,15 +1132,17 @@ thm <- theme_minimal() +
     panel.grid.minor = element_blank(), 
     axis.text.y = element_text(size = 10), 
     legend.text = element_text(size= 12), 
-    axis.text.x = element_text(size = 10)
+    axis.text.x = element_text(size = 10), 
+    legend.position = 'none'
   )
 
 # MTB sampling gap? month coverage? change in sample design?
-p <- ggplot(toplo, aes(x = yr, y = avev)) + 
-  geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7, color = 'steelblue4') + 
-  geom_point(size = 0.75, color = 'steelblue4') +
+p <- ggplot(toplo, aes(x = yr, y = avev, color = var)) + 
+  geom_linerange(aes(ymin = lov, ymax = hiv), show.legend = F, alpha = 0.7) + 
+  geom_point(size = 0.75) +
   # scale_x_continuous(breaks = seq(min(toplo$yr), max(toplo$yr), by = 3)) +
   # geom_line(data = mixmets, aes(y = prd), color = 'steelblue4', method = 'lm', se =) +
+  scale_color_manual(values = c('red2', 'dodgerblue2')) +
   geom_smooth(formula = y ~ x, method = 'lm', se = F) +
   facet_grid(var ~ ., switch = 'y', scales = 'free_y') +
   thm +

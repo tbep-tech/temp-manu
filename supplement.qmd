@@ -3,7 +3,7 @@ format:
   docx:
     reference-doc: my_styles.docx
     number-sections: true
-title: "*Supplement* Hot and fresh: Pervasive climate stressors of seagrass in a large Gulf coast estuary"
+title: "*Supplement* Hot and fresh: evidence of climate-related suboptimal conditions for seagrass in a large Gulf coast estuary"
 bibliography: refs.bib
 csl: estuaries-and-coasts.csl
 author:
