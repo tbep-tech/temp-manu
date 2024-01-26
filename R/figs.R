@@ -1187,9 +1187,13 @@ p <- ggplot(toplo1, aes(x = yr, y = cnt)) +
   geom_point(size = 0.7, alpha = 0.6, color = 'darkgrey') + 
   geom_line(aes(y = prd, group = station), color = 'darkgrey', linewidth = 0.5) + 
   geom_line(data = toplo2, aes(y = prd, col = thrtyp), show.legend = F, linewidth = 1.5) + 
-  geom_label(data = toplo3, aes(x = 2022, y = 0, label = slo, col = thrtyp), show.legend = F, 
-             vjust = 0, hjust = 1, fontface = 'italic', size = 3, label.r = unit(0, "lines"),
-             label.padding = unit(0.1, "lines")) +
+  geom_text(data = subset(toplo3, thrtyp == 'Temperature > 30'), aes(x = 1975, y = -10, label = slo, col = thrtyp), show.legend = F, 
+             vjust = 0, hjust = 0, fontface = 'italic', size = 3) +
+  geom_text(data = subset(toplo3, thrtyp == 'Salinity < 25'), aes(x = 1975, y = -30, label = slo, col = thrtyp), show.legend = F, 
+            vjust = 0, hjust = 0, fontface = 'italic', size = 3) +
+  geom_text(data = subset(toplo3, thrtyp == 'Both'), aes(x = 1975, y = -12, label = slo, col = thrtyp), show.legend = F, 
+            vjust = 0, hjust = 0, fontface = 'italic', size = 3) +
+  
   scale_color_manual(values = c('red2', 'dodgerblue2', 'black')) +
   # coord_cartesian(ylim = c(-10, NA)) +
   facet_grid(thrtyp ~ bay_segment, scales = 'free_y') + 
@@ -1237,9 +1241,12 @@ p <- ggplot(toplo1, aes(x = yr, y = cnt)) +
   geom_point(size = 0.7, alpha = 0.6, color = 'darkgrey') + 
   geom_line(aes(y = prd, group = station), color = 'darkgrey', linewidth = 0.5) + 
   geom_line(data = toplo2, aes(y = prd, col = thrtyp), show.legend = F, linewidth = 1.5) + 
-  geom_label(data = toplo3, aes(x = 2022, y = 0, label = slo, col = thrtyp), show.legend = F, 
-             vjust = 0, hjust = 1, fontface = 'italic', size = 3, label.r = unit(0, "lines"),
-             label.padding = unit(0.1, "lines")) +
+  geom_text(data = subset(toplo3, thrtyp == 'Temperature > 30'), aes(x = 1998, y = -10, label = slo, col = thrtyp), show.legend = F, 
+            vjust = 0, hjust = 0, fontface = 'italic', size = 3) +
+  geom_text(data = subset(toplo3, thrtyp == 'Salinity < 25'), aes(x = 1998, y = -30, label = slo, col = thrtyp), show.legend = F, 
+            vjust = 0, hjust = 0, fontface = 'italic', size = 3) +
+  geom_text(data = subset(toplo3, thrtyp == 'Both'), aes(x = 1998, y = -10, label = slo, col = thrtyp), show.legend = F, 
+            vjust = 0, hjust = 0, fontface = 'italic', size = 3) +
   scale_color_manual(values = c('red2', 'dodgerblue2', 'black')) +
   coord_cartesian(xlim = c(1998, 2022)) +
   facet_grid(thrtyp ~ bay_segment, scales = 'free_y') + 

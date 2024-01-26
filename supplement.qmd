@@ -23,6 +23,18 @@ author:
       email: mburke@tbep.org
       institute: [TBEP]
       correspondence: false
+  - Bradley T Furman:
+      email: Bradley.Furman@myfwc.com
+      institute: [FWRI]
+      correspondence: false
+  - David J Karlen: 
+      email: karlen@epchc.org
+      institute: [EPCHC]
+      correspondence: false
+  - Chris Pratt: 
+      email: prattc@epchc.org
+      institute: [EPCHC]
+      correspondence: false
   - Edward T Sherwood:
       email: esherwood@tbep.org
       institute: [TBEP]
@@ -30,6 +42,8 @@ author:
   
 institute:
   - TBEP: Tampa Bay Estuary Program, 263 13th Ave S., Suite 350, St. Petersburg, Florida 33701 USA
+  - FWRI: Florida Fish and Wildlife Conservation Commission, Florida Fish and Wildlife Research Institute, 100 8th Avenue SE, St. Petersburg, FL 33701, USA
+  - EPCHC: Environmental Protection Commission of Hillsborough County, 3629 Queen Palm Drive, Tampa, FL 33619, USA
 
 filters: 
   - templates/scholarly-metadata.lua
@@ -82,7 +96,7 @@ load(file = here('tabs/supp2daytab.RData'))
 
 {{< pagebreak >}}
 
-![Example of mixed effects models for the estimated number of days per year that temperature (red) or salinity (blue) were above or below thresholds of 30 $^\circ$C or 25 psu, respectively, from 1988 to 2022. The bottom row (black) shows the number of days when both temperature was above and salinity was below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends, grey points as actual number of days, and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom right of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmixeff.png){#fig-suppmixeff}
+![Example of mixed effects models for the estimated number of days per year that temperature (red) or salinity (blue) were above or below thresholds of 30 $^\circ$C or 25 psu, respectively, from 1988 to 2022. The bottom row (black) shows the number of days when both temperature was above and salinity was below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends, grey points as actual number of days, and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom left of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmixeff.png){#fig-suppmixeff}
 
 {{< pagebreak >}}
 
