@@ -72,7 +72,7 @@ load(file = here('tabs/supp2daytab.RData'))
 
 ## Figures {.unnumbered}
 
-![Air temperature, precipitation (Jun-Aug), hydrologic load, Standard Precipitation Index (SPI), water temperature, and salinity trends from 1998 to 2022. The color shades for water temperature and salinity indicate sampling location and values shown are the averages (95% confidence interval) across all Environmental Protection Commission (EPC) stations in each bay segment and sampling months for each year. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmeteowqraw.png){#fig-suppmeteowqraw}
+![Air temperature, precipitation (Jun-Aug), Standard Precipitation Index (SPI), water temperature, and salinity trends from 1998 to 2022. The color shades for water temperature and salinity indicate sampling location and values shown are the averages (95% confidence interval) across all Environmental Protection Commission (EPC) stations in each bay segment and sampling months for each year. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmeteowqraw.png){#fig-suppmeteowqraw}
 
 {{< pagebreak >}}
 

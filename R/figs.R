@@ -315,19 +315,19 @@ p2 <- ggplot(toplo2, aes(x = yr, y = precip_mm / 1e3)) +
     y = 'Jun-Aug prec. (m)'
   )
 
-p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
-  geom_line() + 
-  geom_point() + 
-  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
-  coord_cartesian(xlim = range(speidat$yr)) + 
-  thm +
-  theme(
-    axis.text.x = element_blank()
-  ) +
-  labs(
-    x = NULL, 
-    y = expression(paste('Hy. load (', 10^3, ' t/y)'))
-  )
+# p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
+#   geom_line() + 
+#   geom_point() + 
+#   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
+#   coord_cartesian(xlim = range(speidat$yr)) + 
+#   thm +
+#   theme(
+#     axis.text.x = element_blank()
+#   ) +
+#   labs(
+#     x = NULL, 
+#     y = expression(paste('Hy. load (', 10^3, ' t/y)'))
+#   )
 
 p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
   geom_col(width = 35) +
@@ -434,9 +434,9 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.75)) & theme(legend.position = 'top')
+p <- p1 + p2 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 2.75)) & theme(legend.position = 'top')
 
-png(here('figs/meteowqraw.png'), height = 8, width = 7, family = 'serif', units = 'in', res = 500)
+png(here('figs/meteowqraw.png'), height = 7.5, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
 dev.off()
 
@@ -508,19 +508,19 @@ p2 <- ggplot(toplo2, aes(x = yr, y = precip_mm / 1e3)) +
     y = 'Jun-Aug prec. (m)'
   )
 
-p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
-  geom_line() + 
-  geom_point() + 
-  geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
-  coord_cartesian(xlim = range(toplo1$yr)) + 
-  thm +
-  theme(
-    axis.text.x = element_blank()
-  ) +
-  labs(
-    x = NULL, 
-    y = expression(paste('Hy. load (', 10^3, ' t/y)'))
-  )
+# p3 <- ggplot(hydrodat, aes(x = year, y = hy_load)) +
+#   geom_line() + 
+#   geom_point() + 
+#   geom_smooth(method = 'lm', se = F, formula = y~x, color = 'blue') +
+#   coord_cartesian(xlim = range(toplo1$yr)) + 
+#   thm +
+#   theme(
+#     axis.text.x = element_blank()
+#   ) +
+#   labs(
+#     x = NULL, 
+#     y = expression(paste('Hy. load (', 10^3, ' t/y)'))
+#   )
 
 p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) + 
   geom_col(width = 35) +
@@ -627,9 +627,9 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p3 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 1, 2.75)) & theme(legend.position = 'top')
+p <- p1 + p2 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 2.75)) & theme(legend.position = 'top')
 
-png(here('figs/suppmeteowqraw.png'), height = 8, width = 7, family = 'serif', units = 'in', res = 500)
+png(here('figs/suppmeteowqraw.png'), height = 6.5, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
 dev.off()
 
