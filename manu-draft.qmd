@@ -9,26 +9,32 @@ csl: estuaries-and-coasts.csl
 author:
   - Marcus W Beck:
       email: mbeck@tbep.org
+      orcid: 0000-0002-4996-0059
       institute: [TBEP]
       correspondence: true
   - Kerry Flaherty-Walia:
       email: kfwalia@tbep.org
+      orcid: 0000-0002-6032-0570
       institute: [TBEP]
       correspondence: false
   - Sheila Scolaro:
       email: sscolaro@tbep.org
+      orcid: 0000-0003-3220-3737
       institute: [TBEP]
       correspondence: false
   - Maya C Burke:
       email: mburke@tbep.org
+      orcid: 0000-0002-3847-6501      
       institute: [TBEP]
       correspondence: false
   - Bradley T Furman:
       email: Bradley.Furman@myfwc.com
+      orcid: 0000-0002-9284-8388
       institute: [FWRI]
       correspondence: false
   - David J Karlen: 
       email: karlen@epchc.org
+      orcid: 0000-0002-1432-9099
       institute: [EPCHC]
       correspondence: false
   - Chris Pratt: 
@@ -37,9 +43,10 @@ author:
       correspondence: false
   - Edward T Sherwood:
       email: esherwood@tbep.org
+      orcid: 0000-0001-5330-302X
       institute: [TBEP]
       correspondence: false
-  
+
 institute:
   - TBEP: Tampa Bay Estuary Program, 263 13th Ave S., Suite 350, St. Petersburg, Florida 33701 USA
   - FWRI: Florida Fish and Wildlife Conservation Commission, Florida Fish and Wildlife Research Institute, 100 8th Avenue SE, St. Petersburg, FL 33701, USA
