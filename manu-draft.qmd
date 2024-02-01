@@ -203,9 +203,29 @@ prpprd2 <- predict(prpmod2, se = T)
 prpstr2 <- paste0(round(prpprd2$fit[1], 1), ' (+/-', round(prpprd2$se.fit[1], 2), ' st. err.)')
 prpend2 <- paste0(round(prpprd2$fit[nrow(prp)], 1), ' (+/-', round(prpprd2$se.fit[nrow(prp)], 2), ' st. err.)')
 prpdif2 <- round(prpprd2$fit[nrow(prp)] - prpprd2$fit[1], 1)
+
+seponly <- speidat %>% 
+  select(yr, mo, precip_mm) %>%
+  filter(mo %in% 9)
+sepmod <- lm(precip_mm ~ yr, seponly)
+seppvl <- p_txt(coefficients(summary(sepmod))[2, 4])
+seprsq <- round(summary(sepmod)$adj.r.squared, 2)
+dryonly <- speidat %>% 
+  select(yr, mo, precip_mm) %>%
+  filter(!mo %in% c(6:9)) %>% 
+  summarise(prptot = sum(precip_mm), .by = yr)
+drymod <- lm(prptot ~ yr, dryonly)
+drypvl <- p_txt(coefficients(summary(drymod))[2, 4])
+dryrsq <- round(summary(drymod)$adj.r.squared, 2)
+apronly <- speidat %>% 
+  select(yr, mo, precip_mm) %>%
+  filter(mo %in% 4)
+aprmod <- lm(precip_mm ~ yr, apronly)
+aprpvl <- p_txt(coefficients(summary(aprmod))[2, 4])
+aprrsq <- round(summary(aprmod)$adj.r.squared, 2)
 ```
 
-Long-term meteorological data showed increasing trends for air temperature and precipitation ([@fig-meteowqraw]). Mean annual air temperature has increased by `r airtempslo` $^\circ$C per year (`r airtemppvl`, $R^2$ `r airtemprsq`). Mean annual air temperature in 1975 was `r airtempstr` $^\circ$C, whereas current mean annual air temperature in 2022 was `r airtempend` $^\circ$C, showing an overall increase in the period of record of `r airtempdif` $^\circ$C. Similarly, total precipitation during the rainy season has increased by `r prpslo` mm per year, although the model was not significant (`r prppvl`, $R^2$ = `r prprsq`). Removing September from the rainy season showed a significantly increasing trend of `r prpslo2` mm per year (`r prppvl2`, $R^2$ = `r prprsq2`). Using this model, total precipitation in 1975 was `r prpstr2` mm, whereas current total precipitation in 2022 was `r prpend2` mm, showing an overall increase in the period of record of `r prpdif2` mm. The SPI showed notable anomalies in precipitation, with pronounced rainy periods in the early 1980s, late 1990s, 2005, and 2015-2020.
+Long-term meteorological data showed increasing trends for air temperature and precipitation ([@fig-meteowqraw]). Mean annual air temperature has increased by `r airtempslo` $^\circ$C per year (`r airtemppvl`, $R^2$ `r airtemprsq`). Mean annual air temperature in 1975 was `r airtempstr` $^\circ$C, whereas current mean annual air temperature in 2022 was `r airtempend` $^\circ$C, showing an overall increase in the period of record of `r airtempdif` $^\circ$C. Similarly, total precipitation during the rainy season has increased by `r prpslo` mm per year, although the model was not significant (`r prppvl`). Removing September from the rainy season showed a significantly increasing trend of `r prpslo2` mm per year (`r prppvl2`, $R^2$ = `r prprsq2`; September alone did not have a significant trend, `r seppvl`). Using this model, total precipitation in 1975 was `r prpstr2` mm, whereas current total precipitation in 2022 was `r prpend2` mm, showing an overall increase in the period of record of `r prpdif2` mm. Notably, trends for the dry season (October through May) were not significant (`r drypvl`), except April which had a significantly increasing trend (`r aprpvl`, $R^2$ = `r aprrsq`). The SPI showed notable anomalies in precipitation, with pronounced rainy periods in the early 1980s, late 1990s, 2005, and 2015-2020.
 
 Increasing water temperature and decreasing salinity generally followed the meteorological trends for all three *in situ* datasets (EPC, FIM, and PDEM, @fig-meteowqraw, Tables [-@tbl-temptrndtab], [-@tbl-saltrndtab], Figures S1, S2, S3). Note that for tables [-@tbl-temptrndtab] and [-@tbl-saltrndtab], comparable time periods were evaluated between the datasets when possible given the different sample sizes, and therefore power, to detect trends. The strongest trends were observed for the EPC dataset. The top and bottom water temperature or salinity changes were similar across bay segments (@fig-meteowqraw). Trends in water temperature were similar across bay segments with significant increases varying from 0.03 to 0.04 $^\circ$C per year, with a total increase of 1.4 (OTB) to 2.0 (HB) $^\circ$C from 1975 to present (@tbl-temptrndtab). Salinity trends were also similar between bay segments, although overall salinity was predictably higher for bay segments closer to the Gulf of Mexico. Only Old Tampa Bay and Lower Tampa Bay had significantly decreasing trends, with decreases of 0.06 (OTB) and 0.04 (LTB) ppt per year, with a total decrease of 2.7 (OTB) and 2.1 (LTB) ppt from 1975 to present.
 
