@@ -80,6 +80,7 @@ download.file(
   mode = 'wb'
   )
 
+# rain data for relevant TB areas
 raindat <- readxl::excel_sheets(here('data-raw/swfwmdrainfall.xlsx')) %>% 
   grep('jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec', ., value = TRUE) %>% 
   tibble(
@@ -93,25 +94,31 @@ raindat <- readxl::excel_sheets(here('data-raw/swfwmdrainfall.xlsx')) %>%
         filter(Year %in% 1975:2022) %>% 
         select(
           yr = Year, 
-          precip_in = `Tampa Bay/Coastal Areas`
+          tampacoastal_in = `Tampa Bay/Coastal Areas`, # this just a fringe area around the bay, not the watershed
+          hillsborough_in = `Hillsborough River`,
+          alafia_in = `Alafia River`,
+          littlemanatee_in = `Little Manatee River`,
+          manatee_in = `Manatee River`
         ) %>% 
         mutate_all(as.numeric)
-
+      
     })
   ) %>% 
   unnest('data') %>% 
   mutate(
+    precip_in = rowSums(select(., -mo, -yr), na.rm = TRUE)
+  ) %>%
+  select(mo, yr, precip_in) %>% 
+  mutate(
     mo = gsub('\\-usgsbsn$', '', mo),
     mo = as.numeric(factor(mo,
-                              levels = c('jan', 'feb', 'mar', 'apr', 'may', 'jun',
-                                         'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),
-                              labels = 1:12)
-                    ),
+                           levels = c('jan', 'feb', 'mar', 'apr', 'may', 'jun',
+                                      'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),
+                           labels = 1:12)
+    ),
     date = as.Date(paste0(yr, '-', mo, '-01')), 
     precip_mm = precip_in * 25.4
   )
-
-
 
 # monthly avg, sum
 speidat <- resdat %>% 

@@ -273,7 +273,7 @@ toplo1 <- speidat %>%
   )
 
 toplo2 <- speidat %>% 
-  filter(mo %in% c(6:8)) %>% 
+  filter(mo %in% c(6:8)) %>%
   select(yr, precip_mm) %>% 
   summarise(
     precip_mm = sum(precip_mm), 
