@@ -19,6 +19,16 @@ library(zoo)
 source(here('R/funcs.R'))
 yrsel <- c(1998, 2022)
 
+# use mid salinity for 1975, bottom missing
+data(epcdata)
+epcdat <- epcdata %>% 
+  mutate(
+    Sal_Bottom_ppth = case_when(
+      yr == 1975 & is.na(Sal_Bottom_ppth) ~ Sal_Mid_ppth, 
+      T ~ Sal_Bottom_ppth
+    )
+  )
+
 # SPEI, monthly rain, and monthly air temp ----------------------------------------------------
 
 noaa_key <- Sys.getenv('NOAA_KEY')
@@ -144,10 +154,10 @@ save(speidat, file = here('data/speidat.RData'))
 # temp GAMs for each station, save file -------------------------------------------------------
 
 # save model files for each station, separate for bottom/surface temp
-epcdata %>% 
+epcdat %>% 
   select(bay_segment, station = epchc_station, date = SampleTime, temptop = Temp_Water_Top_degC, tempbot = Temp_Water_Bottom_degC) %>% 
   filter(year(date) < 2023) %>% 
-  filter(year(date) > 1975) %>% 
+  filter(year(date) > 1974) %>% 
   pivot_longer(matches('temp'), names_to = 'param', values_to = 'value') %>% 
   mutate(
     stationdup = station,
@@ -222,10 +232,10 @@ save(tempprd, file = here('data/tempprd.RData'))
 # sali GAMs for each station, save file -------------------------------------------------------
 
 # save model files for each station, separate for bottom/surface temp
-epcdata %>% 
+epcdat %>% 
   select(bay_segment, station = epchc_station, date = SampleTime, salitop = Sal_Top_ppth, salibot = Sal_Bottom_ppth) %>% 
   filter(year(date) < 2023) %>% 
-  filter(year(date) > 1975) %>% 
+  filter(year(date) > 1974) %>% 
   pivot_longer(matches('sal'), names_to = 'param', values_to = 'value') %>% 
   mutate(
     stationdup = station,
@@ -296,85 +306,6 @@ saliprd <- saliprd %>%
   unnest('fit')
 
 save(saliprd, file = here('data/saliprd.RData'))
-
-# chla GAMs for each station, save file -------------------------------------------------------
-
-# save model files for each station, separate for bottom/surface temp
-epcdata %>% 
-  select(bay_segment, station = epchc_station, date = SampleTime, chlatop = chla) %>% 
-  filter(year(date) < 2023) %>% 
-  filter(year(date) > 1975) %>% 
-  pivot_longer(matches('chla'), names_to = 'param', values_to = 'value') %>% 
-  mutate(
-    stationdup = station,
-    paramdup = param,
-    date = as.Date(date), 
-    cont_year = decimal_date(date), 
-    yr = year(date), 
-  ) %>% 
-  unite('ind', bay_segment, station, param) %>% 
-  group_nest(ind) %>% 
-  mutate(
-    cnt = 1:nrow(.)
-  ) %>% 
-  unite('ind', cnt, ind, sep = '-') %>% 
-  deframe() %>% 
-  iwalk(function(data, ind){
-    
-    cat(ind, '\n')
-    
-    yrcnt <- data %>% 
-      na.omit() %>% 
-      summarize(
-        cnt = n(),
-        .by = 'yr'
-      ) %>% 
-      arrange(yr) %>% 
-      mutate(flt = cnt >= 5)
-    yrmin <- yrcnt$yr[which(yrcnt$flt)[1]]
-
-    mod <- data %>% 
-      filter(yr >= yrmin) %>% 
-      filter(!is.na(value)) %>% 
-      anlz_gam(trans = 'log10')
-    
-    ind <- gsub('^.*-', '', ind)
-    assign(ind, mod)
-    fl <- here(paste0('data/', ind, '.RData'))
-    save(list = ind, file = fl, compress = 'xz')
-    
-  })
-
-# get daily chla predictions from GAM files ---------------------------------------------------
-
-fls <- list.files(here('data'), pattern = 'chla', full.names = T)
-obs <- gsub('\\.RData$', '', basename(fls))
-
-chlaprd <- tibble(obs = obs) %>% 
-  mutate(fit = NA, prd = NA)
-for(i in seq_along(fls)){
-  
-  cat(i, 'of', length(fls), '\n')
-  
-  fl <- fls[i]
-  ob <- obs[i]
-  
-  load(file = fl)
-  toadd <- get(ob)
-  chlaprd[chlaprd$obs == ob, 'fit'][[1]] <- list(anlz_fit(toadd))
-  chlaprd[chlaprd$obs == ob, 'prd'][[1]] <- list(anlz_prdday(toadd))
-  
-  rm(toadd)
-  rm(list = ob)
-  
-}
-
-chlaprd <- chlaprd %>% 
-  separate(obs, c('bay_segment', 'station', 'param')) %>% 
-  unnest('fit')
-
-save(chlaprd, file = here('data/chlaprd.RData'))
-
 
 # gam performance, temp/sal only --------------------------------------------------------------
 
@@ -504,45 +435,6 @@ thrdat <- cmbdat %>%
   )
 
 save(thrdat, file = here('data/thrdat.RData'), compress = 'xz')
-
-# count of days per year per station above chl threshold --------------------------------------
-
-# thresholds to count by year, segment specific
-thrs <- targets %>% 
-  filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB')) %>% 
-  select(bay_segment, thr = chla_thresh)
-
-# GAM models for chla by station with daily predictions for POR
-load(file = here('data/chlaprd.RData'))
-
-# get T/F vectors for predictions above thresholds by day
-chlthrdat <- chlaprd %>% 
-  left_join(thrs, by = 'bay_segment') %>% 
-  mutate(
-    cnts = purrr::pmap(list(thr, prd), function(thr, prd){
-
-      out <- prd %>% 
-        filter(yr < 2023) %>% 
-        mutate(
-          cnt = value >= thr
-        ) %>% 
-        summarise(
-          cnt = runfunc(cnt), 
-          .by = c('yr')
-        )
-      
-      return(out)
-      
-    })
-  ) %>% 
-  select(bay_segment, station, chla_thr = thr, cnts) %>% 
-  mutate(
-    chla_thr = paste0('chla_', chla_thr), 
-    thrtyp = 'chlacnt'
-  ) %>% 
-  unnest('cnts')
-
-save(chlthrdat, file = here('data/chlthrdat.RData'), compress = 'xz')
 
 # counts by day above/below thresholds referenced to transect dates ---------------------------
 
@@ -929,7 +821,7 @@ suppmixmodprds <- thrdat %>%
 
 save(suppmixmodprds, file = here('data/suppmixmodprds.RData'))
 
-# combined epc metric, chl, sal, temp data ----------------------------------------------------
+# combined epc metric, sal, temp data ----------------------------------------------------
 
 load(file = here('data/thralltrndat.RData'))
 
