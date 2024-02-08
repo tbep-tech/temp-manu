@@ -32,6 +32,16 @@ tempcol <- c('coral', 'red2', 'darkred')
 salithr <- c(20, 25, 30)
 salicol <- c('navyblue', 'dodgerblue2', 'slategray3')
 
+# use mid salinity for 1975, bottom missing
+data(epcdata)
+epcdat <- epcdata %>% 
+  mutate(
+    Sal_Bottom_ppth = case_when(
+      yr == 1975 & is.na(Sal_Bottom_ppth) ~ Sal_Mid_ppth, 
+      T ~ Sal_Bottom_ppth
+    )
+  )
+
 # map -----------------------------------------------------------------------------------------
 
 fl <- paste0(tempdir(), '/sgdat2022.RData')
@@ -97,7 +107,7 @@ m1 <- ggplot() +
 # xnrg <- ggplot_build(m1)$layout$panel_scales_x[[1]]$range$range
 # yrng <- ggplot_build(m1)$layout$panel_scales_y[[1]]$range$range
 
-epcpts <- epcdata %>% 
+epcpts <- epcdat %>% 
   select(long = Longitude, lat = Latitude) %>% 
   unique() %>% 
   st_as_sf(coords = c('long', 'lat'), crs = 4326) 
@@ -342,7 +352,7 @@ p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) +
     y = 'SPI (z-values)'
   )
 
-toplo <- epcdata %>% 
+toplo <- epcdat %>% 
   select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
   filter(yr < 2023) %>% 
   pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
@@ -535,7 +545,7 @@ p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) +
     y = 'SPI (z-values)'
   )
 
-toplo <- epcdata %>% 
+toplo <- epcdat %>% 
   select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
   filter(yr >= yrsel2[1] & yr <= yrsel2[2]) %>% 
   pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
@@ -661,7 +671,7 @@ dev.off()
 leglab <- expression(paste(yr^{-1}))
 
 # kendall all years
-sktres <- epcdata %>% 
+sktres <- epcdat %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
          mo, matches('Bottom')) %>% 
   pivot_longer(matches('Bottom'), names_to = 'var', values_to = 'val') %>% 
@@ -693,7 +703,7 @@ sktres <- epcdata %>%
   unnest(skt)
 
 #kendall by month
-ktres <- epcdata %>% 
+ktres <- epcdat %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
          mo, matches('Bottom')) %>% 
   pivot_longer(matches('Bottom'), names_to = 'var', values_to = 'val') %>% 
@@ -837,7 +847,7 @@ dev.off()
 leglab <- expression(paste(yr^{-1}))
 
 # kendall all years
-sktres <- epcdata %>% 
+sktres <- epcdat %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
          mo, matches('Bottom')) %>% 
   filter(yr >= yrsel2[1] & yr <= yrsel2[2]) %>% 
@@ -870,7 +880,7 @@ sktres <- epcdata %>%
   unnest(skt)
 
 #kendall by month
-ktres <- epcdata %>% 
+ktres <- epcdat %>% 
   select(bay_segment, station = epchc_station, SampleTime, lon = Longitude, lat = Latitude, yr, 
          mo, matches('Bottom')) %>% 
   filter(yr >= yrsel2[1] & yr <= yrsel2[2]) %>% 

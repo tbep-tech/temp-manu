@@ -6,13 +6,22 @@ library(tbeptools)
 
 source(here('R/funcs.R'))
 
+# use mid salinity for 1975, bottom missing
+data(epcdata)
+epcdat <- epcdata %>% 
+  mutate(
+    Sal_Bottom_ppth = case_when(
+      yr == 1975 & is.na(Sal_Bottom_ppth) ~ Sal_Mid_ppth, 
+      T ~ Sal_Bottom_ppth
+    )
+  )
+
 # linear trend summaries ----------------------------------------------------------------------
 
-data(epcdata)
 data(fimsgtempdat)
 data(pincotemp)
 
-epctmp <- epcdata %>% 
+epctmp <- epcdat %>% 
   select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
   filter(yr < 2023) %>% 
   pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
@@ -69,7 +78,7 @@ pincotmp <- pincotemp %>%
 
 trnds <- bind_rows(epctmp, fimtmp, pincotmp) %>% 
   group_nest(org, bay_segment, var) %>% 
-  crossing(yrstr = c(1976, 1996, 2004)) %>% 
+  crossing(yrstr = c(1975, 1996, 2004)) %>% 
   mutate(
     i = 1:n(),
     data = purrr::pmap(list(i, yrstr, data), function(i, yrstr, data){

@@ -201,7 +201,7 @@ epcdat %>%
 
 # get daily temp predictions from GAM files ---------------------------------------------------
 
-fls <- list.files(here('data'), pattern = 'temp', full.names = T)
+fls <- list.files(here('data'), pattern = 'tempbot|temptop', full.names = T)
 obs <- gsub('\\.RData$', '', basename(fls))
 
 tempprd <- tibble(obs = obs) %>% 
@@ -279,7 +279,7 @@ epcdat %>%
 
 # get daily sali predictions from GAM files ---------------------------------------------------
 
-fls <- list.files(here('data'), pattern = 'sali', full.names = T)
+fls <- list.files(here('data'), pattern = 'salibot|salitop', full.names = T)
 obs <- gsub('\\.RData$', '', basename(fls))
 
 saliprd <- tibble(obs = obs) %>% 
@@ -600,7 +600,7 @@ mixmods <- thrdat %>%
       if(inherits(mod, 'try-error'))
         return(NA)
       
-      effs <- estimate_means(mod, at = 'yr = c(1976, 2022)')
+      effs <- estimate_means(mod, at = 'yr = c(1975, 2022)')
       
       summod <- summary(mod)$coefficients
       
