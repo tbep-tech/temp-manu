@@ -31,10 +31,14 @@ author:
       email: karlen@epchc.org
       institute: [EPCHC]
       correspondence: false
-  - Chris Pratt: 
+  - Christopher Pratt: 
       email: prattc@epchc.org
       institute: [EPCHC]
       correspondence: false
+  - Christopher J Anastasiou: 
+      email: chris.anastasiou@swfwmd.state.fl.us
+      institute: [SWFWMD]
+      correspondence: false    
   - Edward T Sherwood:
       email: esherwood@tbep.org
       institute: [TBEP]
@@ -44,6 +48,7 @@ institute:
   - TBEP: Tampa Bay Estuary Program, 263 13th Ave S., Suite 350, St. Petersburg, Florida 33701 USA
   - FWRI: Florida Fish and Wildlife Conservation Commission, Florida Fish and Wildlife Research Institute, 100 8th Avenue SE, St. Petersburg, FL 33701, USA
   - EPCHC: Environmental Protection Commission of Hillsborough County, 3629 Queen Palm Drive, Tampa, FL 33619, USA
+  - SWFWMD: Southwest Florida Water Management District, 7601 US Highway 301 North, Tampa, FL 33637, USA
 
 filters: 
   - templates/scholarly-metadata.lua
