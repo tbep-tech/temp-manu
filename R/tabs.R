@@ -3,6 +3,7 @@ library(here)
 library(mgcv)
 library(broom)
 library(tbeptools)
+library(flextable)
 
 source(here('R/funcs.R'))
 
@@ -14,7 +15,8 @@ epcdat <- epcdata %>%
       yr == 1975 & is.na(Sal_Bottom_ppth) ~ Sal_Mid_ppth, 
       T ~ Sal_Bottom_ppth
     )
-  )
+  ) %>% 
+  filter(yr < 2023)
 
 # linear trend summaries ----------------------------------------------------------------------
 
@@ -305,9 +307,9 @@ supp1mixtab <- totab %>%
   merge_at(i = 1, j = c(2:3), part = 'header') %>% 
   merge_at(i = 1, j = c(4:6), part = 'header') %>% 
   set_header_labels(i = 2, values = c('Bay Segment', 'Temperature', 'Salinity', 'Temperature', 'Salinity', 'Both')) %>% 
-  padding(padding = 0, part = 'all') %>% 
-  font(part = 'all', fontname = 'Times New Roman') %>% 
-  fontsize(size = 9, part = 'body')
+  flextable::padding(padding = 0, part = 'all') %>% 
+  flextable::font(part = 'all', fontname = 'Times New Roman') %>% 
+  flextable::fontsize(size = 9, part = 'body')
 
 save(supp1mixtab, file = here('tabs/supp1mixtab.RData'))
 

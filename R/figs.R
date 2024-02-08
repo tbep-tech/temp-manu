@@ -40,7 +40,8 @@ epcdat <- epcdata %>%
       yr == 1975 & is.na(Sal_Bottom_ppth) ~ Sal_Mid_ppth, 
       T ~ Sal_Bottom_ppth
     )
-  )
+  ) %>% 
+  filter(yr < 2023)
 
 # map -----------------------------------------------------------------------------------------
 
@@ -50,7 +51,6 @@ load(file = fl)
 
 data(pincotemp)
 data(fimsgtempdat)
-data(epcdata)
 
 sgdat <- sgdat2022 %>% 
   filter(FLUCCSCODE %in% c(9113, 9116)) %>% 
@@ -354,7 +354,6 @@ p4 <- ggplot(speidat, aes(x = date, y = spi, fill = spisign)) +
 
 toplo <- epcdat %>% 
   select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
-  filter(yr < 2023) %>% 
   pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
   mutate(
     var = factor(var, 
