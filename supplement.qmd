@@ -6,6 +6,8 @@ format:
 title: "*Supplement* Hot and fresh: evidence of climate-related suboptimal conditions for seagrass in a large Gulf coast estuary"
 bibliography: refs.bib
 csl: estuaries-and-coasts.csl
+crossref: 
+  fig-title: Fig.
 author:
   - Marcus W Beck:
       email: mbeck@tbep.org

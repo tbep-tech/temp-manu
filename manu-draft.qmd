@@ -6,6 +6,8 @@ format:
 title: "Hot and fresh: evidence of climate-related suboptimal conditions for seagrass in a large Gulf coast estuary"
 bibliography: refs.bib
 csl: estuaries-and-coasts.csl
+crossref: 
+  fig-title: Fig.
 author:
   - Marcus W Beck:
       email: mbeck@tbep.org
@@ -89,6 +91,12 @@ load(file = here('data/sgmods.RData'))
 ## Abstract {.unnumbered}
 
 Seagrasses have long been a focal point for management efforts aimed at restoring ecosystem health in estuaries worldwide. In Tampa Bay, Florida (USA), seagrass coverage has declined since 2016 by nearly a third (11,518 acres), despite sustained reductions of nitrogen loads supportive of light environments for growth. Changing physical water quality conditions related to climate change may be stressing seagrasses beyond their optimal growth ranges, requiring an assessment to determine if this decline can be linked to climate stress. Three ambient water quality datasets of varying sampling design and coverage were evaluated to characterize physicochemical environments in Tampa Bay and the potential relationships with seagrass change. Tampa Bay has become hotter and fresher with water temperature increasing by 0.03 - 0.04 $^\circ$C per year and salinity decreasing by 0.04 - 0.06 ppt per year, translating to an increase of 1.3 to 1.7 $^\circ$C and a decrease of 1.6 to 2.6 ppt over the last fifty years. These changes varied spatially and seasonally, with the most dramatic changes observed in the upper bay. Simple linear models provided a weight-of-evidence that recent seagrass declines are somewhat associated with hotter and fresher conditions. Trends in warming and increased precipitation in the region are likely to continue, further creating suboptimal conditions for seagrasses in Tampa Bay. These results should compel resource managers to consider the likelihood that reduced resilience of estuarine resources due to shifting ecological baselines driven by additional climate change drivers will complicate long-standing management paradigms. While conventional management approaches that focus on limiting nutrient loads should be continued, their future effectiveness may be confounded by climate change drivers and warrant additional, complementary interventions to maintain ecosystem health into the future.
+
+*Key words*: climate change; seagrass; salinity; temperature; Tampa Bay
+
+## Statements and Declarations {.unnumbered}
+
+The authors have no competing interests to declare that are relevant to the content of this article.
 
 {{< pagebreak >}}
 
