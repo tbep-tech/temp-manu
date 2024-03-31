@@ -1,0 +1,5 @@
+* Format table with hlines and fix spacing
+* Proof references
+* Add "S" to supplement figs and tabs, fix non-kable table captions
+* Remove line numbers from supplement
+* Move references in between data availability and acknowledgements (does not render correctly if not at the end)

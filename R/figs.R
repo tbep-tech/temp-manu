@@ -208,17 +208,17 @@ p1 <- ggplot(toplo1, aes(x = factor(year), y = acres)) +
   theme(panel.grid.minor =element_blank(),
         panel.grid.major.x =element_blank(),
         # plot.background = element_rect(fill = NA, color = NA),
-        axis.text.y = element_text(colour = 'black'),
-        axis.text.x = element_text(colour = 'black', angle = 45, size = 6, hjust = 1),
+        axis.text.y = element_text(colour = 'black', size = 9),
+        axis.text.x = element_text(colour = 'black', angle = 60, size = 9, hjust = 1),
         strip.background = element_blank(),
-        # strip.text = element_text(hjust = 0, size = 13),
+        strip.text = element_text(size = 11),
         legend.position = 'none'
   ) +
   labs(
     y = 'Seagrass Coverage (x1,000 acres)',
     x = NULL,
     color = NULL,
-    subtitle = '(a) Coverage changes for all species by bay segment',
+    title = '(a) Coverage changes for all species by bay segment',
     caption = expression(italic('Source: Southwest Florida Water Management District'))
   )
 
@@ -241,23 +241,26 @@ p2 <- ggplot(toplo2, aes(x = yr, y = foest, color = Savspecies)) +
   theme_bw() + 
   theme(
     legend.position = 'top',
+    strip.text = element_text(size = 11),
     strip.background = element_blank(), 
     panel.grid.minor = element_blank(),
     panel.grid.major.x = element_blank(),
-    axis.text.x = element_text(colour = 'black', angle = 45, size = 6, hjust = 1),
+    legend.text = element_text(size = 11),
+    axis.text.y = element_text(colour = 'black', size = 9),
+    axis.text.x = element_text(colour = 'black', angle = 60, size = 9, hjust = 1),
   ) + 
   coord_cartesian(ylim = c(0, 1)) + 
   labs(
     y = 'Frequency Occurrence', 
     x = NULL, 
     color = NULL,
-    subtitle = '(b) Frequency occurrence changes by species by bay segment',
+    title = '(b) Frequency occurrence changes by species by bay segment',
     caption = expression(italic('Source: Interagency Seagrass Monitoring Program'))
   )
 
 p <- p1 + p2 + plot_layout(ncol = 1)
 
-png(here('figs/seagrasschg.png'), height = 6, width = 8, family = 'serif', units = 'in', res = 300)
+png(here('figs/seagrasschg.png'), height = 6, width = 9, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 
