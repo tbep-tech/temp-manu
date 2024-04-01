@@ -953,9 +953,125 @@ thrtrndat <- thralltrndat %>%
   ) %>% 
   rename(yr = trnyr)
 
+##
+# get annual light attenuation for average transect year by bay segment
+
+data(epcdata)
+
+# subset secchi data from epcdata, expand to all days to join with transect dates
+epcsub <- epcdata %>% 
+  select(bay_segment, epchc_station, SampleTime, chla, sd_m) %>% 
+  mutate(
+    date = as.Date(SampleTime)
+  ) %>% 
+  select(-SampleTime) %>% 
+  arrange(bay_segment, epchc_station, date) %>% 
+  filter(year(date) > 1995) %>% # minimum date for ave transecs is 1997-10-24
+  group_by(bay_segment, epchc_station) %>% 
+  complete(date = seq.Date(min(date) ,max(date), by = 'day')) %>% 
+  ungroup()
+
+# mean month of tranect sampling in each bay segment
+transectocc <- anlz_transectocc(transect) 
+trnptssub <- trnpts %>%
+  st_set_geometry(NULL) %>%
+  select(
+    Transect = TRAN_ID,
+    bay_segment
+  ) %>%
+  filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB'))
+trndts <- transectocc %>%
+  ungroup() %>% 
+  filter(Savspecies == 'total') %>%
+  inner_join(trnptssub, by = 'Transect') %>%
+  mutate(
+    year = year(Date)
+  ) %>% 
+  summarise(
+    date = ymd(median(Date)), # use ymd because averaging dates leaves decimals 
+    .by = c('bay_segment', 'year')
+  ) %>% 
+  mutate(trndt = paste0('trndt', 1:n()), .by = 'bay_segment') %>% 
+  select(-year)
+
+# join transect date data with expanded secchi data, then make secchi monthly again
+epcsub <- epcsub %>% 
+  arrange(bay_segment, epchc_station, date) %>% 
+  left_join(trndts, by = c('bay_segment', 'date')) %>% 
+  group_by(bay_segment, epchc_station) %>% 
+  fill(trndt, .direction = 'up') %>% 
+  ungroup() %>% 
+  filter(!is.na(trndt)) %>% # counts occurring after max date in trnds
+  mutate(
+    dycnt = rev(1:n()),
+    trndtcnt = trndt,
+    trndt = max(date),
+    trnyr = max(year(date)),
+    .by = c(bay_segment, epchc_station, trndt)
+  ) %>% 
+  filter(!(dycnt > 365 & trndtcnt == 'trndt1')) %>%  # remove day cnts beyond one year for starting year
+  filter(!is.na(sd_m) | !is.na(chla))
+
+# now calculate annual segment light attenuation as in tbeptools
+epcsubmo <- epcsub %>% 
+  tidyr::gather('var', 'val', chla, sd_m) %>%
+  dplyr::mutate(
+    bay_segment = dplyr::case_when(
+      epchc_station %in% c(9, 11, 81, 84) ~ "MT1",
+      epchc_station %in% c(13, 14, 32, 33) ~ "MT2",
+      epchc_station %in% c(16, 19, 28, 82) ~ "MT3",
+      TRUE ~ bay_segment
+    ), 
+    mo = month(date)
+  ) %>%
+  dplyr::summarise(val = mean(val, na.rm = T), .by = c(bay_segment, trnyr, mo, var)) %>%
+  drop_na() %>%
+  dplyr::mutate(
+    val = dplyr::case_when(
+      bay_segment %in% "MT1" ~ val * 2108.7,
+      bay_segment %in% "MT2" ~ val * 1041.9,
+      bay_segment %in% "MT3" ~ val * 974.6,
+      TRUE ~ val
+    ),
+    bay_segment = dplyr::case_when(
+      bay_segment %in% c('MT1', 'MT2', 'MT3') ~ 'MTB',
+      TRUE ~ bay_segment
+    )
+  ) %>%
+  dplyr::summarise(val = sum(val, na.rm = T), .by = c(bay_segment, trnyr, mo, var)) %>% 
+  dplyr::mutate(
+    val = dplyr::case_when(
+      bay_segment %in% 'MTB' ~ val / 4125.2,
+      TRUE ~ val
+    )
+  ) %>%
+  dplyr::filter(!is.na(val)) %>%
+  dplyr::filter(!is.infinite(val)) %>%
+  dplyr::arrange(var, trnyr, mo, bay_segment)
+
+epcsubann <- epcsubmo %>%
+  dplyr::summarise(val = mean(val), .by = c(trnyr, bay_segment, var)) %>%
+  tidyr::spread('var', 'val') %>%
+  dplyr::mutate(
+    sd_m = dplyr::case_when(
+      bay_segment %in% "OTB" ~ 1.49 / sd_m,
+      bay_segment %in% "HB" ~ 1.61 / sd_m,
+      bay_segment %in% "MTB" ~ 1.49 / sd_m,
+      bay_segment %in% "LTB" ~ 1.84 / sd_m,
+      TRUE ~ sd_m
+    )
+  ) %>%
+  dplyr::rename(
+    la = sd_m
+  )
+
+##
+# combine
+
 epccmbdat <- fodat %>% 
   inner_join(thrtrndat, by = c('yr', 'bay_segment')) %>% 
   inner_join(bbdat, by = c('yr', 'bay_segment')) %>% 
+  left_join(epcsubann, by = c('yr' = 'trnyr', 'bay_segment')) %>% 
   mutate(
     bay_segment = factor(bay_segment, 
                          levels = segshr)
