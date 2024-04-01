@@ -18,6 +18,21 @@ epcdat <- epcdata %>%
   ) %>% 
   filter(yr < 2023)
 
+
+# dataset summaries ---------------------------------------------------------------------------
+
+totab <- tibble(
+  Dataset = c('SWFWMD aerial maps', 'Transect data', 'Environmental Protection Commission of Hillsborough County (EPC)', 'Florida Fish and Wildlife Comission, Fisheries Independent Monitoring (FIM)', 'Pinellas County Department of Environmental Management (PDEM)', 'Tampa International Airport', 'SWFWMD precipitation'),
+  Description = c('Seagrass coverage in acres', 'Seagrass frequency occurrence by species', 'Water quality monitoring samples', 'Nearshore temperature and salinity measurements, seagrass species and cover', 'Water quality and seagrass presence/absence', 'Air temperature', 'Area-weighted precipitation for the wet season (June-September) for the Tampa Bay watershed'),
+  Temporal = c('1988 - 2022, biennial', '1999 - 2022, annual', '1975 - 2022, monthly', '1996 to 2022, monthly', '2003 - 2022, monthly', '1975 - 2022, annual', '1975-2022, annual'),
+  Spatial = c('Whole bay', 'Whole bay, 62 transects', 'Whole bay, fixed sites', 'Whole bay nearshore, stratified random sites', 'Old Tampa Bay, stratified random sites', '27.979$^\\circ$N, 82.535$^\\circ$W', 'Whole watershed'),
+  Analysis = c('Biennial trends by bay segment, visual only', 'Annual trends by bay segment and species, comparison with temperature, salinity, and light attenuation as stressor metrics or observed data at annual scale', 'Trends in annual change and seasonal Kendall tests, estimate of stressor metrics as number of days above/below threshold', 'Trends in annual observed temperature, salinity, comparison to seagrass % cover', 'Trends in annual observed temperature, salinity, comparison to seagrass presence/absence', 'Annual trend', 'Annual trend')
+)
+
+dattab <- knitr::kable(totab)#, col.names = c('Bay Segment', 'Threshold', 'Slope', 'Start', 'End'))
+
+save(dattab, file = here('tabs/dattab.RData'))
+
 # linear trend summaries ----------------------------------------------------------------------
 
 data(fimsgtempdat)
