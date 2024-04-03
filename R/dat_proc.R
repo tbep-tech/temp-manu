@@ -1303,7 +1303,12 @@ phydat <- phyraw %>%
     date = ymd(date), 
     starttime = as.character(starttime),
     hr = gsub('^([[:digit:]]+):.*$', '\\1', starttime),
-    hr = as.numeric(hr)
+    hr = as.numeric(hr), 
+    Secchi_on_bottom = case_when(
+      Secchi_on_bottom == 'YES' ~ TRUE, 
+      is.na(Secchi_depth) ~ NA,
+      T ~ F
+    )
   ) %>% 
   filter(Zone %in% c('A', 'B', 'C', 'D', 'E')) %>% 
   #filter(Project =='AM') 
@@ -1313,7 +1318,7 @@ phydat <- phyraw %>%
   filter(!is.na(BottomVegCover)) %>% 
   st_as_sf(coords = c('Longitude', 'Latitude'), crs = prj, remove = F) %>% 
   .[tbseg, ] %>% 
-  select(Reference, date, hr, BottomVegCover)
+  select(Reference, date, hr, BottomVegCover, secchi_m = Secchi_depth, secchi_on_bottom = Secchi_on_bottom, Secchi_on_bottom)
 
 # sal, temp data (no location)
 hyddat <- hydraw %>% 
@@ -1365,7 +1370,13 @@ fimsgtempdat <- fimtempdat %>%
   mutate(
     lon = st_coordinates(.)[, 1], 
     lat = st_coordinates(.)[, 2], 
-    yr = year(date)
+    yr = year(date), 
+    la = case_when(
+      bay_segment %in% "OTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "HB" ~ 1.61 / secchi_m,
+      bay_segment %in% "MTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "LTB" ~ 1.84 / secchi_m
+    )
   ) %>% 
   st_set_geometry(NULL) %>% 
   filter(!is.na(temp)) %>% 
@@ -1391,6 +1402,8 @@ pincotemp <- tmp %>%
     level = Level, 
     temp  = Temp_Water, 
     sal = Salinity, 
+    secchi_m = Secchi,
+    secchi_on_bottom = Secchi_q,
     SAV, 
     SAV_Type
   ) %>%
@@ -1406,16 +1419,22 @@ pincotemp <- tmp %>%
       SAV %in% c('T', 'Y') ~ 1, 
       T ~ NaN
     ), 
+    secchi_m = as.numeric(secchi_m),
     level = factor(level, levels = c('Surface', 'Middle', 'Bottom')), 
     levelint = as.numeric(level), 
-    lon = ifelse(sign(as.numeric(lon)) == 1, -1 * as.numeric(lon), as.numeric(lon))
+    lon = ifelse(sign(as.numeric(lon)) == 1, -1 * as.numeric(lon), as.numeric(lon)), 
+    secchi_on_bottom = case_when(
+      secchi_on_bottom %in% c('vOB', 'VOB') ~ T,
+      is.na(secchi_m) ~ NA, 
+      T ~ F
+    )
   ) %>% 
   filter(SAV %in% c(0, 1)) %>% 
   mutate_at(vars(lat, lon, temp, sal), as.numeric) %>% 
   filter(lat < 35) # one outlier at 72
 
-# get salinity, temperature by lowest level (not always bottom)
-saltemp <- pincotemp %>% 
+# get salinity, temperature, secchi by lowest level (not always bottom)
+saltempsec <- pincotemp %>% 
   select(-SAV, -SAV_Type) %>% 
   mutate(
     levelmax = max(levelint), 
@@ -1427,7 +1446,7 @@ saltemp <- pincotemp %>%
 # identify sites w/ and w/o seagrass (sav 1 could also include macro)
 # allsg sites are those with only sg species found (will be zero if any macro found)
 sav <- pincotemp %>% 
-  select(-temp, -sal, -level, -levelint) %>% 
+  select(-temp, -sal, -secchi_m, -secchi_on_bottom, -level, -levelint) %>% 
   unique() %>% 
   mutate(SAV_Type = strsplit(SAV_Type, ',|,\\s')) %>% 
   unnest('SAV_Type') %>% 
@@ -1443,12 +1462,18 @@ sav <- pincotemp %>%
   unique()
 
 # rejoin temp, sal with sav ifno
-pincotemp <-  saltemp %>%
+pincotemp <-  saltempsec %>%
   inner_join(sav, by = c('site', 'sample', 'date', 'hr', 'lat', 'lon')) %>% 
   mutate(
     yr = year(date), 
     mo = month(date), 
-    bay_segment = 'OTB'
+    bay_segment = 'OTB',
+    la = case_when(
+      bay_segment %in% "OTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "HB" ~ 1.61 / secchi_m,
+      bay_segment %in% "MTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "LTB" ~ 1.84 / secchi_m
+    )
   ) %>% 
   filter(yr > 2003) %>% # only a few
   filter(!is.na(temp)) %>%
