@@ -1376,7 +1376,8 @@ fimsgtempdat <- fimtempdat %>%
       bay_segment %in% "HB" ~ 1.61 / secchi_m,
       bay_segment %in% "MTB" ~ 1.49 / secchi_m,
       bay_segment %in% "LTB" ~ 1.84 / secchi_m
-    )
+    ), 
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
   st_set_geometry(NULL) %>% 
   filter(!is.na(temp)) %>% 
@@ -1467,7 +1468,7 @@ pincotemp <-  saltempsec %>%
   mutate(
     yr = year(date), 
     mo = month(date), 
-    bay_segment = 'OTB',
+    bay_segment = factor('OTB', levels = 'OTB'),
     la = case_when(
       bay_segment %in% "OTB" ~ 1.49 / secchi_m,
       bay_segment %in% "HB" ~ 1.61 / secchi_m,
