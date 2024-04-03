@@ -11,7 +11,7 @@ tomod <- epccmbdat %>%
   filter(!bay_segment %in% c('LTB'))
 
 ##
-# single smoothers only
+# single smoothers only, temp, sal
 
 mod <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment), data = tomod, method = 'REML')
 
@@ -40,70 +40,33 @@ ggplot(toplo, aes(x = value, y = .estimate, color = bay_segment, fill = bay_segm
   geom_line()+ 
   facet_wrap(~var, scales = 'free')
 
-## 
-# interaction terms
+##
+# single smoothers only, both
 
-mod <- gam(total ~ te(la, yr, by = bay_segment) + te(temp, yr, by = bay_segment) + te(sal, yr, by = bay_segment), data = tomod, method = 'REML')
+mod <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(both, by = bay_segment), data = tomod, method = 'REML')
 
-salslc <- data_slice(mod,
-                    yr = c(2000, 2020),
-                    sal = evenly(sal, n = 100), 
-                    bay_segment = evenly(bay_segment)
-                    )
-toploslc <- smooth_estimates(mod, select = 'te(sal,yr)', data = salslc, partial_match = T) %>% 
-  add_confint() %>% 
-  filter(!((sal < min(tomod[tomod$bay_segment == 'HB', 'sal']) | sal > max(tomod[tomod$bay_segment == 'HB', 'sal'])) & bay_segment == 'HB')) %>%
-  filter(!((sal < min(tomod[tomod$bay_segment == 'OTB', 'sal']) | sal > max(tomod[tomod$bay_segment == 'OTB', 'sal'])) & bay_segment == 'OTB')) %>%
-  filter(!((sal < min(tomod[tomod$bay_segment == 'MTB', 'sal']) | sal > max(tomod[tomod$bay_segment == 'MTB', 'sal'])) & bay_segment == 'MTB')) 
-
-p1 <- ggplot(toploslc, aes(x = sal, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~bay_segment) +#, scales = 'free_y') +
-  labs(
-    x = NULL, 
-    y = 'Sal partial'
-  )
-tempslc <- data_slice(mod,
-                    yr = c(2000, 2020),
-                    temp = evenly(temp, n = 100), 
-                    bay_segment = evenly(bay_segment)
-                    )
-toploslc <- smooth_estimates(mod, select = 'te(temp,yr)', data = tempslc, partial_match = T) %>% 
-  add_confint() %>% 
-  filter(!((temp < min(tomod[tomod$bay_segment == 'HB', 'temp']) | temp > max(tomod[tomod$bay_segment == 'HB', 'temp'])) & bay_segment == 'HB')) %>%
-  filter(!((temp < min(tomod[tomod$bay_segment == 'OTB', 'temp']) | temp > max(tomod[tomod$bay_segment == 'OTB', 'temp'])) & bay_segment == 'OTB')) %>%
-  filter(!((temp < min(tomod[tomod$bay_segment == 'MTB', 'temp']) | temp > max(tomod[tomod$bay_segment == 'MTB', 'temp'])) & bay_segment == 'MTB'))
-
-p2 <- ggplot(toploslc, aes(x = temp, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~bay_segment) +#, scales = 'free_y') + 
-  labs(
-    x = NULL, 
-    y = 'Temp partial'
-  )
-laslc <- data_slice(mod,
-                    yr = c(2000, 2020),
-                    la = evenly(la, n = 100), 
-                    bay_segment = evenly(bay_segment)
-                    )
-toploslc <- smooth_estimates(mod, select = 'te(la,yr)', data = laslc, partial_match = T) %>% 
-  add_confint() %>% 
-  filter(!((la < min(tomod[tomod$bay_segment == 'HB', 'la']) | la > max(tomod[tomod$bay_segment == 'HB', 'la'])) & bay_segment == 'HB')) %>%
-  filter(!((la < min(tomod[tomod$bay_segment == 'OTB', 'la']) | la > max(tomod[tomod$bay_segment == 'OTB', 'la'])) & bay_segment == 'OTB')) %>%
-  filter(!((la < min(tomod[tomod$bay_segment == 'MTB', 'la']) | la > max(tomod[tomod$bay_segment == 'MTB', 'la'])) & bay_segment == 'MTB'))
-
-p3 <- ggplot(toploslc, aes(x = la, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~bay_segment) +#, scales = 'free_y') + 
-  labs(
-    x = NULL, 
-    y = 'LA partial'
+toplo <- data_slice(mod, 
+                    both = evenly(both), 
+                    la = evenly(la),
+                    bay_segment = c('HB', 'OTB', 'MTB'), 
+                    yr = c(2000, 2020)
+) %>% 
+  fitted_values(mod, data = ., scale = 'response') %>% 
+  mutate(
+    .fitted = ifelse(.fitted < 0 | .fitted > 1, NA, .fitted)
   )
 
-p1 + p2 + p3 + plot_layout(ncol = 1, guides = 'collect')
+ggplot(toplo, aes(x = both, y = .fitted, color = factor(yr), fill = factor(yr), group = yr)) + 
+  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
+  geom_line() + 
+  facet_wrap(~bay_segment)
+
+ggplot(toplo, aes(x = la, y = both, z = .fitted)) + 
+  geom_tile(aes(fill = .fitted)) + 
+  facet_wrap(yr~bay_segment) + 
+  scale_fill_viridis_c() + 
+  scale_x_continuous(expand = c(0, 0)) + 
+  scale_y_continuous(expand = c(0, 0))
 
 # FIM eval------------------------------------------------------------------------------------
 
@@ -111,23 +74,32 @@ data(fimsgtempdat)
 
 tomod <- fimsgtempdat %>% 
   filter(!bay_segment %in% c('LTB')) %>% 
-  select(date, sgcov, sgpres, yr, la, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
+  select(date, sgcov, sgpres, yr, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
   na.omit() %>%
-  # filter(month(date) %in% c(7:10)) %>% 
+  mutate(mo = month(date)) %>% 
+  # filter(month(date) %in% c(6:9)) %>%
   summarise(
+    sgcov = mean(sgcov),
     sgpres = mean(sgpres),
-    la = mean(la),
     temp = mean(temp),
     sal = mean(sal),
     secchi_m = mean(secchi_m),
-    .by = c(bay_segment, yr)
+    .by = c(bay_segment, yr, mo)
+  ) %>% 
+  mutate(
+    la = dplyr::case_when(
+      bay_segment %in% "OTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "HB" ~ 1.61 / secchi_m,
+      bay_segment %in% "MTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "LTB" ~ 1.84 / secchi_m
+    )
   )
   # filter(!secchi_on_bottom)
 
 ##
 # single smoothers only
 
-mod <- gam(sgpres ~ s(yr, by = bay_segment, k = 20) + s(secchi_m, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment), data = tomod, method = 'REML')
+mod <- gam(sgcov ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + s(mo, bs = 'cc') + ti(yr, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(la, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(temp, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(sal, mo, bs = c('tp', 'cc'), by = bay_segment), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
 
 toplo <- smooth_estimates(mod) %>% 
   add_confint() %>% 
@@ -152,72 +124,7 @@ toplo <- smooth_estimates(mod) %>%
 ggplot(toplo, aes(x = value, y = .estimate, color = bay_segment, fill = bay_segment)) + 
   geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
   geom_line()+ 
-  facet_wrap(~var, scales = 'free')
-
-## 
-# interaction terms
-
-mod <- gam(sgcov ~ te(secchi_m, yr, by = bay_segment) + te(temp, yr, by = bay_segment) + te(sal, yr, by = bay_segment), data = tomod, method = 'REML')
-
-salslc <- data_slice(mod,
-                     yr = c(2000, 2020),
-                     sal = evenly(sal, n = 100), 
-                     bay_segment = evenly(bay_segment)
-)
-toploslc <- smooth_estimates(mod, select = 'te(sal,yr)', data = salslc, partial_match = T) %>% 
-  add_confint() %>% 
-  filter(!((sal < min(tomod[tomod$bay_segment == 'HB', 'sal']) | sal > max(tomod[tomod$bay_segment == 'HB', 'sal'])) & bay_segment == 'HB')) %>%
-  filter(!((sal < min(tomod[tomod$bay_segment == 'OTB', 'sal']) | sal > max(tomod[tomod$bay_segment == 'OTB', 'sal'])) & bay_segment == 'OTB')) %>%
-  filter(!((sal < min(tomod[tomod$bay_segment == 'MTB', 'sal']) | sal > max(tomod[tomod$bay_segment == 'MTB', 'sal'])) & bay_segment == 'MTB')) 
-
-p1 <- ggplot(toploslc, aes(x = sal, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~bay_segment) +#, scales = 'free_y') +
-  labs(
-    x = NULL, 
-    y = 'Sal partial'
-  )
-tempslc <- data_slice(mod,
-                      yr = c(2000, 2020),
-                      temp = evenly(temp, n = 100), 
-                      bay_segment = evenly(bay_segment)
-)
-toploslc <- smooth_estimates(mod, select = 'te(temp,yr)', data = tempslc, partial_match = T) %>% 
-  add_confint() %>% 
-  filter(!((temp < min(tomod[tomod$bay_segment == 'HB', 'temp']) | temp > max(tomod[tomod$bay_segment == 'HB', 'temp'])) & bay_segment == 'HB')) %>%
-  filter(!((temp < min(tomod[tomod$bay_segment == 'OTB', 'temp']) | temp > max(tomod[tomod$bay_segment == 'OTB', 'temp'])) & bay_segment == 'OTB')) %>%
-  filter(!((temp < min(tomod[tomod$bay_segment == 'MTB', 'temp']) | temp > max(tomod[tomod$bay_segment == 'MTB', 'temp'])) & bay_segment == 'MTB'))
-
-p2 <- ggplot(toploslc, aes(x = temp, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~bay_segment) +#, scales = 'free_y') + 
-  labs(
-    x = NULL, 
-    y = 'Temp partial'
-  )
-secchislc <- data_slice(mod,
-                    yr = c(2000, 2020),
-                    secchi_m = evenly(secchi_m, n = 100), 
-                    bay_segment = evenly(bay_segment)
-)
-toploslc <- smooth_estimates(mod, select = 'te(secchi_m,yr)', data = secchislc, partial_match = T) %>% 
-  add_confint() %>% 
-  filter(!((secchi_m < min(tomod[tomod$bay_segment == 'HB', 'secchi_m']) | secchi_m > max(tomod[tomod$bay_segment == 'HB', 'secchi_m'])) & bay_segment == 'HB')) %>%
-  filter(!((secchi_m < min(tomod[tomod$bay_segment == 'OTB', 'secchi_m']) | secchi_m > max(tomod[tomod$bay_segment == 'OTB', 'secchi_m'])) & bay_segment == 'OTB')) %>%
-  filter(!((secchi_m < min(tomod[tomod$bay_segment == 'MTB', 'secchi_m']) | secchi_m > max(tomod[tomod$bay_segment == 'MTB', 'secchi_m'])) & bay_segment == 'MTB'))
-
-p3 <- ggplot(toploslc, aes(x = secchi_m, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~bay_segment) +#, scales = 'free_y') + 
-  labs(
-    x = NULL, 
-    y = 'Secchi partial'
-  )
-
-p1 + p2 + p3 + plot_layout(ncol = 1, guides = 'collect')
+  facet_wrap(bay_segment~var, scales = 'free')
 
 # PINCO eval----------------------------------------------------------------------------------
 
@@ -225,23 +132,28 @@ data("pincotemp")
 
 tomod <- pincotemp %>% 
   filter(!bay_segment %in% c('LTB')) %>% 
-  select(date, allsg, yr, la, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
+  select(date, allsg, yr, site, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
   na.omit() %>%
-  # filter(month(date) %in% c(7:10)) %>%
+  mutate(
+    mo = month(date),
+    site = factor(site)
+    ) %>% 
   summarise(
     allsg = sum(allsg) / length(allsg),
-    la = mean(la),
     temp = mean(temp),
     sal = mean(sal),
     secchi_m = mean(secchi_m),
-    .by = c(bay_segment, yr)
+    .by = c(yr, mo, site)
+  ) %>% 
+  mutate(
+    la = 1.49 / secchi_m
   )
 # filter(!secchi_on_bottom)
 
 ##
 # single smoothers only
 
-mod <- gam(allsg ~ s(yr) + s(secchi_m) + s(temp) + s(sal), data = tomod, method = 'REML')
+mod <- gam(allsg ~ s(yr, by = site) + s(la, by = site) + s(temp, by = site) + s(sal, by = site) + s(mo, bs = 'cc') + ti(yr, mo, bs = c('tp', 'cc'), by = site) + ti(la, mo, bs = c('tp', 'cc'), by = site) + ti(temp, mo, bs = c('tp', 'cc'), by = site) + ti(sal, mo, bs = c('tp', 'cc'), by = site), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
 
 toplo <- smooth_estimates(mod) %>% 
   add_confint() %>% 
@@ -255,52 +167,3 @@ ggplot(toplo, aes(x = value, y = .estimate)) +
   geom_line()+ 
   facet_wrap(~var, scales = 'free')
 
-## 
-# interaction terms
-
-mod <- gam(allsg ~ te(secchi_m, yr) + te(temp, yr) + te(sal, yr), data = tomod, method = 'REML')
-
-salslc <- data_slice(mod,
-                     yr = c(2000, 2020),
-                     sal = evenly(sal, n = 100)
-)
-toploslc <- smooth_estimates(mod, select = 'te(sal,yr)', data = salslc, partial_match = T) %>% 
-  add_confint()
-
-p1 <- ggplot(toploslc, aes(x = sal, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  labs(
-    x = NULL, 
-    y = 'Sal partial'
-  )
-tempslc <- data_slice(mod,
-                      yr = c(2000, 2020),
-                      temp = evenly(temp, n = 100)
-)
-toploslc <- smooth_estimates(mod, select = 'te(temp,yr)', data = tempslc, partial_match = T) %>% 
-  add_confint()
-
-p2 <- ggplot(toploslc, aes(x = temp, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+  
-  labs(
-    x = NULL, 
-    y = 'Temp partial'
-  )
-secchislc <- data_slice(mod,
-                        yr = c(2000, 2020),
-                        secchi_m = evenly(secchi_m, n = 100)
-)
-toploslc <- smooth_estimates(mod, select = 'te(secchi_m,yr)', data = secchislc, partial_match = T) %>% 
-  add_confint()
-
-p3 <- ggplot(toploslc, aes(x = secchi_m, y = .estimate, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  labs(
-    x = NULL, 
-    y = 'Secchi partial'
-  )
-
-p1 + p2 + p3 + plot_layout(ncol = 1, guides = 'collect')

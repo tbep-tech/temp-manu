@@ -1371,12 +1371,6 @@ fimsgtempdat <- fimtempdat %>%
     lon = st_coordinates(.)[, 1], 
     lat = st_coordinates(.)[, 2], 
     yr = year(date), 
-    la = case_when(
-      bay_segment %in% "OTB" ~ 1.49 / secchi_m,
-      bay_segment %in% "HB" ~ 1.61 / secchi_m,
-      bay_segment %in% "MTB" ~ 1.49 / secchi_m,
-      bay_segment %in% "LTB" ~ 1.84 / secchi_m
-    ), 
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
   st_set_geometry(NULL) %>% 
@@ -1403,6 +1397,7 @@ pincotemp <- tmp %>%
     level = Level, 
     temp  = Temp_Water, 
     sal = Salinity, 
+    chla = `Chl-a`,
     secchi_m = Secchi,
     secchi_on_bottom = Secchi_q,
     SAV, 
@@ -1420,7 +1415,6 @@ pincotemp <- tmp %>%
       SAV %in% c('T', 'Y') ~ 1, 
       T ~ NaN
     ), 
-    secchi_m = as.numeric(secchi_m),
     level = factor(level, levels = c('Surface', 'Middle', 'Bottom')), 
     levelint = as.numeric(level), 
     lon = ifelse(sign(as.numeric(lon)) == 1, -1 * as.numeric(lon), as.numeric(lon)), 
@@ -1431,7 +1425,7 @@ pincotemp <- tmp %>%
     )
   ) %>% 
   filter(SAV %in% c(0, 1)) %>% 
-  mutate_at(vars(lat, lon, temp, sal), as.numeric) %>% 
+  mutate_at(vars(lat, lon, temp, sal, secchi_m, chla), as.numeric) %>% 
   filter(lat < 35) # one outlier at 72
 
 # get salinity, temperature, secchi by lowest level (not always bottom)
@@ -1447,7 +1441,7 @@ saltempsec <- pincotemp %>%
 # identify sites w/ and w/o seagrass (sav 1 could also include macro)
 # allsg sites are those with only sg species found (will be zero if any macro found)
 sav <- pincotemp %>% 
-  select(-temp, -sal, -secchi_m, -secchi_on_bottom, -level, -levelint) %>% 
+  select(-temp, -sal, -secchi_m, -chla, -secchi_on_bottom, -level, -levelint) %>% 
   unique() %>% 
   mutate(SAV_Type = strsplit(SAV_Type, ',|,\\s')) %>% 
   unnest('SAV_Type') %>% 
@@ -1468,13 +1462,7 @@ pincotemp <-  saltempsec %>%
   mutate(
     yr = year(date), 
     mo = month(date), 
-    bay_segment = factor('OTB', levels = 'OTB'),
-    la = case_when(
-      bay_segment %in% "OTB" ~ 1.49 / secchi_m,
-      bay_segment %in% "HB" ~ 1.61 / secchi_m,
-      bay_segment %in% "MTB" ~ 1.49 / secchi_m,
-      bay_segment %in% "LTB" ~ 1.84 / secchi_m
-    )
+    bay_segment = factor('OTB', levels = 'OTB')
   ) %>% 
   filter(yr > 2003) %>% # only a few
   filter(!is.na(temp)) %>%

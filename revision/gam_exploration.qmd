@@ -1,0 +1,120 @@
+---
+title: "GAM exploration"
+format: 
+  html:
+    code-fold: true
+editor: visual
+
+filters:
+   - lightbox
+lightbox: auto
+
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+library(tidyverse)
+library(mgcv)
+library(gratia)
+library(patchwork)
+library(here)
+library(broom)
+library(knitr)
+
+source(here('R/funcs.R'))
+
+load(file = here('data/epccmbdat.RData'))
+load(file = here('data/fimsgtempdat.RData'))
+load(file = here('data/pincotemp.RData'))
+```
+
+The following is an exploratory analysis of potential seagrass response over time as a function of time, light attenuation, temperature, and salinity. Three different datasets are used, each with different sampling designs. GAMs are used to assess potential non-linear responses using the sum of additive smoothing functions. Lower Tampa Bay is not modeled in any of the datasets given minimal seagrass loss.
+
+## EPC
+
+The EPC data were compared to bay segment averages of seagrass transect frequency occurrence data at the annual scale. Light attenuation was estimated from all monitoring stations using Secchi depth and combined as a bay segment average. Temperature and salinity are expressed as the estimated number of days each when when temperature was above or salinity was below a threshold. The model formula is as follows:
+
+$$
+\begin{aligned}
+Freq. Occ. \sim s(year, by = bay\_segment) + s(la, by = bay\_segment) + 
+\\
+s(temp, by = bay\_segment) + s(salinity, by = bay\_segment)
+\end{aligned}
+$$
+
+```{r}
+tomod <- epccmbdat %>% 
+  filter(!bay_segment %in% c('LTB'))
+
+##
+# single smoothers only, temp, sal
+
+mod <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment), data = tomod, method = 'REML')
+
+mod %>% 
+  tidy() %>% 
+  mutate(
+    star = p_ast2(p.value)
+  ) %>% 
+  kable(digits = 3)
+```
+
+```{r}
+smmod <- summary(mod)
+smtab <- tibble(
+  R.sq = smmod$r.sq,
+  `Deviance explained` = paste0(round(100*smmod$dev.expl, 0), '%')
+)
+kable(smtab, digits = 2, align = 'l')
+```
+
+```{r}
+#| fig-width: 8
+#| fig-height: 10
+draw(mod, ncol = 3)
+```
+
+The same model is created but the "both" metric is used instead of temperature and salinity.
+
+$$
+\begin{aligned}
+Freq. Occ. \sim s(year, by = bay\_segment) + s(la, by = bay\_segment) + 
+\\
+s(both, by = bay\_segment)
+\end{aligned}
+$$
+
+```{r}
+##
+# single smoothers only, temp, sal
+
+mod <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(both, by = bay_segment), data = tomod, method = 'REML')
+
+mod %>% 
+  tidy() %>% 
+  mutate(
+    star = p_ast2(p.value)
+  ) %>% 
+  kable(digits = 3)
+```
+
+```{r}
+smmod <- summary(mod)
+smtab <- tibble(
+  R.sq = smmod$r.sq,
+  `Deviance explained` = paste0(round(100*smmod$dev.expl, 0), '%')
+)
+kable(smtab, digits = 2, align = 'l')
+```
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7.5
+draw(mod, ncol = 3)
+```
+
+#### Conclusions
+
+There's some weirdness with these models that don't align with expecations.  For example, increasing light attenuation is associated with increasing seagrass frequency occurrence.  Additionally, increases of the stressor metrics are also often associated with increasing seagrass frequency occurence. Perhaps we can attribute this to the different in sampling location between the EPC stations and the seagrass transects, i.e., the stations are in deeper water and may not reflect conditions at the seagrass beds. 
