@@ -2,75 +2,58 @@ library(tidyverse)
 library(mgcv)
 library(gratia)
 library(patchwork)
+library(here)
+library(broom)
+library(knitr)
 
-# EPC eval ------------------------------------------------------------------------------------
+source(here('R/funcs.R'))
 
-data(epccmbdat)
+load(file = here('data/epccmbdat.RData'))
+load(file = here('data/fimsgtempdat.RData'))
+load(file = here('data/pincotemp.RData'))
+
+# EPC -----------------------------------------------------------------------------------------
 
 tomod <- epccmbdat %>% 
   filter(!bay_segment %in% c('LTB'))
 
-##
-# single smoothers only, temp, sal
-
 mod <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment), data = tomod, method = 'REML')
 
-toplo <- smooth_estimates(mod) %>% 
-  add_confint() %>% 
-  # add_residuals(data = ., model = mod)
-  select(.smooth, .estimate, yr, la, temp, sal, .lower_ci, .upper_ci) %>% 
-  pivot_longer(cols = c(yr, la, temp, sal), names_to = 'var', values_to = 'value') %>% 
-  filter(!is.na(value)) %>% 
+mod %>% 
+  tidy() %>% 
   mutate(
-    bay_segment = gsub('^.*segment', '', .smooth)
+    star = p_ast2(p.value)
   ) %>% 
-  filter(!((value < min(tomod[tomod$bay_segment == 'HB', 'sal']) | value > max(tomod[tomod$bay_segment == 'HB', 'sal'])) & bay_segment == 'HB' & var == 'sal')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'HB', 'temp']) | value > max(tomod[tomod$bay_segment == 'HB', 'temp'])) & bay_segment == 'HB' & var == 'temp')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'HB', 'la']) | value > max(tomod[tomod$bay_segment == 'HB', 'la'])) & bay_segment == 'HB' & var == 'la')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'OTB', 'sal']) | value > max(tomod[tomod$bay_segment == 'OTB', 'sal'])) & bay_segment == 'OTB' & var == 'sal')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'OTB', 'temp']) | value > max(tomod[tomod$bay_segment == 'OTB', 'temp'])) & bay_segment == 'OTB' & var == 'temp')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'OTB', 'la']) | value > max(tomod[tomod$bay_segment == 'OTB', 'la'])) & bay_segment == 'OTB' & var == 'la')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'MTB', 'sal']) | value > max(tomod[tomod$bay_segment == 'MTB', 'sal'])) & bay_segment == 'MTB' & var == 'sal')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'MTB', 'temp']) | value > max(tomod[tomod$bay_segment == 'MTB', 'temp'])) & bay_segment == 'MTB' & var == 'temp')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'MTB', 'la']) | value > max(tomod[tomod$bay_segment == 'MTB', 'la'])) & bay_segment == 'MTB' & var == 'la'))
+  kable(digits = 3)
 
+smmod <- summary(mod)
+smtab <- tibble(
+  R.sq = smmod$r.sq,
+  `Deviance explained` = paste0(round(100*smmod$dev.expl, 0), '%')
+)
+kable(smtab, digits = 2, align = 'l')
 
-ggplot(toplo, aes(x = value, y = .estimate, color = bay_segment, fill = bay_segment)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~var, scales = 'free')
-
-##
-# single smoothers only, both
+draw(mod, ncol = 3)
 
 mod <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(both, by = bay_segment), data = tomod, method = 'REML')
 
-toplo <- data_slice(mod, 
-                    both = evenly(both), 
-                    la = evenly(la),
-                    bay_segment = c('HB', 'OTB', 'MTB'), 
-                    yr = c(2000, 2020)
-) %>% 
-  fitted_values(mod, data = ., scale = 'response') %>% 
+mod %>% 
+  tidy() %>% 
   mutate(
-    .fitted = ifelse(.fitted < 0 | .fitted > 1, NA, .fitted)
-  )
+    star = p_ast2(p.value)
+  ) %>% 
+  kable(digits = 3)
 
-ggplot(toplo, aes(x = both, y = .fitted, color = factor(yr), fill = factor(yr), group = yr)) + 
-  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line() + 
-  facet_wrap(~bay_segment)
+smmod <- summary(mod)
+smtab <- tibble(
+  R.sq = smmod$r.sq,
+  `Deviance explained` = paste0(round(100*smmod$dev.expl, 0), '%')
+)
+kable(smtab, digits = 2, align = 'l')
 
-ggplot(toplo, aes(x = la, y = both, z = .fitted)) + 
-  geom_tile(aes(fill = .fitted)) + 
-  facet_wrap(yr~bay_segment) + 
-  scale_fill_viridis_c() + 
-  scale_x_continuous(expand = c(0, 0)) + 
-  scale_y_continuous(expand = c(0, 0))
+draw(mod, ncol = 3)
 
-# FIM eval------------------------------------------------------------------------------------
-
-data(fimsgtempdat)
+# FIM -----------------------------------------------------------------------------------------
 
 tomod <- fimsgtempdat %>% 
   filter(!bay_segment %in% c('LTB')) %>% 
@@ -94,41 +77,59 @@ tomod <- fimsgtempdat %>%
       bay_segment %in% "LTB" ~ 1.84 / secchi_m
     )
   )
-  # filter(!secchi_on_bottom)
 
-##
-# single smoothers only
+mod <- gam(sgcov ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + s(mo, bs = 'cc', by = bay_segment) + ti(yr, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(la, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(temp, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(sal, mo, bs = c('tp', 'cc'), by = bay_segment), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
 
-mod <- gam(sgcov ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + s(mo, bs = 'cc') + ti(yr, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(la, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(temp, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(sal, mo, bs = c('tp', 'cc'), by = bay_segment), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
-
-toplo <- smooth_estimates(mod) %>% 
-  add_confint() %>% 
-  # add_residuals(data = ., model = mod)
-  select(.smooth, .estimate, yr, secchi_m, temp, sal, .lower_ci, .upper_ci) %>% 
-  pivot_longer(cols = c(yr, secchi_m, temp, sal), names_to = 'var', values_to = 'value') %>% 
-  filter(!is.na(value)) %>% 
+mod %>% 
+  tidy() %>% 
   mutate(
-    bay_segment = gsub('^.*segment', '', .smooth)
+    star = p_ast2(p.value)
   ) %>% 
-  filter(!((value < min(tomod[tomod$bay_segment == 'HB', 'sal']) | value > max(tomod[tomod$bay_segment == 'HB', 'sal'])) & bay_segment == 'HB' & var == 'sal')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'HB', 'temp']) | value > max(tomod[tomod$bay_segment == 'HB', 'temp'])) & bay_segment == 'HB' & var == 'temp')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'HB', 'secchi_m']) | value > max(tomod[tomod$bay_segment == 'HB', 'secchi_m'])) & bay_segment == 'HB' & var == 'secchi_m')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'OTB', 'sal']) | value > max(tomod[tomod$bay_segment == 'OTB', 'sal'])) & bay_segment == 'OTB' & var == 'sal')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'OTB', 'temp']) | value > max(tomod[tomod$bay_segment == 'OTB', 'temp'])) & bay_segment == 'OTB' & var == 'temp')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'OTB', 'secchi_m']) | value > max(tomod[tomod$bay_segment == 'OTB', 'secchi_m'])) & bay_segment == 'OTB' & var == 'secchi_m')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'MTB', 'sal']) | value > max(tomod[tomod$bay_segment == 'MTB', 'sal'])) & bay_segment == 'MTB' & var == 'sal')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'MTB', 'temp']) | value > max(tomod[tomod$bay_segment == 'MTB', 'temp'])) & bay_segment == 'MTB' & var == 'temp')) %>%
-  filter(!((value < min(tomod[tomod$bay_segment == 'MTB', 'secchi_m']) | value > max(tomod[tomod$bay_segment == 'MTB', 'secchi_m'])) & bay_segment == 'MTB' & var == 'secchi_m'))
+  kable(digits = 3)
 
+smmod <- summary(mod)
+smtab <- tibble(
+  R.sq = smmod$r.sq,
+  `Deviance explained` = paste0(round(100*smmod$dev.expl, 0), '%')
+)
+kable(smtab, digits = 2, align = 'l')
 
-ggplot(toplo, aes(x = value, y = .estimate, color = bay_segment, fill = bay_segment)) + 
+draw(mod, select = 's(temp)', ncol = 3, partial_match = TRUE)
+draw(mod, select = 's(sal)', ncol = 3, partial_match = TRUE)
+draw(mod, select = 'ti(temp,mo)', ncol = 3, partial_match = TRUE)
+draw(mod, select = 'ti(sal,mo)', ncol = 3, partial_match = TRUE)
+
+tempslc <- smooth_estimates(mod, select = 'ti(temp,mo)', partial_match = T) %>% 
+  add_confint() %>% 
+  filter(mo %in% c(1, 7)) %>% 
+  filter(bay_segment %in% c('HB', 'MTB'))
+ggplot(tempslc, aes(x = temp, y = .estimate, color = factor(mo), fill = factor(mo), group = mo)) +
   geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(bay_segment~var, scales = 'free')
+  geom_line() +
+  facet_wrap(~bay_segment, scales = 'free_y') + 
+  labs(
+    x = 'Temperature',
+    y = 'Partial effect',
+    color = 'Month',
+    fill = 'Month'
+  )
 
-# PINCO eval----------------------------------------------------------------------------------
+salslc <- smooth_estimates(mod, select = 'ti(sal,mo)', partial_match = T) %>% 
+  add_confint() %>% 
+  filter(mo %in% c(3, 9)) %>% 
+  filter(bay_segment %in% c('MTB'))
+ggplot(salslc, aes(x = sal, y = .estimate, color = factor(mo), fill = factor(mo), group = mo)) +
+  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
+  geom_line() +
+  facet_wrap(~bay_segment, scales = 'free_y') + 
+  labs(
+    x = 'Salinity',
+    y = 'Partial effect',
+    color = 'Month',
+    fill = 'Month'
+  )
 
-data("pincotemp")
+# PDEM ----------------------------------------------------------------------------------------
 
 tomod <- pincotemp %>% 
   filter(!bay_segment %in% c('LTB')) %>% 
@@ -137,7 +138,7 @@ tomod <- pincotemp %>%
   mutate(
     mo = month(date),
     site = factor(site)
-    ) %>% 
+  ) %>% 
   summarise(
     allsg = sum(allsg) / length(allsg),
     temp = mean(temp),
@@ -148,22 +149,54 @@ tomod <- pincotemp %>%
   mutate(
     la = 1.49 / secchi_m
   )
-# filter(!secchi_on_bottom)
 
-##
-# single smoothers only
+mod <- gam(allsg ~ s(yr, by = site) + s(la, by = site) + s(temp, by = site) + s(sal, by = site) + s(mo, bs = 'cc', by = site) + ti(yr, mo, bs = c('tp', 'cc'), by = site) + ti(la, mo, bs = c('tp', 'cc'), by = site) + ti(temp, mo, bs = c('tp', 'cc'), by = site) + ti(sal, mo, bs = c('tp', 'cc'), by = site), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
 
-mod <- gam(allsg ~ s(yr, by = site) + s(la, by = site) + s(temp, by = site) + s(sal, by = site) + s(mo, bs = 'cc') + ti(yr, mo, bs = c('tp', 'cc'), by = site) + ti(la, mo, bs = c('tp', 'cc'), by = site) + ti(temp, mo, bs = c('tp', 'cc'), by = site) + ti(sal, mo, bs = c('tp', 'cc'), by = site), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
+mod %>% 
+  tidy() %>% 
+  mutate(
+    star = p_ast2(p.value)
+  ) %>% 
+  kable(digits = 3)
 
-toplo <- smooth_estimates(mod) %>% 
+smmod <- summary(mod)
+smtab <- tibble(
+  R.sq = smmod$r.sq,
+  `Deviance explained` = paste0(round(100*smmod$dev.expl, 0), '%')
+)
+kable(smtab, digits = 2, align = 'l')
+
+draw(mod, select = 's(temp)', ncol = 4, partial_match = TRUE)
+draw(mod, select = 's(sal)', ncol = 4, partial_match = TRUE)
+draw(mod, select = 'ti(temp,mo)', ncol = 4, partial_match = TRUE)
+draw(mod, select = 'ti(sal,mo)', ncol = 4, partial_match = TRUE)
+
+tempslc <- smooth_estimates(mod, select = 'ti(temp,mo)', partial_match = T) %>% 
   add_confint() %>% 
-  # add_residuals(data = ., model = mod)
-  select(.smooth, .estimate, yr, secchi_m, temp, sal, .lower_ci, .upper_ci) %>% 
-  pivot_longer(cols = c(yr, secchi_m, temp, sal), names_to = 'var', values_to = 'value') %>% 
-  filter(!is.na(value))
-
-ggplot(toplo, aes(x = value, y = .estimate)) + 
+  filter(mo %in% c(1, 7)) %>% 
+  filter(site %in% c('E1', 'E4'))
+ggplot(tempslc, aes(x = temp, y = .estimate, color = factor(mo), fill = factor(mo), group = mo)) +
   geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
-  geom_line()+ 
-  facet_wrap(~var, scales = 'free')
+  geom_line() +
+  facet_wrap(~site, scales = 'free_y') + 
+  labs(
+    x = 'Temperature',
+    y = 'Partial effect',
+    color = 'Month',
+    fill = 'Month'
+  )
 
+salslc <- smooth_estimates(mod, select = 'ti(sal,mo)', partial_match = T) %>% 
+  add_confint() %>% 
+  filter(mo %in% c(3, 9)) %>% 
+  filter(site %in% c('E4'))
+ggplot(salslc, aes(x = sal, y = .estimate, color = factor(mo), fill = factor(mo), group = mo)) +
+  geom_ribbon(aes(ymin = .lower_ci, ymax = .upper_ci), alpha = 0.2, color = NA) +
+  geom_line() +
+  facet_wrap(~site, scales = 'free_y') + 
+  labs(
+    x = 'Salinity',
+    y = 'Partial effect',
+    color = 'Month',
+    fill = 'Month'
+  )
