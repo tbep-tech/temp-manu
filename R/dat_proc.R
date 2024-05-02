@@ -1395,6 +1395,7 @@ pincotemp <- tmp %>%
     lat = Latitude, 
     lon = Longitude, 
     level = Level, 
+    depth_m = Depth_Total,
     temp  = Temp_Water, 
     sal = Salinity, 
     chla = `Chl-a`,
@@ -1425,7 +1426,7 @@ pincotemp <- tmp %>%
     )
   ) %>% 
   filter(SAV %in% c(0, 1)) %>% 
-  mutate_at(vars(lat, lon, temp, sal, secchi_m, chla), as.numeric) %>% 
+  mutate_at(vars(lat, lon, temp, sal, secchi_m, chla, depth_m), as.numeric) %>% 
   filter(lat < 35) # one outlier at 72
 
 # get salinity, temperature, secchi by lowest level (not always bottom)
@@ -1441,7 +1442,7 @@ saltempsec <- pincotemp %>%
 # identify sites w/ and w/o seagrass (sav 1 could also include macro)
 # allsg sites are those with only sg species found (will be zero if any macro found)
 sav <- pincotemp %>% 
-  select(-temp, -sal, -secchi_m, -chla, -secchi_on_bottom, -level, -levelint) %>% 
+  select(-temp, -sal, -secchi_m, -chla, -depth_m, -secchi_on_bottom, -level, -levelint) %>% 
   unique() %>% 
   mutate(SAV_Type = strsplit(SAV_Type, ',|,\\s')) %>% 
   unnest('SAV_Type') %>% 
@@ -1450,7 +1451,7 @@ sav <- pincotemp %>%
       any(!SAV_Type %in% c('H', 'Halophila', 'Hd', 'Hs', 'Hw', 'HW', 'R', 'Rm', 'RM', 'S', 'Sf', 'SF', 'T', 'Tt')) ~ 0, 
       all(is.na(SAV_Type)) ~ 0,
       T ~ 1
-      ), 
+    ), 
     .by = c('site', 'sample', 'date')
   ) %>% 
   select(-SAV, -SAV_Type) %>% 
