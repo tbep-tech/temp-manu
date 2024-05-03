@@ -307,7 +307,7 @@ Natural resource managers should consider how these climate-related stressors ma
 
 {{< pagebreak >}}
 
-![Seagrass changes over time in Tampa Bay for (a) areal coverage 1988 - 2022 from mapping and (b) frequency occurrence of major species 1998 - 2022 from annual transect monitoring. Changes are shown for major bay segments. Red lines in (a) show approximate capacity of seagrass coverage based on the baywide target of 40,000 acres. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/seagrasschg.png){#fig-seagrasschg}
+![Seagrass changes over time in Tampa Bay for (a) areal coverage 1988 - 2022 from mapping, (b) frequency occurrence of major species 1998 - 2022 from annual transect monitoring, and (c) mean annual light attenuation from 1970 to 2022. Changes are shown for major bay segments. Red lines in (a) show approximate capacity of seagrass coverage based on the baywide target of 40,000 acres and red lines in (c) show the approximate linear trend for the period of record covered by the transect data in (b). The dashed line in (c) shows the light attenuation threshold for each bay segment identified as supportive for seagrass growth. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/seagrasschg.png){#fig-seagrasschg}
 
 {{< pagebreak >}}
 

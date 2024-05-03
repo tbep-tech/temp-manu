@@ -258,9 +258,46 @@ p2 <- ggplot(toplo2, aes(x = yr, y = foest, color = Savspecies)) +
     caption = expression(italic('Source: Interagency Seagrass Monitoring Program'))
   )
 
-p <- p1 + p2 + plot_layout(ncol = 1)
+dat <- anlz_avedat(epcdata)$ann %>% 
+  filter(var == 'mean_la') %>% 
+  filter(yr < 2023) %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  )
 
-png(here('figs/seagrasschg.png'), height = 6, width = 9, family = 'serif', units = 'in', res = 300)
+lns <- targets %>% 
+  filter(bay_segment %in% c('OTB', 'HB', 'MTB', 'LTB')) %>%
+  mutate(bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))) %>% 
+  select(bay_segment, la_thresh)
+
+p3 <- ggplot(dat, aes(x = yr, y = val)) + 
+  geom_line() +
+  geom_point() +
+  geom_smooth(data = filter(dat, yr >= 1998), method = 'lm', formula = y ~ x, se = F, color = 'tomato1') +
+  geom_hline(data = lns, aes(yintercept = la_thresh), color = 'blue', linetype = 'dashed') +
+  facet_wrap(~bay_segment, ncol = 4) + 
+  theme_bw() + 
+  theme(
+    legend.position = 'top',
+    strip.text = element_text(size = 11),
+    strip.background = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    legend.text = element_text(size = 11),
+    axis.text.y = element_text(colour = 'black', size = 9),
+    axis.text.x = element_text(colour = 'black', angle = 60, size = 9, hjust = 1),
+  ) + 
+  labs(
+    y = expression("Light Att. (m " ^-1 *")"),
+    x = NULL, 
+    color = NULL,
+    title = '(c) Mean annual light attenuation bay segment',
+    caption = expression(italic('Source: Environmental Protection Commission of Hillsborough County'))
+  ) 
+
+p <- p1 + p2 + p3 + plot_layout(ncol = 1)
+
+png(here('figs/seagrasschg.png'), height = 9, width = 9, family = 'serif', units = 'in', res = 300)
 print(p)
 dev.off()
 

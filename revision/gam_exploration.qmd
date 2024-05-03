@@ -33,11 +33,11 @@ load(file = here('data/fimsgtempdat.RData'))
 load(file = here('data/pincotemp.RData'))
 ```
 
-The following is an exploratory analysis of potential seagrass response related to time, light attenuation, temperature, and salinity. Three different datasets are used, each with different sampling designs. GAMs are used to assess potential non-linear responses in seagrass change using the sum of additive smoothing functions for different predictors. Lower Tampa Bay is not modeled in any of the models given minimal seagrass loss.  Model selection techniques are not considered for simplicity and the results are evaluated based on the percent deviance explained and "partial effects" of each smoother, where the smoother is a proxy for the effect of the variable on the response while considering a more comprehensive set of predictors.  These models were developed in response to reviewer comments on including additional predictors important for characterizing change, namely time and light attenuation. 
+The following is an exploratory analysis of potential seagrass response related to time, light attenuation, temperature, and salinity. Three different datasets are used, each with different sampling designs. GAMs are used to assess potential non-linear responses in seagrass change using the sum of additive smoothing functions for different predictors. Lower Tampa Bay is not modeled in any of the models given minimal seagrass loss. Model selection techniques are not considered for simplicity and the results are evaluated based on the percent deviance explained and "partial effects" of each smoother, where the smoother is a proxy for the effect of the variable on the response while considering a more comprehensive set of predictors.
 
 ## Quick summary
 
-All models had much more explained variance (32-94%) compared to earlier linear regression models. The EPC models returned confusing results, which could be from differences in sampling location for water quality (mid-bay) vs seagrass transect sampling.  The FIM models for nearshore provide the most compelling results, particularly for temperature in HB and salinity in MTB.  There are also some notable differences by season in the FIM models.  The PDEM models are inconsistent, although a significant interaction term for temperature and season at stratum E4 (most southern portion of OTB) suggests increasing temperature in the winter is associated with lower seagrass frequency occurrence.  In general, trends in OTB are not explained well by temperature or salinity, whereas HB and MTB follow expectations for some of the models.
+All models had much more explained variance (32-94%) compared to earlier linear regression models. The EPC models returned confusing results, which could be from differences in sampling location for water quality (mid-bay) vs seagrass transect sampling. The FIM models for nearshore provide the most compelling results, particularly for temperature in HB and salinity in MTB. There are also some notable differences by season in the FIM models. The PDEM models are inconsistent, although a significant interaction term for temperature and season at stratum E4 (most southern portion of OTB) suggests increasing temperature in the winter is associated with lower seagrass frequency occurrence. In general, trends in OTB are not explained well by temperature or salinity, whereas HB and MTB follow expectations for some of the models.
 
 ## EPC
 
@@ -89,7 +89,7 @@ kable(smtab, digits = 2, align = 'l')
 draw(mod, ncol = 3)
 ```
 
-The same model is created but the "both" metric is used instead of temperature and salinity, which is the number of days each year when both temperature was above or salinity was below thresholds.  The expectation is that total frequency occurrence will decrease as the metric increases, either linearly (additive effect) or non-linearly (multiplicative effect). The model formula is as follows:
+The same model is created but the "both" metric is used instead of temperature and salinity, which is the number of days each year when both temperature was above or salinity was below thresholds. The expectation is that total frequency occurrence will decrease as the metric increases, either linearly (additive effect) or non-linearly (multiplicative effect). The model formula is as follows:
 
 $$
 \begin{aligned}
@@ -106,7 +106,7 @@ $$
 mod <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(both, by = bay_segment), data = tomod, method = 'REML')
 ```
 
-Smoother summary: 
+Smoother summary:
 
 ```{r}
 mod %>% 
@@ -136,16 +136,16 @@ draw(mod, ncol = 3)
 
 ### Conclusions
 
-There's some weirdness with these models that don't align with expectations.  For example, increasing light attenuation is associated with increasing seagrass frequency occurrence (MTB).  Additionally, increases of the stressor metrics are also often associated with increasing seagrass frequency occurrence. These results could be from a discrepancy between sampling location of the EPC stations and the seagrass transects, i.e., the stations are in deeper water and may not reflect conditions at the seagrass beds in more shallow waters. The association of the salinity metric with seagrasses in MTB is as expected, although the smoother is not significant.  However, this is consistent with the FIM models.
+There's some weirdness with these models that don't align with expectations. For example, increasing light attenuation is associated with increasing seagrass frequency occurrence (MTB). Additionally, increases of the stressor metrics are also often associated with increasing seagrass frequency occurrence. These results could be from a discrepancy between sampling location of the EPC stations and the seagrass transects, i.e., the stations are in deeper water and may not reflect conditions at the seagrass beds in more shallow waters. The association of the salinity metric with seagrasses in MTB is as expected, although the smoother is not significant. However, this is consistent with the FIM models.
 
 ## FIM
 
-The FIM models are different from the EPC models in several ways: 
+The FIM models are different from the EPC models in several ways:
 
-* Seagrass and stressor data are collected at the same locations possibly allowing for a more consistent comparison
-* The stressor data (light attenuation, temperature, salinity) are observed data, so the expectation of how seagrass will response varies from the EPC data and by stressor, i.e., seagrass will decrease with temperature and light attenuation, but increase with salinity (fresh conditions are more stressful)
-* Monthly observations are available, allowing a seasonal component in the model. 
-* Secchi data is used for light attenuation (as for EPC), but more than half of the observations are on the bottom.  Attempts were made to calculate monthly medians using Kaplan-Meier survival curves, but data were insufficient to do so.
+-   Seagrass and stressor data are collected at the same locations possibly allowing for a more consistent comparison
+-   The stressor data (light attenuation, temperature, salinity) are observed data, so the expectation of how seagrass will response varies from the EPC data and by stressor, i.e., seagrass will decrease with temperature and light attenuation, but increase with salinity (fresh conditions are more stressful)
+-   Monthly observations are available, allowing a seasonal component in the model.
+-   Secchi data is used for light attenuation (as for EPC), but more than half of the observations are on the bottom. Attempts were made to calculate monthly medians using Kaplan-Meier survival curves, but data were insufficient to do so.
 
 The FIM data are averaged at the annual and monthly time steps. The model is more complex than the previous and includes smoothers for year, month, light attenuation, temperature, and salinity and interaction smoothers (`ti`) for the predictions with month, allowing the effects of the predictors to vary seasonally. Different smoothers are also constructed for each bay segment. The model formula is as follows:
 
@@ -194,7 +194,7 @@ tomod <- fimsgtempdat %>%
 mod <- gam(sgcov ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + s(mo, bs = 'cc', by = bay_segment) + ti(yr, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(la, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(temp, mo, bs = c('tp', 'cc'), by = bay_segment) + ti(sal, mo, bs = c('tp', 'cc'), by = bay_segment), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
 ```
 
-Smoother summary: 
+Smoother summary:
 
 ```{r}
 mod %>% 
@@ -205,7 +205,7 @@ mod %>%
   kable(digits = 3)
 ```
 
-Model fit summary: 
+Model fit summary:
 
 ```{r}
 smmod <- summary(mod)
@@ -224,6 +224,7 @@ Select smoothers:
 draw(mod, select = 's(temp)', ncol = 3, partial_match = TRUE)
 draw(mod, select = 's(sal)', ncol = 3, partial_match = TRUE)
 ```
+
 ```{r}
 #| fig-width: 10
 #| fig-height: 4
@@ -251,6 +252,7 @@ ggplot(tempslc, aes(x = temp, y = .estimate, color = factor(mo), fill = factor(m
     fill = 'Month'
   )
 ```
+
 ```{r}
 #| fig-width: 4
 #| fig-height: 3
@@ -272,11 +274,11 @@ ggplot(salslc, aes(x = sal, y = .estimate, color = factor(mo), fill = factor(mo)
 
 ### Conclusions
 
-The FIM models are more promising as expected relationships with temperature and salinity are observed, particularly for MTB and HB.  There are also interesting interactions by month suggesting the effects vary seasonally, e.g., the temperature effect in HB seems to be driven by July temperatures and the salinity effect in MTB seems to be pronounced in the dry season (March). 
+The FIM models are more promising as expected relationships with temperature and salinity are observed, particularly for MTB and HB. There are also interesting interactions by month suggesting the effects vary seasonally, e.g., the temperature effect in HB seems to be driven by July temperatures and the salinity effect in MTB seems to be pronounced in the dry season (March).
 
 ## PDEM
 
-The PDEM models are similar to the FIM models except only OTB is evaluated. Effects are also evaluated differently for four sampling strata in OTB (E1-E4, somewhat north to south), allowing for a more precise spatial assessment of seagrass relationships. The data are averaged for each year, month, and stratum.  Compared to the FIM data, fewer Secchi measurements were on the bottom given the broader depth coverage (see Figure 1 in the manuscript).  Additionally, PDEM only records seagrass presence/absence, but this was converted to a strata-wide frequency occurrence metric as the number of points with seagrass divided by the total points in each stratum.
+The PDEM models are similar to the FIM models except only OTB is evaluated. Effects are also evaluated differently for four sampling strata in OTB (E1-E4, somewhat north to south), allowing for a more precise spatial assessment of seagrass relationships. The data are averaged for each year, month, and stratum. Compared to the FIM data, fewer Secchi measurements were on the bottom given the broader depth coverage (see Figure 1 in the manuscript). Additionally, PDEM only records seagrass presence/absence, but this was converted to a strata-wide frequency occurrence metric as the number of points with seagrass divided by the total points in each stratum.
 
 The PDEM model is the same as for FIM, except separate smoothers are estimated for each stratum instead of bay segment. The model formula is as follows:
 
@@ -297,6 +299,7 @@ ti(temp, month, bs = c('tp', 'cc'), by = stratum) +
 ti(salinity, month, bs = c('tp', 'cc'), by = stratum)
 \end{aligned}
 $$
+
 ```{r}
 
 tomod <- pincotemp %>% 
@@ -321,7 +324,7 @@ tomod <- pincotemp %>%
 mod <- gam(allsg ~ s(yr, by = site) + s(la, by = site) + s(temp, by = site) + s(sal, by = site) + s(mo, bs = 'cc', by = site) + ti(yr, mo, bs = c('tp', 'cc'), by = site) + ti(la, mo, bs = c('tp', 'cc'), by = site) + ti(temp, mo, bs = c('tp', 'cc'), by = site) + ti(sal, mo, bs = c('tp', 'cc'), by = site), knots = list(doy = c(1, 12)), data = tomod, method = 'REML')
 ```
 
-Smoother summary: 
+Smoother summary:
 
 ```{r}
 mod %>% 
@@ -332,7 +335,7 @@ mod %>%
   kable(digits = 3)
 ```
 
-Model fit summary: 
+Model fit summary:
 
 ```{r}
 smmod <- summary(mod)
@@ -351,6 +354,7 @@ Select smoothers:
 draw(mod, select = 's(temp)', ncol = 4, partial_match = TRUE)
 draw(mod, select = 's(sal)', ncol = 4, partial_match = TRUE)
 ```
+
 ```{r}
 #| fig-width: 10
 #| fig-height: 4
@@ -378,6 +382,7 @@ ggplot(tempslc, aes(x = temp, y = .estimate, color = factor(mo), fill = factor(m
     fill = 'Month'
   )
 ```
+
 ```{r}
 #| fig-width: 4
 #| fig-height: 3
@@ -399,4 +404,4 @@ ggplot(salslc, aes(x = sal, y = .estimate, color = factor(mo), fill = factor(mo)
 
 ### Conclusions
 
-None of the main effects for temperature or salinity are significant, although Some of the interaction terms by stratum are informative.  The model slices for salinity at stratum E4 and temperature at E1 are unclear, but temperature at E4 is associated with lower frequency occurrence of seagrass in January. 
+None of the main effects for temperature or salinity are significant, although Some of the interaction terms by stratum are informative. The model slices for salinity at stratum E4 and temperature at E1 are unclear, but temperature at E4 is associated with lower frequency occurrence of seagrass in January.
