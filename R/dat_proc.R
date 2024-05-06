@@ -1471,41 +1471,95 @@ pincotemp <-  saltempsec %>%
 
 save(pincotemp, file = here('data/pincotemp.RData'))
 
+
+# secchi on bottom for each dataset -----------------------------------------------------------
+
+data(epcdata, package = 'tbeptools')
+load(file = here::here('data/fimsgtempdat.RData'))
+load(file = here::here('data/pincotemp.RData'))
+
+epconb <- epcdata %>% 
+  filter(yr >= 1998 & yr <= 2022) %>%
+  summarise(per = 100 * mean(grepl('>', sd_q))) %>%
+  round(0) %>% 
+  paste0('%')
+fimonb <- fimsgtempdat %>% 
+  filter(month(date) %in% c(7:10)) %>%
+  summarise(per = 100 * sum(secchi_on_bottom, na.rm = T) / n()) %>%
+  round(0) %>% 
+  paste0('%')
+pincoonb <- pincotemp %>% 
+  filter(month(date) %in% c(7:10)) %>%
+  filter(depth_m < 2) %>% 
+  summarise(per = 100 * sum(secchi_on_bottom, na.rm = T) / n()) %>%
+  round(0) %>% 
+  paste0('%')
+
+onb <- list(epc = epconb, fim = fimonb, pinco = pincoonb)
+
+save(onb, file = here::here('data/onb.RData'))
+
 # seagrass declines models, epc, fim, and pinco -----------------------------------------------
 
 load(file  = here('data/epccmbdat.RData'))
 load(file = here('data/fimsgtempdat.RData'))
 load(file = here('data/pincotemp.RData'))
 
-modprep <- function(dat){
+tomod <- epccmbdat %>% 
+  filter(!bay_segment %in% c('LTB'))
 
-  dat %>% 
-    filter(!bay_segment %in% c('LTB')) %>% 
-    mutate(
-      yrcat = case_when(
-        yr <= 2016 ~ 'pre', 
-        yr > 2016 ~ 'post'
-      ), 
-      yrcat = factor(yrcat, levels = c('pre', 'post'), 
-                     labels = c('Recovery (pre - 2016)', 'Decline (post - 2016)'))
+epcmod1 <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + ti(la, yr, by = bay_segment) + ti(temp, yr, by = bay_segment) + ti(sal, yr, by = bay_segment), data = tomod, method = 'REML')
+
+epcmod2 <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(both, by = bay_segment) + ti(la, yr, by = bay_segment) + ti(both, yr, by = bay_segment), data = tomod, method = 'REML')
+
+tomod <- fimsgtempdat %>% 
+  filter(!bay_segment %in% c('LTB')) %>%
+  select(date, sgcov, sgpres, yr, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
+  na.omit() %>%
+  mutate(mo = month(date)) %>% 
+  filter(month(date) %in% c(7:10)) %>%
+  summarise(
+    sgcov = mean(sgcov),
+    sgpres = mean(sgpres),
+    temp = mean(temp),
+    sal = mean(sal),
+    secchi_m = mean(secchi_m),
+    .by = c(bay_segment, yr)
+  ) %>%
+  mutate(
+    la = dplyr::case_when(
+      bay_segment %in% "OTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "HB" ~ 1.61 / secchi_m,
+      bay_segment %in% "MTB" ~ 1.49 / secchi_m,
+      bay_segment %in% "LTB" ~ 1.84 / secchi_m
     )
+  )
 
-}
+fimmod <- gam(sgcov ~ s(yr, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + 
+             ti(sal, yr, by = bay_segment) + ti(temp, yr, by = bay_segment), data = tomod, method = 'REML')
 
-epctomod <- modprep(epccmbdat)
-fimtomod <- modprep(fimsgtempdat) %>% 
-  filter(month(date) %in% c(7:10))
-pincotomod <- modprep(pincotemp) %>% 
-  filter(month(date) %in% c(7:10))
+tomod <- pincotemp %>% 
+  filter(depth_m < 2) %>% 
+  select(date, allsg, yr, site, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
+  na.omit() %>%
+  mutate(
+    mo = month(date),
+    site = factor(site)
+  ) %>% 
+  filter(mo >= 7 & mo <= 10) %>% 
+  summarise(
+    allsg = sum(allsg) / length(allsg),
+    temp = mean(temp),
+    sal = mean(sal),
+    secchi_m = mean(secchi_m),
+    .by = c(yr)
+  ) %>%
+  mutate(
+    la = 1.49 / secchi_m
+  )
 
-epcmod1 <- lm(total ~ sal * temp * yrcat + bay_segment, data = epctomod) %>% 
-  step()
-epcmod2 <- lm(total ~ both * yrcat + bay_segment, data = epctomod) %>% 
-  step()
-fimmod <- lm(sgcov ~ sal * temp * yrcat + bay_segment, data = fimtomod) %>% 
-  step()
-pincomod <- glm(allsg ~ sal * temp * yrcat, data = pincotomod, family = binomial(link = 'logit')) %>%
-  step()
+pincomod <- gam(allsg ~ s(yr) + s(temp) + s(sal) + ti(yr, temp) + ti(yr, sal), 
+           data = tomod, method = 'REML')
 
 sgmods <- list(epcmod1 = epcmod1, epcmod2 = epcmod2, fimmod = fimmod, pincomod = pincomod)
 

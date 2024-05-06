@@ -291,7 +291,7 @@ p3 <- ggplot(dat, aes(x = yr, y = val)) +
     y = expression("Light Att. (m " ^-1 *")"),
     x = NULL, 
     color = NULL,
-    title = '(c) Mean annual light attenuation bay segment',
+    title = '(c) Mean annual light attenuation by bay segment',
     caption = expression(italic('Source: Environmental Protection Commission of Hillsborough County'))
   ) 
 

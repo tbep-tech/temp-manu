@@ -65,7 +65,7 @@ tomod <- fimsgtempdat %>%
   select(date, sgcov, sgpres, yr, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
   na.omit() %>%
   mutate(mo = month(date)) %>% 
-  filter(month(date) %in% c(7:11)) %>%
+  filter(month(date) %in% c(7:10)) %>%
   summarise(
     sgcov = mean(sgcov),
     sgpres = mean(sgpres),
@@ -138,14 +138,14 @@ ggplot(salslc, aes(x = sal, y = .estimate, color = factor(mo), fill = factor(mo)
 # PDEM ----------------------------------------------------------------------------------------
 
 tomod <- pincotemp %>% 
-  filter(!bay_segment %in% c('LTB')) %>% 
+  filter(depth_m < 2) %>% 
   select(date, allsg, yr, site, temp, sal, secchi_m, secchi_on_bottom, bay_segment) %>% 
   na.omit() %>%
   mutate(
     mo = month(date),
     site = factor(site)
   ) %>% 
-  filter(mo >= 7 & mo <= 11) %>% 
+  filter(mo >= 7 & mo <= 10) %>% 
   summarise(
     allsg = sum(allsg) / length(allsg),
     temp = mean(temp),
