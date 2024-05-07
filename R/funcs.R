@@ -103,8 +103,126 @@ runfunc <- function(cnt){
   return(out)
 }
 
-# plot all s() for gam
-gamplo_fun <- function(mod, smths, labels, cols, bayseg = T){
+# gam plot for fim and pdem, main text
+gamplo_fun <- function(sgmods){
+  
+  mod <- sgmods$fimmod
+  smths <- c('s(yr)', 's(temp)', 's(sal)')
+  labels <- c('Year', 'Temperature (\u00B0C)', 'Salinity (ppt)')
+  cols <- c('grey20', 'red2', 'dodgerblue2')
+  
+  toplo1 <- tibble(smooths = factor(smths, levels = smths)) %>% 
+    group_nest(smooths) %>% 
+    mutate(
+      data = purrr::map(smooths, function(x) smooth_estimates(mod, as.character(x), partial_match = T) %>% add_confint()),
+      xlab = factor(smooths, levels = smths,
+                    labels = labels
+      ),
+      xvar = gsub('s\\((.*)\\)', '\\1', smooths), 
+      cols = cols
+    ) %>% 
+    unnest('data') %>% 
+    group_by(smooths, bay_segment, xlab, xvar, cols) %>% 
+    nest() %>% 
+    mutate(
+      plos = purrr::pmap(list(data, xvar, xlab, cols, bay_segment), function(data, xvar, xlab, cols, bay_segment){
+        
+        # xlab <- ifelse(bay_segment == 'HB', as.character(xlab), "")
+        xlab <- as.character(xlab)
+        ylab <- ifelse(bay_segment == 'OTB', 'Partial effect', '')
+        xsz <- ifelse(xvar == 'yr', 8, 8)
+        
+        yrng <- 0.9 * max(abs(range(data$.estimate, data$.lower_ci, data$.upper_ci)))
+        
+        if(bay_segment == 'HB' & xvar == 'sal')
+          yrng <-100
+        
+        ttl <- ifelse(bay_segment == 'OTB' & xvar == 'yr', 
+                      '(a) FIM', '')
+        
+        p <- ggplot(data, aes(x = get(xvar), y = .estimate)) +
+          geom_hline(yintercept = 0, linetype = 'dashed') +
+          geom_ribbon(aes(ymin  = .lower_ci, ymax = .upper_ci), alpha = 0.2, fill = cols) +
+          geom_line(color = cols) +
+          coord_cartesian(ylim = c(-yrng, yrng)) +
+          theme_minimal() +
+          theme(
+            panel.grid.minor = element_blank(), 
+            plot.subtitle = element_text(hjust = 0.5, size = 10), 
+            axis.text.x = element_text(size = xsz),
+            plot.margin = margin(0, 0, 0, 0)
+          ) +
+          labs(
+            subtitle = bay_segment, 
+            title = ttl,
+            x = xlab,
+            y = ylab
+          )
+        
+        return(p)
+        
+      })
+    )
+  
+  mod <- sgmods$pincomod
+  smths <- c('s(yr)', 's(temp)', 's(sal)')
+  labels <- c('Year', 'Temperature (\u00B0C)', 'Salinity (ppt)')
+  cols <- c('grey20', 'red2', 'dodgerblue2')
+  
+  toplo2 <- tibble(smooths = factor(smths, levels = smths)) %>% 
+    group_nest(smooths) %>% 
+    mutate(
+      data = purrr::map(smooths, function(x) smooth_estimates(mod, as.character(x), partial_match = T) %>% add_confint()),
+      xlab = factor(smooths, levels = smths,
+                    labels = labels
+      ),
+      xvar = gsub('s\\((.*)\\)', '\\1', smooths), 
+      cols = cols,
+      plos = purrr::pmap(list(data, xvar, xlab, cols), function(data, xvar, xlab, cols){
+        
+        xlab <- as.character(xlab)
+        # ylab <- ifelse(xvar == 'yr', 'Partial effect', '')
+        ylab <- ''
+        xsz <- ifelse(xvar == 'yr', 8, 8)
+        
+        yrng <- 0.9 * max(abs(range(data$.estimate, data$.lower_ci, data$.upper_ci)))
+        
+        ttl <- ifelse(xvar == 'yr', '(b) PDEM', '')
+        
+        p <- ggplot(data, aes(x = get(xvar), y = .estimate)) +
+          geom_hline(yintercept = 0, linetype = 'dashed') +
+          geom_ribbon(aes(ymin  = .lower_ci, ymax = .upper_ci), alpha = 0.2, fill = cols) +
+          geom_line(color = cols) +
+          coord_cartesian(ylim = c(-yrng, yrng)) +
+          theme_minimal() +
+          theme(
+            panel.grid.minor = element_blank(),
+            plot.subtitle = element_text(hjust = 0.5, size = 10), 
+            axis.text.x = element_text(size = xsz), 
+            plot.margin = margin(0, 0, 0, 0)
+          ) +
+          labs(
+            title = ttl,
+            x = xlab,
+            subtitle = 'OTB',
+            y = ylab
+          )
+        
+        return(p)
+        
+      })
+    )
+  
+  p <- (toplo1$plos[[1]] + toplo1$plos[[2]] + toplo1$plos[[3]] + toplo2$plos[[1]] + plot_layout(ncol = 4)) / 
+    (toplo1$plos[[4]] + toplo1$plos[[5]] + toplo1$plos[[6]] + toplo2$plos[[2]] + plot_layout(ncol = 4)) /
+    (toplo1$plos[[7]] + toplo1$plos[[8]] + toplo1$plos[[9]] + toplo2$plos[[3]] + plot_layout(ncol = 4))
+  
+  return(p)
+  
+}
+
+# plot all s() for gam, supplement
+suppgamplo_fun <- function(mod, smths, labels, cols, bayseg = T){
 
   out <- tibble(smooths = factor(smths, levels = smths)) %>% 
     group_nest(smooths) %>% 

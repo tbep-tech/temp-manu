@@ -114,11 +114,6 @@ load(file = here('tabs/supppincomodtab.RData'))
 ![Partial effects of smoothers by bay segment from a Generalized Additive model used to describe seagrass change relative to year, light attenuation, and the number of days each year when both temperature was above 30 $^\circ$C and salinity was below 25 ppt. The EPC data were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S8 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. n = 75, R.sq. 0.93, Deviance explained 97%](figs/suppepcmod2.png){#fig-suppepcmod2}
 {{< pagebreak >}}
 
-![Partial effects of smoothers by bay segment from a Generalized Additive model used to describe seagrass change relative to year, temperature ($^\circ$C), and salinity (ppt). The FIM data were used to develop the model. Partial effects describe the modeled association between each predictor and mean seagrass coverage (0-100) after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S9 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. n = 81, R.sq. 0.81, Deviance explained 89%](figs/suppfimmod.png){#fig-suppfimmod}
-{{< pagebreak >}}
-
-![Partial effects of smoothers from a Generalized Additive model used to describe seagrass change relative to year, temperature ($^\circ$C), and salinity (ppt). The PDEM data in Old Tampa Bay were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S10 for additional model fit statistics. n = 19, R.sq. 0.69, Deviance explained 81%](figs/supppincomod.png){#fig-supppincomod}
-
 ## Tables {.unnumbered}
 
 ```{r}

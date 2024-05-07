@@ -1318,50 +1318,11 @@ dev.off()
 
 # seagrass change plots -----------------------------------------------------------------------
 
-load(file = here('data/sgmods.RData'))
+load(file = here::here('data/sgmods.RData'))
 
-epcmod1 <- sgmods$epcmod1
-fimmod <- sgmods$fimmod
-pincomod <- sgmods$pincomod
+p <- gamplo_fun(sgmods)
 
-##
-# epc model plot
-
-epcplo <- modplo_fun(
-  mod = epcmod1, 
-  xlab1 = '# days temperature > 30 \u00B0C', 
-  ylab1 = 'Frequency occurrence', 
-  xlab2 = '# days salinity < 25 ppt',
-  title1 = '(a) EPC', 
-  ismetric = T
-)
-
-## 
-# fim model plot
-
-fimplo <- modplo_fun(
-  mod = fimmod, 
-  xlab1 = 'Temperature (\u00B0C)', 
-  ylab1 = '% cover', 
-  xlab2 = 'Salinity (ppt)',
-  title1 = '(b) FIM'
-)
-
-# ## 
-# # pinco model plot, only yrcat significant
-# 
-# pincoplo <- modplo_fun(
-#   mod = pincomod, 
-#   xlab1 = 'Temperature (\u00B0C)', 
-#   ylab1 = 'Probability of occurrence', 
-#   xlab2 = 'Salinity (ppt)', 
-#   isbinom = T,
-#   title1 = '(c) PDEM'
-# )
-
-p <- epcplo / fimplo 
-
-png(here('figs/sgmods.png'), height = 6, width = 7, family = 'serif', units = 'in', res = 300)
+png(here('figs/sgmods.png'), width = 8, height = 6, units = 'in', res = 300, family = 'serif')
 print(p)
 dev.off()
 
@@ -1413,11 +1374,11 @@ mod <- sgmods$epcmod1
 smths <- c('s(yr)', 's(la)', 's(temp)', 's(sal)')
 labels <- c('year', 'light att (m-1)', '# days temperature > 30 \u00B0C', '# days salinity < 25 ppt')
 cols <- c('grey20', 'bisque4', 'red2', 'dodgerblue2')
-toplo <- gamplo_fun(mod, smths, labels, cols)
+toplo <- suppgamplo_fun(mod, smths, labels, cols)
 
 p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]] / toplo$plos[[4]]  
 
-png(here('figs/suppepcmod1.png'), width = 7, height = 8, units = 'in', res = 300)
+png(here('figs/suppepcmod1.png'), width = 7, height = 8, units = 'in', res = 300, family = 'serif')
 print(p)
 dev.off()
 
@@ -1428,44 +1389,12 @@ load(file = here('data/sgmods.RData'))
 mod <- sgmods$epcmod2
 smths <- c('s(yr)', 's(la)', 's(both)')
 labels <- c('year', 'light att (m-1)', '# days temperature > 30 \u00B0C & salinity < 25 ppt')
-cols <- c('grey20', 'bisque4', 'purple')
-toplo <- gamplo_fun(mod, smths, labels, cols)
+cols <- c('grey20', 'bisque4', 'black')
+toplo <- suppgamplo_fun(mod, smths, labels, cols)
 
 p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]]
 
-png(here('figs/suppepcmod2.png'), width = 7, height = 6.5, units = 'in', res = 300)
-print(p)
-dev.off()
-
-# supp fim mod --------------------------------------------------------------------------------
-
-load(file = here('data/sgmods.RData'))
-
-mod <- sgmods$fimmod
-smths <- c('s(yr)', 's(temp)', 's(sal)')
-labels <- c('Year', 'Temperature (\u00B0C)', 'Salinity (ppt)')
-cols <- c('grey20', 'red2', 'dodgerblue2')
-toplo <- gamplo_fun(mod, smths, labels, cols)
-
-p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]]
-
-png(here('figs/suppfimmod.png'), width = 7, height = 6.5, units = 'in', res = 300)
-print(p)
-dev.off()
-
-# supp pinco mod ------------------------------------------------------------------------------
-
-load(file = here('data/sgmods.RData'))
-
-mod <- sgmods$pincomod
-smths <- c('s(yr)', 's(temp)', 's(sal)')
-labels <- c('Year', 'Temperature (\u00B0C)', 'Salinity (ppt)')
-cols <- c('grey20', 'red2', 'dodgerblue2')
-toplo <- gamplo_fun(mod, smths, labels, cols, bayseg = F)
-
-p <- toplo$plos[[1]] + toplo$plos[[2]] + toplo$plos[[3]]
-
-png(here('figs/supppincomod.png'), width = 8, height = 3, units = 'in', res = 300)
+png(here('figs/suppepcmod2.png'), width = 7, height = 6.5, units = 'in', res = 300, family = 'serif')
 print(p)
 dev.off()
 
