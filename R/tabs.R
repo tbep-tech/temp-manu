@@ -457,3 +457,22 @@ supp2daytab <- totab %>%
 
 save(supp2daytab, file = here('tabs/supp2daytab.RData'))
 
+# gam summaries -------------------------------------------------------------------------------
+
+load(file = here::here('data/sgmods.RData'))
+
+suppepccap1 <- 'Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to temperature and salinity stress metrics, with additional smoothers for year and light attenuation.  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.'  
+suppepcmod1tab <- gam_table(sgmods$epcmod1, cap = suppepccap1)
+save(suppepcmod1tab, file = here('tabs/suppepcmod1tab.RData'))
+
+suppepccap2 <- 'Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to "both" stressors (both temperuture above and salinity below thresholds), with additional smoothers for year and light attenuation.  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.'  
+suppepcmod2tab <- gam_table(sgmods$epcmod2, cap = suppepccap2)
+save(suppepcmod2tab, file = here('tabs/suppepcmod2tab.RData'))
+
+suppfimcap <- 'Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the FIM data in relation to temperature, salinity, and year.  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.'  
+suppfimmodtab <- gam_table(sgmods$fimmod, cap = suppfimcap)
+save(suppfimmodtab, file = here('tabs/suppfimmodtab.RData'))
+
+supppincocap <- 'Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the PDEM data in relation to temperature and salinity, salinity, and year.  $s$ = invidual smoother, $ti$ = interaction term.'  
+supppincomodtab <- gam_table(sgmods$pincomod, cap = supppincocap)
+save(supppincomodtab, file = here('tabs/supppincomodtab.RData'))

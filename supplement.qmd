@@ -75,6 +75,10 @@ load(file = here('tabs/supp1mixtab.RData'))
 load(file = here('tabs/supp2mixtab.RData'))
 load(file = here('tabs/supp1daytab.RData'))
 load(file = here('tabs/supp2daytab.RData'))
+load(file = here('tabs/suppepcmod1tab.RData'))
+load(file = here('tabs/suppepcmod2tab.RData'))
+load(file = here('tabs/suppfimmodtab.RData'))
+load(file = here('tabs/supppincomodtab.RData'))
 ```
 
 ## Figures {.unnumbered}
@@ -95,9 +99,6 @@ load(file = here('tabs/supp2daytab.RData'))
 
 {{< pagebreak >}}
 
-<!-- ![Relationship between water temperature and discharge in the Hillsborough River (USGS gage 02303000) over time. The relationship is shown for February (dry month) and August (wet month) grouped by historic (1975-1999) and contemporary (2000-2022) time periods. Regression lines with 95% confidence intervals for each temporal grouping are shown.](figs/suppflowtemp.png){#fig-suppflowtemp} -->
-
-<!-- {{< pagebreak >}} -->
 
 ![Examples of Generalized Additive Models of bottom water temperature and salinity for station 66 in Old Tampa Bay.  Models were fit using a continuous smoothing spline for decimal year.  Monthly observations are shown as points and daily predictions from the models as lines.](figs/suppgamex.png){#fig-supgamex}
 
@@ -106,6 +107,17 @@ load(file = here('tabs/supp2daytab.RData'))
 ![Example of mixed effects models for the estimated number of days per year that temperature (red) or salinity (blue) were above or below thresholds of 30 $^\circ$C or 25 psu, respectively, from 1988 to 2022. The bottom row (black) shows the number of days when both temperature was above and salinity was below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends, grey points as actual number of days, and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom left of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmixeff.png){#fig-suppmixeff}
 
 {{< pagebreak >}}
+
+![Partial effects of smoothers by bay segment from a Generalized Additive model used to describe seagrass change relative to year, light attenuation, the number of days each year when temperature was above 30 $^\circ$C, and the number of days each year when salinity was below 25 ppt. The EPC data were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S7 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. n = 75, R.sq. 0.93, Deviance explained 97\%](figs/suppepcmod1.png){#fig-suppepcmod1}
+{{< pagebreak >}}
+
+![Partial effects of smoothers by bay segment from a Generalized Additive model used to describe seagrass change relative to year, light attenuation, and the number of days each year when both temperature was above 30 $^\circ$C and salinity was below 25 ppt. The EPC data were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S8 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. n = 75, R.sq. 0.93, Deviance explained 97%](figs/suppepcmod2.png){#fig-suppepcmod2}
+{{< pagebreak >}}
+
+![Partial effects of smoothers by bay segment from a Generalized Additive model used to describe seagrass change relative to year, temperature ($^\circ$C), and salinity (ppt). The FIM data were used to develop the model. Partial effects describe the modeled association between each predictor and mean seagrass coverage (0-100) after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S9 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. n = 81, R.sq. 0.81, Deviance explained 89%](figs/suppfimmod.png){#fig-suppfimmod}
+{{< pagebreak >}}
+
+![Partial effects of smoothers from a Generalized Additive model used to describe seagrass change relative to year, temperature ($^\circ$C), and salinity (ppt). The PDEM data in Old Tampa Bay were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S10 for additional model fit statistics. n = 19, R.sq. 0.69, Deviance explained 81%](figs/supppincomod.png){#fig-supppincomod}
 
 ## Tables {.unnumbered}
 
@@ -153,4 +165,32 @@ Table S6: Number of days at the beginning and end of the period of record when t
 
 ```{r}
 supp2daytab
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-suppepcmod1tab
+suppepcmod1tab
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-suppepcmod2tab
+suppepcmod2tab
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-suppfimmodtab
+suppfimmodtab
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-supppincomodtab
+supppincomodtab
 ```

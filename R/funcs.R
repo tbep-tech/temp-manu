@@ -25,18 +25,45 @@ p_ast2 <- function(x){
 }
 
 # function for formatting p-values in text
-p_txt <- function(x){
+p_txt <- function(x, addp = TRUE){
   
-  if(x >= 0.05){
-    out <- paste('p =', round(x, 2))
-    return(out)
+  if(x < 0.001){
+    out <- 'p < 0.001'
+  } else {
+    out <- paste('p =', sprintf('%.3f', round(x, 3)))
   }
   
-  sig_cats <- c('p < 0.005', 'p < 0.05', 'ns')
-  sig_vals <- c(-Inf, 0.005, 0.05, Inf)
+  if(!addp)
+    out <- gsub('^p\\s|\\=\\s', '', out)
   
-  out <- cut(x, breaks = sig_vals, labels = sig_cats, right = FALSE)
-  out <- as.character(out)
+  return(out)
+  
+}
+
+# gam table function
+gam_table <- function(mod, cap = NULL){
+ 
+  n <- paste('n =', nrow(mod$model))
+  smmod <- summary(mod)
+  rsq <- paste0('R.sq. ', sprintf('%.2f', round(smmod$r.sq, 2)))
+  dev <- paste0('Deviance explained ', round(100 * smmod$dev.expl, 0), '%')
+  cap <- paste0(cap, ' ', n, ', ', rsq, ', ', dev)
+  
+  out <- mod %>% 
+    tidy() %>% 
+    rowwise() %>% 
+    mutate(
+      p.value = p_txt(p.value, addp = F)
+    ) %>% 
+    ungroup() %>% 
+    mutate_if(is.numeric, round, 3) %>%
+    rename(
+      'Smoother' = term,
+      'Ref.df' = ref.df,
+      'F' = statistic,
+      'p' = p.value
+    ) %>%
+    kable(digits = 3, align = 'lrrrr', caption = cap)
   
   return(out)
   
@@ -76,100 +103,43 @@ runfunc <- function(cnt){
   return(out)
 }
 
-# prep epc, fim, pinco data prior to modelign 
-modprep <- function(dat){
-  
-  dat %>% 
-    filter(!bay_segment %in% c('LTB')) %>% 
+# plot all s() for gam
+gamplo_fun <- function(mod, smths, labels, cols, bayseg = T){
+
+  out <- tibble(smooths = factor(smths, levels = smths)) %>% 
+    group_nest(smooths) %>% 
     mutate(
-      yrcat = case_when(
-        yr <= 2016 ~ 'pre', 
-        yr > 2016 ~ 'post'
-      ), 
-      yrcat = factor(yrcat, levels = c('pre', 'post'), 
-                     labels = c('Recovery (pre - 2016)', 'Decline (2016 - present)')), 
-      bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB'))
+      data = purrr::map(smooths, function(x) smooth_estimates(mod, as.character(x), partial_match = T) %>% add_confint()), 
+      xlab = factor(smooths, levels = smths,
+                    labels = labels
+      ),
+      xvar = gsub('s\\((.*)\\)', '\\1', smooths),
+      cols = cols,
+      plos = purrr::pmap(list(data, xvar, xlab, cols), function(data, xvar, xlab, cols){
+
+        p <- ggplot(data, aes(x = get(xvar), y = .estimate)) +
+          geom_hline(yintercept = 0, linetype = 'dashed') +
+          geom_ribbon(aes(ymin  = .lower_ci, ymax = .upper_ci), alpha = 0.2, fill = cols) +
+          geom_line(color = cols) +
+          theme_minimal() +
+          theme(
+            panel.grid.minor = element_blank()
+          ) +
+          labs(
+            x = xlab,
+            y = 'Partial effect'
+          )
+
+        if(bayseg)
+          p <- p +
+            facet_wrap(~ bay_segment, ncol = 3, scales = 'free_x')
+
+        return(p)
+
+      })
     )
+  
+  return(out)
   
 }
 
-# plotting function for glm mods of seagrass change
-modplo_fun <- function(mod, xlab1, ylab1, subtitle1 = NULL, title1 = NULL, 
-                       xlab2, ylab2 = NULL, subtitle2 = NULL, title2 = NULL, isbinom = F, ismetric = F) {
-
-  if(ismetric){
-    salcond <- quantile(mod$model$sal, 0.5)
-    tempcond <- quantile(mod$model$temp, 0.5)
-  }
-  
-  if(!ismetric){
-    salcond <- quantile(mod$model$sal, 0.5)
-    tempcond <- quantile(mod$model$temp, 0.5)
-  }
-  
-  toplo1 <- visreg(mod, xvar = 'temp', by = 'yrcat', plot = F, scale = 'response', cond = list(sal = salcond), data = mod$model)
-  toplo1a <- toplo1$fit
-  
-  toplo2 <- visreg(mod, xvar = 'sal', by = 'yrcat', plot = F, scale = 'response', cond = list(temp = tempcond), data = mod$model)
-  toplo2a <- toplo2$fit
-  
-  ylim <- c(min(toplo1a$visregLwr, toplo2a$visregLwr), max(toplo1a$visregUpr, toplo2a$visregUpr))
-
-  p1 <- ggplot(toplo1a, aes(x = temp)) + 
-    geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'red2', alpha = 0.5) + 
-    geom_line(aes(y = visregFit), color = 'red2') + 
-    facet_grid(~ yrcat, scales = 'free_y') + 
-    coord_cartesian(ylim = ylim) +
-    labs(
-      y = ylab1,
-      x = xlab1,
-      subtitle = subtitle1, 
-      title = title1
-    ) + 
-    theme_bw() + 
-    theme(
-      strip.background = element_blank(), 
-      panel.grid.minor = element_blank()
-    )
-  
-  p2 <- ggplot(toplo2a, aes(x = sal)) + 
-    geom_ribbon(aes(ymin = visregLwr, ymax = visregUpr), fill = 'dodgerblue2', alpha = 0.5) + 
-    geom_line(aes(y = visregFit), color = 'dodgerblue2') + 
-    facet_grid(~ yrcat, scales = 'free_y') + 
-    coord_cartesian(ylim = ylim) +
-    labs(
-      y = ylab2,
-      x = xlab2,
-      subtitle = subtitle2, 
-      title = title2
-    ) + 
-    theme_bw() + 
-    theme(
-      strip.background = element_blank(), 
-      panel.grid.minor = element_blank()
-    )
-  
-  if(!isbinom){
-    toplo1b <- toplo1$res
-    toplo2b <- toplo2$res
-    p1 <- p1 +
-      geom_point(data = toplo1b, aes(x = temp, y = visregRes), size = 0.5, alpha = 0.5)
-    p2 <- p2 +
-      geom_point(data = toplo2b, aes(x = sal, y = visregRes), size = 0.5, alpha = 0.5)
-  }
-  
-  if(isbinom){
-    rawdat <- mod$model
-    p1 <- p1 +
-      geom_rug(data = rawdat[rawdat$allsg == 0, ], aes(x = temp), sides = 'b', alpha = 0.5) +
-      geom_rug(data = rawdat[rawdat$allsg == 1, ], aes(x = temp), sides = 't', alpha = 0.5) 
-    p2 <- p2 +
-      geom_rug(data = rawdat[rawdat$allsg == 0, ], aes(x = sal), sides = 'b', alpha = 0.5) +
-      geom_rug(data = rawdat[rawdat$allsg == 1, ], aes(x = sal), sides = 't', alpha = 0.5)
-  }
-  
-  p <- p1 + p2 + plot_layout(ncol = 2)
-  
-  return(p)
-  
-}

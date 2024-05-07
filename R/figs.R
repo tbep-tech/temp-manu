@@ -19,6 +19,7 @@ library(car)
 library(mgcv)
 library(mixmeta)
 library(maps)
+library(gratia)
 
 source(here('R/funcs.R'))
 
@@ -1404,137 +1405,67 @@ png(here('figs/suppflowtemp.png'), height = 4, width = 6, family = 'serif', unit
 print(p)
 dev.off()
 
-# # ports data threshold counts -----------------------------------------------------------------
-# 
-# load(file = here('data/portsdat.RData'))
-# 
-# # thresholds to count by year, temp is above
-# thrs <- tibble(
-#   temp = c(29, 30, 31)
-# )
-# 
-# # get T/F vectors for predictions above/below thresholds by day
-# portscnt <- portsdat %>%
-#   group_nest(name) %>%
-#   crossing(thrs) %>%
-#   mutate(
-#     data = purrr::pmap(list(data, temp), function(data, temp){
-# 
-#       out <- data %>%
-#         mutate(
-#           cnt = temp_c >= temp
-#         )
-# 
-#       return(out)
-# 
-#     })
-#   ) %>%
-#   unnest('data') %>%
-#   summarise(
-#     runcnt = runfunc(cnt),
-#     sumcnt = sum(cnt),
-#     .by = c(name, yr, temp)
-#   )
-# 
-# # ggplot(portscnt, aes(x = yr, y = runcnt, col = factor(temp))) +
-# #   geom_point() +
-# #   geom_smooth(se = F, method = 'lm', formula = y ~ x) +
-# #   facet_wrap(~name)
-# 
-# ggplot(portsdat, aes(x = date, y = temp_c)) +
-#   geom_line() +
-#   facet_wrap(~name, ncol = 1)
-# 
-# ##
-# # epc stations closes to gages (verified from maps)
-# 
-# epccnts <- tibble(
-#     fl = c('MTB_28_tempbot', 'LTB_90_temptop', 'HB_52_temptop', 'OTB_36_temptop'),
-#     name = c('stpete', 'manatee', 'mckay', 'oldporttampa')
-#   ) %>% 
-#   group_nest(name) %>% 
-#   mutate(
-#     mod = purrr::map(data, function(x){
-#   
-#       load(file = here(paste0('data/', x, '.RData')))
-#       
-#       out <- get(x[[1]])
-#       
-#       return(out)
-#       
-#     }),
-#     prd = purrr::map(mod, anlz_prdday)
-#   ) %>% 
-#   crossing(
-#     temp = c(29, 30, 31)
-#   ) %>%
-#   mutate(
-#     cnt = purrr::pmap(list(prd, temp), function(prd, temp){
-# 
-#       out <- prd %>% 
-#         mutate(
-#           cnt = value > temp
-#         ) %>% 
-#         summarise(
-#           modsumcnt = sum(cnt),
-#           modruncnt = runfunc(cnt),
-#           .by = yr
-#         )
-#       
-#       return(out)
-#       
-#     })
-#   ) %>% 
-#   select(-prd, -mod) %>% 
-#   unnest(data) %>% 
-#   unnest(cnt)
-# 
-# cmbcnts <- inner_join(portscnt, epccnts, by = c('name', 'temp', 'yr')) 
-# 
-# toplo <- cmbcnts %>%
-#   select(-runcnt, -modruncnt) %>% 
-#   pivot_longer(names_to = 'var', values_to = 'val', cols = c(sumcnt, modsumcnt))
-# 
-# # 1:1 scatterplots  
-# ggplot(cmbcnts, aes(x = sumcnt, y = modsumcnt, group = temp, color = factor(temp))) + 
-#   geom_point() + 
-#   geom_smooth(method = 'lm', se = F) +
-#   facet_wrap(~name)
-# 
-# # line plot by year
-# ggplot(toplo, aes(x = yr, y = val, group = var, color = var)) + 
-#   geom_point() +
-#   # geom_line() + 
-#   geom_smooth(method = 'lm', se = F) + 
-#   facet_wrap(temp ~ name)
-# 
-# # comparing ports data to bay segment averages
-# data(thrdat)
-# 
-# modcnt2 <- thrdat %>% 
-#   filter(thrtyp == 'tempcnt') %>% 
-#   summarise(
-#     modcnt = mean(cnt), 
-#     .by = c(bay_segment, yr, tempthr)
-#   ) %>% 
-#   mutate(
-#     temp = as.numeric(sub('^temp_', '', tempthr)),
-#     name = case_when(
-#       bay_segment == 'HB' ~ 'mckay', 
-#       bay_segment == 'LTB' ~ 'manatee', 
-#       bay_segment == 'OTB' ~ 'oldporttampa', 
-#       bay_segment == 'MTB' ~ 'stpete'
-#     )
-#   ) %>% 
-#   select(name, temp, yr, modcnt)
-# 
-# cmbcnt2 <- inner_join(portscnt, modcnt2, by = c('name', 'temp', 'yr'))
-# 
-# toplo <- cmbcnt2 %>% 
-#   select(-runcnt) %>% 
-#   pivot_longer(names_to = 'var', values_to = 'val', sumcnt:modcnt)
-# 
-# ggplot(toplo, aes(x = yr, y = val, color = var)) + 
-#   geom_point() + 
-#   geom_line() +
-#   facet_wrap(temp~name)
+# supp epc mod1 -------------------------------------------------------------------------------
+
+load(file = here('data/sgmods.RData'))
+
+mod <- sgmods$epcmod1
+smths <- c('s(yr)', 's(la)', 's(temp)', 's(sal)')
+labels <- c('year', 'light att (m-1)', '# days temperature > 30 \u00B0C', '# days salinity < 25 ppt')
+cols <- c('grey20', 'bisque4', 'red2', 'dodgerblue2')
+toplo <- gamplo_fun(mod, smths, labels, cols)
+
+p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]] / toplo$plos[[4]]  
+
+png(here('figs/suppepcmod1.png'), width = 7, height = 8, units = 'in', res = 300)
+print(p)
+dev.off()
+
+# supp epc mod2 -------------------------------------------------------------------------------
+
+load(file = here('data/sgmods.RData'))
+
+mod <- sgmods$epcmod2
+smths <- c('s(yr)', 's(la)', 's(both)')
+labels <- c('year', 'light att (m-1)', '# days temperature > 30 \u00B0C & salinity < 25 ppt')
+cols <- c('grey20', 'bisque4', 'purple')
+toplo <- gamplo_fun(mod, smths, labels, cols)
+
+p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]]
+
+png(here('figs/suppepcmod2.png'), width = 7, height = 6.5, units = 'in', res = 300)
+print(p)
+dev.off()
+
+# supp fim mod --------------------------------------------------------------------------------
+
+load(file = here('data/sgmods.RData'))
+
+mod <- sgmods$fimmod
+smths <- c('s(yr)', 's(temp)', 's(sal)')
+labels <- c('Year', 'Temperature (\u00B0C)', 'Salinity (ppt)')
+cols <- c('grey20', 'red2', 'dodgerblue2')
+toplo <- gamplo_fun(mod, smths, labels, cols)
+
+p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]]
+
+png(here('figs/suppfimmod.png'), width = 7, height = 6.5, units = 'in', res = 300)
+print(p)
+dev.off()
+
+# supp pinco mod ------------------------------------------------------------------------------
+
+load(file = here('data/sgmods.RData'))
+
+mod <- sgmods$pincomod
+smths <- c('s(yr)', 's(temp)', 's(sal)')
+labels <- c('Year', 'Temperature (\u00B0C)', 'Salinity (ppt)')
+cols <- c('grey20', 'red2', 'dodgerblue2')
+toplo <- gamplo_fun(mod, smths, labels, cols, bayseg = F)
+
+p <- toplo$plos[[1]] + toplo$plos[[2]] + toplo$plos[[3]]
+
+png(here('figs/supppincomod.png'), width = 8, height = 3, units = 'in', res = 300)
+print(p)
+dev.off()
+
