@@ -3,7 +3,7 @@ format:
   docx:
     reference-doc: my_styles.docx
     number-sections: true
-title: "Hot and fresh: evidence of climate-related suboptimal conditions for seagrass in a large Gulf coast estuary"
+title: "Hot and fresh: evidence of climate-related suboptimal water conditions for seagrass in a large Gulf coast estuary"
 bibliography: refs.bib
 csl: estuaries-and-coasts.csl
 crossref: 
@@ -367,9 +367,11 @@ Natural resource managers should consider how these climate-related stressors ma
 
 ```{r}
 #| label: tbl-dattab
-#| tbl-cap: "Summary of datasets used for trend analyses and comparisons with seagrass datasets.  Temporal and spatial scales are those used for analysis.  SWFWMD: Southwest Florida Water Management District."
+#| tbl-cap: "Summary of datasets used for trend analyses and comparisons with seagrass datasets.  Temporal and spatial scales are those used for analysis.  SWFWMD: Southwest Florida Water Management District, EPC: Environmental Protection Commission of Hillsborough County, FIM: Florida Fish and Wildlife Comission, Fisheries Independent Monitoring, PDEM: Pinellas County Department of Environmental Management."
 dattab
 ```
+
+{{< pagebreak >}}
 
 ```{r}
 #| label: tbl-temptrndtab
