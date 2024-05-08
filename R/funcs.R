@@ -42,12 +42,6 @@ p_txt <- function(x, addp = TRUE){
 
 # gam table function
 gam_table <- function(mod, cap = NULL){
- 
-  n <- paste('n =', nrow(mod$model))
-  smmod <- summary(mod)
-  rsq <- paste0('R.sq. ', sprintf('%.2f', round(smmod$r.sq, 2)))
-  dev <- paste0('Deviance explained ', round(100 * smmod$dev.expl, 0), '%')
-  cap <- paste0(cap, ' ', n, ', ', rsq, ', ', dev)
   
   out <- mod %>% 
     tidy() %>% 
@@ -78,13 +72,16 @@ overall_p <- function(my_model) {
 }
 
 # summarize lm for inline text
-modtxt_fun <- function(mod){
-  r2 <- paste0('Adj. R$^2$ = ', round(summary(mod)$adj.r.squared, 2))
-  fv <- round(summary(mod)$fstatistic, 2)
-  fv <- paste0('F = ', fv[1], ', df = ', fv[2], ', ', fv[3])
-  pv <- p_txt(overall_p(mod))
-  out <- paste(r2, fv, pv, sep = ', ')
-  return(out)
+modtxt_fun <- function(modsum){
+  
+  lapply(modsum, function(x){
+    n <- paste0('n = ', x$n)
+    r2 <- paste0('Adj. R$^2$ = ', x$rsq)
+    dev <- paste0('Deviance explained = ', x$dev, '\\%')
+    out <- paste(n, r2, dev, sep = ', ')
+    return(out)
+  })
+  
 }
 
 # run length encoding for vector of TF, return longest run of T
@@ -140,6 +137,8 @@ gamplo_fun <- function(sgmods){
         ttl <- ifelse(bay_segment == 'OTB' & xvar == 'yr', 
                       '(a) FIM', '')
         
+        bay_segment <- ifelse(xvar == 'yr', as.character(bay_segment), '')
+        
         p <- ggplot(data, aes(x = get(xvar), y = .estimate)) +
           geom_hline(yintercept = 0, linetype = 'dashed') +
           geom_ribbon(aes(ymin  = .lower_ci, ymax = .upper_ci), alpha = 0.2, fill = cols) +
@@ -148,7 +147,7 @@ gamplo_fun <- function(sgmods){
           theme_minimal() +
           theme(
             panel.grid.minor = element_blank(), 
-            plot.subtitle = element_text(hjust = 0.5, size = 10), 
+            plot.subtitle = element_text(hjust = 0.5, size = 12), 
             axis.text.x = element_text(size = xsz),
             plot.margin = margin(0, 0, 0, 0)
           ) +
@@ -188,6 +187,7 @@ gamplo_fun <- function(sgmods){
         yrng <- 0.9 * max(abs(range(data$.estimate, data$.lower_ci, data$.upper_ci)))
         
         ttl <- ifelse(xvar == 'yr', '(b) PDEM', '')
+        bay_segment <- ifelse(xvar == 'yr', 'OTB', '')
         
         p <- ggplot(data, aes(x = get(xvar), y = .estimate)) +
           geom_hline(yintercept = 0, linetype = 'dashed') +
@@ -197,14 +197,14 @@ gamplo_fun <- function(sgmods){
           theme_minimal() +
           theme(
             panel.grid.minor = element_blank(),
-            plot.subtitle = element_text(hjust = 0.5, size = 10), 
+            plot.subtitle = element_text(hjust = 0.5, size = 12), 
             axis.text.x = element_text(size = xsz), 
             plot.margin = margin(0, 0, 0, 0)
           ) +
           labs(
             title = ttl,
             x = xlab,
-            subtitle = 'OTB',
+            subtitle = bay_segment,
             y = ylab
           )
         
@@ -222,42 +222,55 @@ gamplo_fun <- function(sgmods){
 }
 
 # plot all s() for gam, supplement
-suppgamplo_fun <- function(mod, smths, labels, cols, bayseg = T){
+epcgamplo_fun <- function(mod, smths, labels, cols){
 
   out <- tibble(smooths = factor(smths, levels = smths)) %>% 
     group_nest(smooths) %>% 
     mutate(
-      data = purrr::map(smooths, function(x) smooth_estimates(mod, as.character(x), partial_match = T) %>% add_confint()), 
+      data = purrr::map(smooths, function(x) smooth_estimates(mod, as.character(x), partial_match = T) %>% add_confint()),
       xlab = factor(smooths, levels = smths,
                     labels = labels
       ),
-      xvar = gsub('s\\((.*)\\)', '\\1', smooths),
-      cols = cols,
-      plos = purrr::pmap(list(data, xvar, xlab, cols), function(data, xvar, xlab, cols){
-
+      xvar = gsub('s\\((.*)\\)', '\\1', smooths), 
+      cols = cols
+    ) %>% 
+    unnest('data') %>% 
+    group_by(smooths, bay_segment, xlab, xvar, cols) %>% 
+    nest() %>% 
+    mutate(
+      plos = purrr::pmap(list(data, xvar, xlab, cols, bay_segment), function(data, xvar, xlab, cols, bay_segment){
+        
+        xlab <- as.character(xlab)#ifelse(bay_segment == 'HB', as.character(xlab), "")
+        ylab <- ifelse(bay_segment == 'OTB', 'Partial effect', '')
+        bay_segment <- ifelse(xvar == 'yr', as.character(bay_segment), '')
+        xsz <- ifelse(xvar == 'yr', 8, 8)
+        
+        yrng <- 0.9 * max(abs(range(data$.estimate, data$.lower_ci, data$.upper_ci)))
+        
         p <- ggplot(data, aes(x = get(xvar), y = .estimate)) +
           geom_hline(yintercept = 0, linetype = 'dashed') +
           geom_ribbon(aes(ymin  = .lower_ci, ymax = .upper_ci), alpha = 0.2, fill = cols) +
           geom_line(color = cols) +
+          coord_cartesian(ylim = c(-yrng, yrng)) +
           theme_minimal() +
           theme(
-            panel.grid.minor = element_blank()
+            panel.grid.minor = element_blank(), 
+            plot.subtitle = element_text(hjust = 0.5, size = 12), 
+            axis.text.x = element_text(size = xsz)#,
+            # plot.margin = margin(0, 0, 0, 0)
           ) +
           labs(
+            subtitle = bay_segment, 
             x = xlab,
-            y = 'Partial effect'
+            y = ylab
           )
-
-        if(bayseg)
-          p <- p +
-            facet_wrap(~ bay_segment, ncol = 3, scales = 'free_x')
-
+        
         return(p)
-
+        
       })
     )
   
-  return(out)
+    return(out)
   
 }
 

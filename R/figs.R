@@ -1316,71 +1316,35 @@ png(here('figs/suppmixeff.png'), height = 6, width = 7, family = 'serif', units 
 print(p)
 dev.off()
 
-# seagrass change plots -----------------------------------------------------------------------
-
-load(file = here::here('data/sgmods.RData'))
-
-p <- gamplo_fun(sgmods)
-
-png(here('figs/sgmods.png'), width = 8, height = 6, units = 'in', res = 300, family = 'serif')
-print(p)
-dev.off()
-
-# supp hillsborough flow v temp over time -----------------------------------------------------
-
-load(file = here('data/gagedat.RData'))
-
-toplo <- gagedat %>%
-  filter(name == 'Hillsborough') %>%
-  pivot_wider(names_from = 'var', values_from = 'val') %>%
-  na.omit() %>%
-  mutate(
-    yrgroup = ifelse(year < 2000, '1975 - 1999', '2000 - 2022'),
-    mo = month(date, label = T, abbr = F)
-  ) %>%
-  # filter(flow_m3d < quantile(flow_m3d, 0.9)) %>%
-  filter(mo %in% c('February', 'August')) #%>%
-# filter(temp_c > 1)
-
-p <- ggplot(toplo, aes(x = flow_m3d / 1e6, y = temp_c, group = yrgroup, fill = yrgroup, color = yrgroup)) +
-  geom_point(size = 0.6, show.legend = F) +
-  scale_x_log10() +
-  facet_grid(~mo) +
-  theme_minimal() + 
-  scale_color_manual(values = c('tomato1', 'darkred')) +
-  scale_fill_manual(values = c('tomato1', 'darkred')) +
-  theme(
-    legend.position = 'top', 
-    panel.grid.minor = element_blank(), 
-    strip.text = element_text(size = 11)
-  ) +
-  geom_smooth(se = T, method = 'lm', formula = y ~ x) +
-  labs(
-    x = expression(paste('Hillsborough River discharge (', 10^6~m^3, ' / yr)')), 
-    y = 'Water temp. (\u00B0 C)',
-    color = 'Time period',
-    fill = 'Time period'
-  )
-
-png(here('figs/suppflowtemp.png'), height = 4, width = 6, family = 'serif', units = 'in', res = 600)
-print(p)
-dev.off()
-
-# supp epc mod1 -------------------------------------------------------------------------------
+# epc mod1 ------------------------------------------------------------------------------------
 
 load(file = here('data/sgmods.RData'))
 
 mod <- sgmods$epcmod1
 smths <- c('s(yr)', 's(la)', 's(temp)', 's(sal)')
-labels <- c('year', 'light att (m-1)', '# days temperature > 30 \u00B0C', '# days salinity < 25 ppt')
+labels <- c('Year', 'Light attenuation (m-1)', '# days temperature > 30 \u00B0C', '# days salinity < 25 ppt')
 cols <- c('grey20', 'bisque4', 'red2', 'dodgerblue2')
-toplo <- suppgamplo_fun(mod, smths, labels, cols)
+toplo <- epcgamplo_fun(mod, smths, labels, cols)
 
-p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]] / toplo$plos[[4]]  
+p <- (toplo$plos[[1]] + toplo$plos[[2]] + toplo$plos[[3]]) /
+  (toplo$plos[[4]] + toplo$plos[[5]] + toplo$plos[[6]]) /
+  (toplo$plos[[7]] + toplo$plos[[8]] + toplo$plos[[9]]) /
+  (toplo$plos[[10]] + toplo$plos[[11]] + toplo$plos[[12]])
 
-png(here('figs/suppepcmod1.png'), width = 7, height = 8, units = 'in', res = 300, family = 'serif')
+png(here('figs/sgmod1.png'), width = 8, height = 7, units = 'in', res = 300, family = 'serif')
 print(p)
 dev.off()
+
+# fim, pinco sg mods --------------------------------------------------------------------------
+
+load(file = here::here('data/sgmods.RData'))
+
+p <- gamplo_fun(sgmods)
+
+png(here('figs/sgmod2.png'), width = 8, height = 6, units = 'in', res = 300, family = 'serif')
+print(p)
+dev.off()
+
 
 # supp epc mod2 -------------------------------------------------------------------------------
 
@@ -1388,13 +1352,15 @@ load(file = here('data/sgmods.RData'))
 
 mod <- sgmods$epcmod2
 smths <- c('s(yr)', 's(la)', 's(both)')
-labels <- c('year', 'light att (m-1)', '# days temperature > 30 \u00B0C & salinity < 25 ppt')
+labels <- c('Year', 'Light atttenuation (m-1)', '# days temperature > 30 \u00B0C &\nsalinity < 25 ppt')
 cols <- c('grey20', 'bisque4', 'black')
-toplo <- suppgamplo_fun(mod, smths, labels, cols)
+toplo <- epcgamplo_fun(mod, smths, labels, cols)
 
-p <- toplo$plos[[1]] / toplo$plos[[2]] / toplo$plos[[3]]
+p <- (toplo$plos[[1]] + toplo$plos[[2]] + toplo$plos[[3]]) /
+  (toplo$plos[[4]] + toplo$plos[[5]] + toplo$plos[[6]]) /
+  (toplo$plos[[7]] + toplo$plos[[8]] + toplo$plos[[9]]) 
 
-png(here('figs/suppepcmod2.png'), width = 7, height = 6.5, units = 'in', res = 300, family = 'serif')
+png(here('figs/suppsgmod3.png'), width = 8, height = 6.5, units = 'in', res = 300, family = 'serif')
 print(p)
 dev.off()
 

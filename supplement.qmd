@@ -69,6 +69,9 @@ library(knitr)
 library(here)
 library(flextable)
 
+source(here('R/funcs.R'))
+
+load(file = here('data/sgmodsum.RData'))
 load(file = here('tabs/supptempfittab.RData'))
 load(file = here('tabs/suppsalifittab.RData'))
 load(file = here('tabs/supp1mixtab.RData'))
@@ -108,10 +111,8 @@ load(file = here('tabs/supppincomodtab.RData'))
 
 {{< pagebreak >}}
 
-![Partial effects of smoothers by bay segment from a Generalized Additive model used to describe seagrass change relative to year, light attenuation, the number of days each year when temperature was above 30 $^\circ$C, and the number of days each year when salinity was below 25 ppt. The EPC data were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S7 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. n = 75, R.sq. 0.93, Deviance explained 97\%](figs/suppepcmod1.png){#fig-suppepcmod1}
-{{< pagebreak >}}
+![Partial effects of smoothers (rows) by bay segment (columns) from a Generalized Additive model used to describe seagrass change relative to year, light attenuation, and the number of days each year when both temperature was above 30 $^\circ$C and salinity was below 25 ppt. The EPC data were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S8 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. `r modtxt_fun(sgmodsum)$epcmod2`](figs/suppsgmod3.png){#fig-suppsgmod3}
 
-![Partial effects of smoothers by bay segment from a Generalized Additive model used to describe seagrass change relative to year, light attenuation, and the number of days each year when both temperature was above 30 $^\circ$C and salinity was below 25 ppt. The EPC data were used to develop the model. Partial effects describe the modeled association between each predictor and seagrass frequency occurrence after accounting for the effects of the other predictors. The model also included smoothed interaction terms with year (not shown). See Table S8 for additional model fit statistics. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. n = 75, R.sq. 0.93, Deviance explained 97%](figs/suppepcmod2.png){#fig-suppepcmod2}
 {{< pagebreak >}}
 
 ## Tables {.unnumbered}

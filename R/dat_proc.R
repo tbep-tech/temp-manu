@@ -1565,3 +1565,26 @@ sgmods <- list(epcmod1 = epcmod1, epcmod2 = epcmod2, fimmod = fimmod, pincomod =
 
 save(sgmods, file = here('data/sgmods.RData'))
 
+
+# sg mod gam performance ----------------------------------------------------------------------
+
+load(file = here("data/sgmods.RData"))
+
+sgmodsum <- sgmods %>% 
+  lapply(function(x){
+    
+    summod <- summary(x)
+    resdf <- sprintf('%.2f', round(summod$residual.df, 2))
+    rsq <- sprintf('%.2f', round(summod$r.sq, 2))
+    dev <- round(100 * summod$dev.expl, 0)
+    n <- nrow(x$model)
+    
+    out <- tibble(n = n, resdf = resdf, rsq = rsq, dev = dev)
+    
+    return(out)
+    
+  })
+
+save(sgmodsum, file = here('data/sgmodsum.RData'))
+
+
