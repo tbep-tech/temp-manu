@@ -115,10 +115,10 @@ raindat <- readxl::excel_sheets(here('data-raw/swfwmdrainfall.xlsx')) %>%
     })
   ) %>% 
   unnest('data') %>% 
-  mutate(
-    precip_in = rowSums(select(., -mo, -yr), na.rm = TRUE)
-  ) %>%
-  select(mo, yr, precip_in) %>% 
+  # mutate(
+  #   precip_in = rowSums(select(., -mo, -yr), na.rm = TRUE)
+  # ) %>%
+  select(mo, yr, precip_in = tampacoastal_in) %>% 
   mutate(
     mo = gsub('\\-usgsbsn$', '', mo),
     mo = as.numeric(factor(mo,
@@ -1579,4 +1579,112 @@ sgmodsum <- sgmods %>%
 
 save(sgmodsum, file = here('data/sgmodsum.RData'))
 
+# linear temp, sal trends all data ------------------------------------------------------------
 
+data(fimsgtempdat)
+data(pincotemp)
+
+epctmp <- epcdat %>% 
+  select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
+  filter(yr < 2023) %>% 
+  pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
+  mutate(
+    var = factor(var, 
+                 levels = c(c("Sal_Top_ppth", "Sal_Bottom_ppth", "Temp_Water_Top_degC", "Temp_Water_Bottom_degC"
+                 )), 
+                 labels = c("Sal_Top", "Sal_Bottom", "Temp_Top", "Temp_Bottom")
+    ),
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
+  ) %>% 
+  separate(var, c('var', 'loc')) %>% 
+  mutate(
+    var = factor(var, levels = c('Temp', 'Sal'), labels = c('temp', 'sal'))
+  ) %>% 
+  filter(loc %in% 'Bottom') %>% 
+  filter(!is.na(val)) %>% 
+  summarise(
+    avev = mean(val, na.rm = T),
+    .by = c('bay_segment', 'yr', 'var') 
+  ) %>% 
+  mutate(
+    org = 'EPC'
+  )
+
+fimtmp <- fimsgtempdat %>% 
+  select(date, temp, sal, bay_segment) %>% 
+  mutate(
+    yr = year(date), 
+    mo = month(date)
+  ) %>% 
+  pivot_longer(temp:sal, names_to = 'var', values_to = 'val') %>% 
+  summarise(
+    avev = mean(val, na.rm = T),
+    .by = c(bay_segment, yr, var)
+  ) %>% 
+  mutate(
+    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')),
+    var = factor(var, levels = c('temp', 'sal')), 
+    org = 'FIM'
+  )
+
+pincotmp <- pincotemp %>% 
+  pivot_longer(temp:sal, names_to = 'var', values_to = 'val') %>% 
+  summarise(
+    avev = mean(val, na.rm = T), 
+    .by = c(yr, var)
+  ) %>% 
+  mutate(
+    var = factor(var, levels = c('temp', 'sal')), 
+    bay_segment = 'OTB', 
+    org = 'PDEM'
+  )
+
+lintrnds <- bind_rows(epctmp, fimtmp, pincotmp) %>% 
+  group_nest(org, bay_segment, var) %>% 
+  crossing(yrstr = c(1975, 1996, 2004)) %>% 
+  mutate(
+    i = 1:n(),
+    data = purrr::pmap(list(i, yrstr, data), function(i, yrstr, data){
+      
+      cat(i, '\n')
+      
+      out <- tibble(
+        n = NA,
+        slo = NA, 
+        slose = NA,
+        pval = NA, 
+        strvest = NA,
+        endvest = NA
+      )
+      
+      if(!yrstr %in% unique(data$yr))
+        return(out)
+      
+      tomod <- data %>% 
+        filter(yr >= yrstr) %>% 
+        arrange(yr)
+
+      # model fit and results
+      mod <- lm(avev ~ yr, data = tomod)
+      n <- nrow(mod$model)
+      coef <- summary(mod)$coefficients
+      prds <- data.frame(predict(mod, se = T))
+      prds$ci <- 1.96 * prds$se.fit
+      strv <- prds[1, ]
+      endv <- prds[nrow(prds), ]
+      
+      # output
+      out$n <- n
+      out$slo <- coef[2, 1]
+      out$slose <- coef[2, 2] 
+      out$pval <- coef[2, 4]
+      out$strvest <- strv$fit
+      out$endvest <- endv$fit
+      
+      return(out)
+      
+    })
+  ) %>% 
+  unnest('data')
+
+save(lintrnds, file = here('data/lintrnds.RData'))

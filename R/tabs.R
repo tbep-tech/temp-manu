@@ -25,7 +25,7 @@ totab <- tibble(
   Dataset = c('SWFWMD aerial maps', 'Transect data', 'EPC', 'FIM', 'PDEM', 'Tampa International Airport', 'SWFWMD precipitation'),
   Description = c('Seagrass coverage in acres', 'Seagrass frequency occurrence by species', 'Water quality monitoring samples', 'Nearshore temperature and salinity, seagrass species and cover', 'Water quality and seagrass presence/absence', 'Air temperature', 'Area-weighted precipitation for the wet season (June-September) for the Tampa Bay watershed'),
   Temporal = c('1988 - 2022, biennial', '1999 - 2022, annual', '1975 - 2022, monthly', '1996 to 2022, monthly', '2003 - 2022, monthly', '1975 - 2022, annual', '1975-2022, annual'),
-  Spatial = c('Whole bay', 'Whole bay, 62 transects', 'Whole bay, fixed sites', 'Whole bay nearshore, stratified random sites', 'Old Tampa Bay, stratified random sites', '27.979$^\\circ$N, 82.535$^\\circ$W', 'Whole watershed'),
+  Spatial = c('Whole bay', 'Whole bay, 62 transects', 'Whole bay, fixed sites', 'Whole bay shallow, stratified random sites', 'Old Tampa Bay, stratified random sites', '27.979$^\\circ$N, 82.535$^\\circ$W', 'Whole watershed'),
   Analysis = c('Biennial trends by bay segment, visual only', 'Annual trends by bay segment and species, comparison with temperature, salinity, and light attenuation as stressor metrics or observed data at annual scale', 'Trends in annual change and seasonal Kendall tests, estimate of stressor metrics as number of days above/below threshold', 'Trends in annual observed temperature, salinity, comparison to annual seagrass % cover', 'Trends in annual observed temperature, salinity, comparison to annual seagrass frequency occurrence', 'Annual trend', 'Annual trend')
 )
 
@@ -35,116 +35,19 @@ save(dattab, file = here('tabs/dattab.RData'))
 
 # linear trend summaries ----------------------------------------------------------------------
 
-data(fimsgtempdat)
-data(pincotemp)
+load(file = here('data/lintrnds.RData'))
 
-epctmp <- epcdat %>% 
-  select(bay_segment, epchc_station, SampleTime, yr, matches('Top|Bottom')) %>% 
-  filter(yr < 2023) %>% 
-  pivot_longer(names_to = 'var', values_to = 'val', matches('Top|Bottom')) %>% 
-  mutate(
-    var = factor(var, 
-                 levels = c(c("Sal_Top_ppth", "Sal_Bottom_ppth", "Temp_Water_Top_degC", "Temp_Water_Bottom_degC"
-                 )), 
-                 labels = c("Sal_Top", "Sal_Bottom", "Temp_Top", "Temp_Bottom")
-    ),
-    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
-  ) %>% 
-  separate(var, c('var', 'loc')) %>% 
-  mutate(
-    var = factor(var, levels = c('Temp', 'Sal'), labels = c('temp', 'sal'))
-  ) %>% 
-  filter(loc %in% 'Bottom') %>% 
-  filter(!is.na(val)) %>% 
-  summarise(
-    avev = mean(val, na.rm = T),
-    .by = c('bay_segment', 'yr', 'var') 
-  ) %>% 
-  mutate(
-    org = 'EPC'
-  )
-
-fimtmp <- fimsgtempdat %>% 
-  select(date, temp, sal, bay_segment) %>% 
-  mutate(
-    yr = year(date), 
-    mo = month(date)
-  ) %>% 
-  pivot_longer(temp:sal, names_to = 'var', values_to = 'val') %>% 
-  summarise(
-    avev = mean(val, na.rm = T),
-    .by = c(bay_segment, yr, var)
-  ) %>% 
-  mutate(
-    bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')),
-    var = factor(var, levels = c('temp', 'sal')), 
-    org = 'FIM'
-  )
-
-pincotmp <- pincotemp %>% 
-  pivot_longer(temp:sal, names_to = 'var', values_to = 'val') %>% 
-  summarise(
-    avev = mean(val, na.rm = T), 
-    .by = c(yr, var)
-  ) %>% 
-  mutate(
-    var = factor(var, levels = c('temp', 'sal')), 
-    bay_segment = 'OTB', 
-    org = 'PDEM'
-  )
-
-trnds <- bind_rows(epctmp, fimtmp, pincotmp) %>% 
-  group_nest(org, bay_segment, var) %>% 
-  crossing(yrstr = c(1975, 1996, 2004)) %>% 
-  mutate(
-    i = 1:n(),
-    data = purrr::pmap(list(i, yrstr, data), function(i, yrstr, data){
-      
-      cat(i, '\n')
-      
-      out <- tibble(
-        slo = NA, 
-        pval = NA, 
-        strvest = NA,
-        endvest = NA
-      )
-      
-      if(!yrstr %in% unique(data$yr))
-        return(out)
-      
-      tomod <- data %>% 
-        filter(yr >= yrstr) %>% 
-        arrange(yr)
-      
-      # model fit and results
-      mod <- lm(avev ~ yr, data = tomod)
-      coef <- summary(mod)$coefficients
-      prds <- data.frame(predict(mod, se = T))
-      prds$ci <- 1.96 * prds$se.fit
-      strv <- prds[1, ]
-      endv <- prds[nrow(prds), ]
-      
-      # output
-      out$slo <- coef[2, 1]
-      out$pval <- coef[2, 4]
-      out$strvest <- strv$fit
-      out$endvest <- endv$fit
-      
-      return(out)
-      
-    })
-  ) %>% 
-  unnest('data')
-
-totab <- trnds %>% 
+totab <- lintrnds %>% 
   mutate_at(vars(strvest, endvest), round, 1) %>% 
   mutate(
     chng = endvest - strvest,
     slo = round(slo, 2), 
+    slose = paste0('(', round(slose, 2), ')'),
     pval = p_ast(pval), 
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
     org = factor(org, levels = c('EPC', 'FIM', 'PDEM'))
   ) %>% 
+  unite('slo', slo, slose, sep = ' ') %>% 
   select(
     var, 
     `Start year` = yrstr,
@@ -156,7 +59,7 @@ totab <- trnds %>%
     `Total change` = chng
   ) %>% 
   arrange(var, `Start year`, `Bay segment`, Dataset) %>% 
-  filter(`Change / year` != 'NANA') %>% 
+  filter(`Change / year` != 'NA (NA)') %>% 
   mutate(
     `Bay segment` = ifelse(duplicated(`Bay segment`), '', as.character(`Bay segment`)), 
     .by = c(var, `Start year`)

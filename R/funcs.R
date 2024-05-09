@@ -274,3 +274,19 @@ epcgamplo_fun <- function(mod, smths, labels, cols){
   
 }
 
+# get n text for linear temp, sal trends by starting year
+lintrndsn_txt <- function(lintrndsn){
+ 
+  out <- unique(lintrnds[, c('yrstr', 'n')]) %>% 
+    na.omit() %>% 
+    mutate(
+      yrstr = paste0(yrstr, ': '),
+      n = paste('n =', n)
+    ) %>% 
+    unite('n', yrstr, n, sep = ' ') %>% 
+    pull(n) %>% 
+    paste(collapse = ', ') 
+  
+  return(out)
+  
+}
