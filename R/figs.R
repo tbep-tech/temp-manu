@@ -800,7 +800,10 @@ ktresplo <- ktres %>%
           ),
           cnt = n(),
           nsigper = round(100 * nsig / cnt, 0),
-          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper)))
+          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper))), 
+          aveslo = median(slos, na.rm = T), 
+          aveslolab = gsub('^0', '', as.character(round(aveslo, 2))),
+          aveslolab = gsub('^\\-0', '-', aveslolab)
         )
       
     })
@@ -808,12 +811,13 @@ ktresplo <- ktres %>%
   select(-data) %>% 
   unnest('sum')
 
-p2 <- ggplot(ktresplo, aes(x = mo, y = bay_segment, fill = nsigper)) + 
+p2 <- ggplot(ktresplo, aes(x = mo, y = bay_segment, fill = aveslo)) + 
   geom_tile(color = 'darkgrey') +
-  geom_text(aes(label = perlab), color = 'white', fontface = 'bold') +
+  geom_text(aes(label = aveslolab, size = abs(aveslo)), color = 'white', fontface = 'bold') +
   scale_x_discrete(expand = c(0, 0)) + 
   scale_y_discrete(expand = c(0, 0)) + 
-  scale_fill_gradientn(leglab, limits = c(-100, 100), colors = c('blue', 'grey', 'tomato1')) +
+  scale_size_continuous(range = c(1, 5)) +
+  scale_fill_gradientn(leglab, limits = c(-0.12, 0.12), colors = c('blue', 'grey', 'tomato1')) +
   facet_wrap(~ varsimp, ncol = 1, scales = 'free_x') + 
   theme(
     strip.background = element_blank(), 
@@ -824,7 +828,7 @@ p2 <- ggplot(ktresplo, aes(x = mo, y = bay_segment, fill = nsigper)) +
   labs(
     x = NULL, 
     y = 'Bay segment',
-    title = '(b) % stations with significant trends by month'
+    title = '(b) Average magnitude of change by month'
   )
     
 leglab <- expression(paste(yr^{-1}))
@@ -860,11 +864,11 @@ pthm <- theme_bw(base_family = 'serif') +
 p1 <- ggplot() + 
   annotation_map_tile('cartolight', zoom = 11) +
   geom_sf(data = tbseg, inherit.aes = F) +
-  geom_sf(data = toplo, aes(size = abs(slos), fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
+  geom_sf(data = toplo, aes(size = abs(slos), fill = slos, shape = coefsgn), color = 'black', stroke = 1) +
   facet_grid( ~ var) +
   # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
   scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
-  scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
+  # scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
   # coord_map() +
   scale_x_continuous(breaks = seq(-82.7, -82.4, length = 4)) +
   scale_shape_manual(values = c(24, 25), drop = FALSE, guide = 'none') +
@@ -872,11 +876,10 @@ p1 <- ggplot() +
   scale_size(range = c(0.75, 4), guide = 'none') +
   guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
   labs(
-    title = paste0('(a) Change per year, ', yrsel1[1], '-', yrsel1[2]),
-    caption = 'Outlines indicate p < 0.05'
+    title = paste0('(a) Change per year, ', yrsel1[1], '-', yrsel1[2])
   )
 
-p <- p1 + p2 + plot_layout(ncol = 2, width = c(0.9, 1))
+p <- p1 + p2 + plot_layout(ncol = 2, width = c(1, 1))
 
 png(here('figs/kendall.png'), height = 4.5, width = 9.5, family = 'serif', units = 'in', res = 300)
 print(p)
@@ -978,7 +981,10 @@ ktresplo <- ktres %>%
           ),
           cnt = n(),
           nsigper = round(100 * nsig / cnt, 0),
-          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper)))
+          perlab = ifelse(nsigper == 0, '', as.character(abs(nsigper))),
+          aveslo = median(slos, na.rm = T), 
+          aveslolab = gsub('^0', '', as.character(round(aveslo, 2))),
+          aveslolab = gsub('^\\-0', '-', aveslolab)
         )
       
     })
@@ -986,12 +992,13 @@ ktresplo <- ktres %>%
   select(-data) %>% 
   unnest('sum')
 
-p2 <- ggplot(ktresplo, aes(x = mo, y = bay_segment, fill = nsigper)) + 
+p2 <- ggplot(ktresplo, aes(x = mo, y = bay_segment, fill = aveslo)) + 
   geom_tile(color = 'darkgrey') +
-  geom_text(aes(label = perlab), color = 'white', fontface = 'bold') +
+  geom_text(aes(label = aveslolab, size = abs(aveslo)), color = 'white', fontface = 'bold') +
   scale_x_discrete(expand = c(0, 0)) + 
   scale_y_discrete(expand = c(0, 0)) + 
-  scale_fill_gradientn(leglab, limits = c(-100, 100), colors = c('blue', 'grey', 'tomato1')) +
+  scale_size_continuous(range = c(1, 5)) +
+  scale_fill_gradientn(leglab, limits = c(-0.221, 0.221), colors = c('blue', 'grey', 'tomato1')) +
   facet_wrap(~ varsimp, ncol = 1, scales = 'free_x') + 
   theme(
     strip.background = element_blank(), 
@@ -1002,7 +1009,7 @@ p2 <- ggplot(ktresplo, aes(x = mo, y = bay_segment, fill = nsigper)) +
   labs(
     x = NULL, 
     y = 'Bay segment',
-    title = '(b) % stations with significant trends by month'
+    title = '(b) Average magnitude of change by month'
   )
 
 leglab <- expression(paste(yr^{-1}))
@@ -1038,11 +1045,11 @@ pthm <- theme_bw(base_family = 'serif') +
 p1 <- ggplot() +
   annotation_map_tile('cartolight', zoom = 11) +
   geom_sf(data = tbseg, inherit.aes = F) +
-  geom_sf(data = toplo, aes(fill = slos, shape = coefsgn, color = pvalcol), stroke = 1) +
+  geom_sf(data = toplo, aes(size = abs(slos), fill = slos, shape = coefsgn), color = 'black', stroke = 1) +
   facet_grid( ~ var) +
   # scale_fill_gradient2(leglab, low = 'blue', mid = 'grey',  high = 'tomato1', midpoint = 0) +
   scale_fill_gradientn(leglab, limits = colrng, colors = c('blue', 'grey', 'tomato1')) +
-  scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
+  # scale_color_manual(values = c(scales::alpha('black', 0), 'black'), guide = 'none', drop = FALSE) +
   # coord_map() +
   scale_x_continuous(breaks = seq(-82.7, -82.4, length = 4)) +
   scale_shape_manual(values = c(24, 25), drop = FALSE, guide = 'none') +
@@ -1050,11 +1057,10 @@ p1 <- ggplot() +
   scale_size(range = c(0.75, 4), guide = 'none') +
   guides(fill = guide_colourbar(barwidth = 0.4, barheight = 2.5)) + 
   labs(
-    title = paste0('(a) Change per year, ', yrsel2[1], '-', yrsel2[2]),
-    caption = 'Outlines indicate p < 0.05'
+    title = paste0('(a) Change per year, ', yrsel2[1], '-', yrsel2[2])
   )
 
-p <- p1 + p2 + plot_layout(ncol = 2, width = c(0.9, 1))
+p <- p1 + p2 + plot_layout(ncol = 2, width = c(1, 1))
 
 png(here('figs/suppkendall.png'), height = 4.5, width = 9.5, family = 'serif', units = 'in', res = 300)
 print(p)

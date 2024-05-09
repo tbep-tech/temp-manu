@@ -4,6 +4,7 @@ library(mgcv)
 library(broom)
 library(tbeptools)
 library(flextable)
+library(knitr)
 
 source(here('R/funcs.R'))
 
@@ -144,7 +145,6 @@ totab <- trnds %>%
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')), 
     org = factor(org, levels = c('EPC', 'FIM', 'PDEM'))
   ) %>% 
-  unite('slo', slo, pval, sep = '') %>% 
   select(
     var, 
     `Start year` = yrstr,
@@ -204,11 +204,11 @@ totab <- mixmods %>%
                     labels = c(paste('Temperature >', tmpthr), paste('Salinity <', salthr), 'Both')),
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
-  unite('slo', slo, pvl, sep = '') %>% 
+  select(-pvl) %>% 
   unite('yrstr', yrstr, yrstrse, sep = ' ') %>%
   unite('yrend', yrend, yrendse, sep = ' ') %>% 
   mutate(
-    slo = ifelse(slo == 'NANA', '-', slo),
+    slo = ifelse(is.na(slo), '-', slo),
     yrstr = ifelse(grepl('NA', yrstr), '-', yrstr),
     yrend = ifelse(grepl('NA', yrend), '-', yrend)
   ) %>%
@@ -261,9 +261,8 @@ save(suppsalifittab, file = here('tabs/suppsalifittab.RData'))
 load(file = here('data/mixmods.RData'))
 
 totab <- mixmods %>% 
-  select(-yrstr, -yrstrse, -yrend, -yrendse) %>% 
+  select(-yrstr, -yrstrse, -yrend, -yrendse, -pvl) %>% 
   mutate(
-    pvl = p_ast(pvl), 
     slo = as.character(round(slo, 2)), 
     salithr = gsub('^.*_', '', salithr),
     tempthr = gsub('^.*_', '', tempthr), 
@@ -271,9 +270,8 @@ totab <- mixmods %>%
                      labels = c('Temperature', 'Salinity', 'Both')),
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
-  unite('slo', slo, pvl, sep = '') %>% 
   mutate(
-    slo = ifelse(slo == 'NANA', '-', slo)
+    slo = ifelse(is.na(slo), '-', slo)
   ) %>%
   arrange(bay_segment, thrtyp) %>% 
   pivot_wider(names_from = 'thrtyp', values_from = 'slo')
@@ -296,9 +294,8 @@ save(supp1mixtab, file = here('tabs/supp1mixtab.RData'))
 load(file = here('data/suppmixmods.RData'))
 
 totab <- suppmixmods %>% 
-  select(-yrstr, -yrstrse, -yrend, -yrendse) %>% 
+  select(-yrstr, -yrstrse, -yrend, -yrendse, -pvl) %>% 
   mutate(
-    pvl = p_ast(pvl), 
     slo = as.character(round(slo, 2)), 
     salithr = gsub('^.*_', '', salithr),
     tempthr = gsub('^.*_', '', tempthr), 
@@ -306,9 +303,8 @@ totab <- suppmixmods %>%
                     labels = c('Temperature', 'Salinity', 'Both')),
     bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB'))
   ) %>% 
-  unite('slo', slo, pvl, sep = '') %>% 
   mutate(
-    slo = ifelse(slo == 'NANA', '-', slo)
+    slo = ifelse(is.na(slo), '-', slo)
   ) %>%
   arrange(bay_segment, thrtyp) %>% 
   pivot_wider(names_from = 'thrtyp', values_from = 'slo')
@@ -425,18 +421,18 @@ save(supp2daytab, file = here('tabs/supp2daytab.RData'))
 load(file = here::here('data/sgmods.RData'))
 load(file = here::here('data/sgmodsum.RData'))
 
-suppepccap1 <- paste('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to temperature and salinity stress metrics, with additional smoothers for year and light attenuation.  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.', modtxt_fun(sgmodsum)$epcmod1)  
+suppepccap1 <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to temperature (temp) and salinity (sal) stress metrics, with additional smoothers for year (yr) and light attenuation (la).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ', modtxt_fun(sgmodsum)$epcmod1, '.')  
 suppepcmod1tab <- gam_table(sgmods$epcmod1, cap = suppepccap1)
 save(suppepcmod1tab, file = here('tabs/suppepcmod1tab.RData'))
 
-suppepccap2 <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to "both" stressors (both temperuture above and salinity below thresholds), with additional smoothers for year and light attenuation.  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.', modtxt_fun(sgmodsum)$epcmod2)    
+suppepccap2 <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to "both" stressors (both temperature above and salinity below thresholds), with additional smoothers for year (yr) and light attenuation (la).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ', modtxt_fun(sgmodsum)$epcmod2, '.')    
 suppepcmod2tab <- gam_table(sgmods$epcmod2, cap = suppepccap2)
 save(suppepcmod2tab, file = here('tabs/suppepcmod2tab.RData'))
 
-suppfimcap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the FIM data in relation to temperature, salinity, and year.  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay.' , modtxt_fun(sgmodsum)$fimmod)   
+suppfimcap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the FIM data in relation to temperature (temp), salinity (sal), and year (yr).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ' , modtxt_fun(sgmodsum)$fimmod, '.')   
 suppfimmodtab <- gam_table(sgmods$fimmod, cap = suppfimcap)
 save(suppfimmodtab, file = here('tabs/suppfimmodtab.RData'))
 
-supppincocap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the PDEM data in relation to temperature and salinity, salinity, and year.  $s$ = invidual smoother, $ti$ = interaction term.', modtxt_fun(sgmodsum)$pincomod)    
+supppincocap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the PDEM data in relation to temperature (temp), salinity (sal), and year (yr).  $s$ = invidual smoother, $ti$ = interaction term. ', modtxt_fun(sgmodsum)$pincomod, '.')    
 supppincomodtab <- gam_table(sgmods$pincomod, cap = supppincocap)
 save(supppincomodtab, file = here('tabs/supppincomodtab.RData'))

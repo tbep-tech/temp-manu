@@ -716,10 +716,6 @@ mixmodprds <- thrdat %>%
         
         summod <- summary(mod)$coefficients
         
-        pvl <- summod['yr', 'Pr(>|t|)']
-        if(pvl >= 0.05)
-          return('')
-        
         out <- summod['yr', 'Estimate'] %>%
           round(2) %>%
           as.character()
@@ -795,10 +791,6 @@ suppmixmodprds <- thrdat %>%
       if(!is.null(mod)){
         
         summod <- summary(mod)$coefficients
-        
-        pvl <- summod['yr', 'Pr(>|t|)']
-        if(pvl >= 0.05)
-          return('')
         
         out <- summod['yr', 'Estimate'] %>%
           round(2) %>%

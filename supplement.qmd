@@ -98,7 +98,7 @@ load(file = here('tabs/supppincomodtab.RData'))
 
 {{< pagebreak >}}
 
-![Trends from 1998 to 2022 for temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for seasonal Kendall tests by station and monitoring location (top or bottom of the water column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr$^{-1}$). Summarized seasonal trends by month are shown for (b) top and (c) bottom measurements as the percent of stations in each bay segment with significant increasing (temperature) or decreasing (salinity) trends. Bay segment outlines are shown in (a); OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppkendall.png){#fig-suppkendall}
+![Trends from 1998 to 2022 for temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for seasonal Kendall tests by station and monitoring location (top or bottom of the water column) are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr$^{-1}$). Summarized seasonal trends by month are shown as (b) the average magnitude of change (slope) per month for all stations in each bay segment for temperature and salinity. Bay segment outlines are shown in (a); OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppkendall.png){#fig-suppkendall}
 
 {{< pagebreak >}}
 
@@ -107,7 +107,7 @@ load(file = here('tabs/supppincomodtab.RData'))
 
 {{< pagebreak >}}
 
-![Example of mixed effects models for the estimated number of days per year that temperature (red) or salinity (blue) were above or below thresholds of 30 $^\circ$C or 25 psu, respectively, from 1988 to 2022. The bottom row (black) shows the number of days when both temperature was above and salinity was below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends, grey points as actual number of days, and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom left of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmixeff.png){#fig-suppmixeff}
+![Example of mixed effects models for the estimated number of days per year that temperature (red) or salinity (blue) were above or below thresholds of 30 $^\circ$C or 25 psu, respectively, from 1988 to 2022. The bottom row (black) shows the number of days when both temperature was above and salinity was below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends, grey points as actual number of days, and thicker lines indicating the overall model fit. Slopes are shown in the bottom left of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppmixeff.png){#fig-suppmixeff}
 
 {{< pagebreak >}}
 
@@ -133,7 +133,7 @@ suppsalifittab
 
 {{< pagebreak >}}
 
-Table S3: Summary of mixed-effects models evaluating increases in the number of days each year from 1975 to 2022 when temperature or salinity were above or below critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both temperature and salinity were above or below critical thresholds. \*\* p \< 0.005, \* p \< 0.05, - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+Table S3: Summary of mixed-effects models evaluating increases in the number of days each year from 1975 to 2022 when temperature or salinity were above or below critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both temperature and salinity were above or below critical thresholds. - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 
 ```{r}
 supp1mixtab
@@ -141,7 +141,7 @@ supp1mixtab
 
 {{< pagebreak >}}
 
-Table S4: Summary of mixed-effects models evaluating increases in the number of days each year from 1998 to 2022 when temperature or salinity were above or below critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both temperature and salinity were above or below critical thresholds. \*\* p \< 0.005, \* p \< 0.05, - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+Table S4: Summary of mixed-effects models evaluating increases in the number of days each year from 1998 to 2022 when temperature or salinity were above or below critical thresholds, respectively. The slope estimates in the "Both" column indicate trends in the number of days when both temperature and salinity were above or below critical thresholds. - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 
 ```{r}
 supp2mixtab
@@ -149,7 +149,7 @@ supp2mixtab
 
 {{< pagebreak >}}
 
-Table S5: Number of days at the beginning and end of the period of record when temperature or salinity were above or below critical thresholds, respectively. Values are the estimated mean number of days (plus standard error) from 1975 to 2022. Columns for "Both" indicate the estimated number of days when both temperature and salinity were above or below critical thresholds. Note that not all models are significant (see table 3). - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+Table S5: Number of days at the beginning and end of the period of record when temperature or salinity were above or below critical thresholds, respectively. Values are the estimated mean number of days (plus standard error) from 1975 to 2022. Columns for "Both" indicate the estimated number of days when both temperature and salinity were above or below critical thresholds. - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 
 ```{r}
 supp1daytab
@@ -157,7 +157,7 @@ supp1daytab
 
 {{< pagebreak >}}
 
-Table S6: Number of days at the beginning and end of the period of record when temperature or salinity were above or below critical thresholds, respectively. Values are the estimated mean number of days (plus standard error) from 1998 to 2022. Columns for "Both" indicate the estimated number of days when both temperature and salinity were above or below critical thresholds. Note that not all models are significant (see table 4). - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
+Table S6: Number of days at the beginning and end of the period of record when temperature or salinity were above or below critical thresholds, respectively. Values are the estimated mean number of days (plus standard error) from 1998 to 2022. Columns for "Both" indicate the estimated number of days when both temperature and salinity were above or below critical thresholds. - no model. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.
 
 ```{r}
 supp2daytab

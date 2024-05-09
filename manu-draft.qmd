@@ -347,11 +347,11 @@ Natural resource managers should consider how these climate-related stressors ma
 
 {{< pagebreak >}}
 
-![Trends from 1975 to 2022 for bottom water temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for seasonal Kendall tests by station are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr$^{-1}$). Summarized seasonal trends by month are shown as (b) the percent of stations in each bay segment with significant increasing (temperature) or decreasing (salinity) trends. Bay segment outlines are shown in (a); OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/kendall.png){#fig-kendall}
+![Trends from 1975 to 2022 for bottom water temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for seasonal Kendall tests by station are shown in (a) with color and shape corresponding to the estimated annual slope as change per year (yr$^{-1}$). Summarized seasonal trends by month are shown as (b) the average magnitude of change (slope) per month for stations in each bay segment for temperature and salinity. Bay segment outlines are shown in (a); OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/kendall.png){#fig-kendall}
 
 {{< pagebreak >}}
 
-![Example of mixed effects models for the estimated number of days per year that temperature (red) or salinity (blue) were above or below thresholds of 30 $^\circ$C or 25 ppt, respectively, from the EPC data. The bottom row (black) shows the number of days when both temperature was above and salinity was below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends, grey points as actual number of days for each station, and thicker lines indicating the overall model fit. Slopes for significant models are shown in the bottom left of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/mixeff.png){#fig-mixeff}
+![Example of mixed effects models for the estimated number of days per year that temperature (red) or salinity (blue) were above or below thresholds of 30 $^\circ$C or 25 ppt, respectively, from the EPC data. The bottom row (black) shows the number of days when both temperature was above and salinity was below the thresholds. The models included station as a random effect for each bay segment, with grey lines indicating individual station trends, grey points as actual number of days for each station, and thicker lines indicating the overall model fit. Slopes are shown in the bottom left of each facet. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/mixeff.png){#fig-mixeff}
 
 {{< pagebreak >}}
 
@@ -375,7 +375,7 @@ dattab
 
 ```{r}
 #| label: tbl-temptrndtab
-#| tbl-cap: "Bottom temperature trends ($^\\circ$C) by bay segments and datasets.  Start year describes the range of the trend test to the present year (2022). The starting value is the estimated temperature at the start year and the end value is the estimated temperature in 2022.  Total change is the difference between the two.  Datasets evaluated were from the Environmental Protection Commission of Hillsborough County (EPC), Fisheries Independent Monitoring (FIM), and Pinellas County Department of Environmental Management (PDEM).  Note that PDEM includes data only for the western portion of Old Tampa Bay from 2004 to present and EPC is the only dataset beginning prior to 1996. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. ** p < 0.005, * p < 0.05"
+#| tbl-cap: "Bottom temperature trends ($^\\circ$C) by bay segments and datasets.  Start year describes the range of the trend test to the present year (2022). The starting value is the estimated temperature at the start year and the end value is the estimated temperature in 2022.  Total change is the difference between the two.  Datasets evaluated were from the Environmental Protection Commission of Hillsborough County (EPC), Fisheries Independent Monitoring (FIM), and Pinellas County Department of Environmental Management (PDEM).  Note that PDEM includes data only for the western portion of Old Tampa Bay from 2004 to present and EPC is the only dataset beginning prior to 1996. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay."
 temptrndtab
 ```
 
@@ -383,7 +383,7 @@ temptrndtab
 
 ```{r}
 #| label: tbl-saltrndtab
-#| tbl-cap: "Bottom salinity trends (ppt) by bay segments and datasets.  Start year describes the range of the trend test to the present year (2022). The starting value is the estimated salinity at the start year and the end value is the estimated salinity in 2022.  Total change is the difference between the two.  Datasets evaluated were from the Environmental Protection Commission of Hillsborough County (EPC), Fisheries Independent Monitoring (FIM), and Pinellas County Department of Environmental Management (PDEM).  Note that PDEM includes data only for the western portion of Old Tampa Bay from 2004 to present and EPC is the only dataset beginning prior to 1996. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay. ** p < 0.005, * p < 0.05"
+#| tbl-cap: "Bottom salinity trends (ppt) by bay segments and datasets.  Start year describes the range of the trend test to the present year (2022). The starting value is the estimated salinity at the start year and the end value is the estimated salinity in 2022.  Total change is the difference between the two.  Datasets evaluated were from the Environmental Protection Commission of Hillsborough County (EPC), Fisheries Independent Monitoring (FIM), and Pinellas County Department of Environmental Management (PDEM).  Note that PDEM includes data only for the western portion of Old Tampa Bay from 2004 to present and EPC is the only dataset beginning prior to 1996. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay."
 saltrndtab
 ```
 
@@ -391,7 +391,7 @@ saltrndtab
 
 ```{r}
 #| label: tbl-mixdaytab
-#| tbl-cap: "Summary of mixed-effects models evaluating increases in the number of days each year from 1975 to 2022 when temperature was above 30 $^\\circ$C, salinity was below 25 ppt, or both temperature and salinity were above/below the thresholds. The start and end columns show the estimated number of days at the beginning and end of the period of record when temperature or salinity were above or below the thresholds. Values are the estimated mean number of days (plus standard error) from 1975 and 2022. ** p < 0.005, * p < 0.05. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay."
+#| tbl-cap: "Summary of mixed-effects models evaluating increases in the number of days each year from 1975 to 2022 when temperature was above 30 $^\\circ$C, salinity was below 25 ppt, or both temperature and salinity were above/below the thresholds. The start and end columns show the estimated number of days (mean, standard error) in 1975 and 2022 when temperature or salinity were above or below the thresholds. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay."
 mixdaytab
 ```
 
