@@ -484,7 +484,7 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 2.75)) & theme(legend.position = 'top')
+p <- p1 + p2 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 2.75)) & theme(legend.position = 'bottom')
 
 png(here('figs/meteowqraw.png'), height = 7.5, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
@@ -677,7 +677,7 @@ p6 <- ggplot(toplo6, aes(x = yr, y = avev, group = loc, color = loc)) +
     shape = NULL
   )
 
-p <- p1 + p2 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 2.75)) & theme(legend.position = 'top')
+p <- p1 + p2 + p4 + (p5 + p6 + plot_layout(ncol = 1, guides = 'collect')) + plot_layout(ncol = 1, heights = c(1, 1, 1, 2.75)) & theme(legend.position = 'bottom')
 
 png(here('figs/suppmeteowqraw.png'), height = 6.5, width = 7, family = 'serif', units = 'in', res = 500)
 print(p)
