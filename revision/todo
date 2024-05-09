@@ -4,3 +4,4 @@
 * Remove line numbers from supplement
 * Move references in between data availability and acknowledgements (does not render correctly if not at the end)
 * Make sure figure, table citations in text have correct parentheses
+* Update line numbers in author response to revised text
