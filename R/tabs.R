@@ -324,18 +324,18 @@ save(supp2daytab, file = here('tabs/supp2daytab.RData'))
 load(file = here::here('data/sgmods.RData'))
 load(file = here::here('data/sgmodsum.RData'))
 
-suppepccap1 <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to temperature (temp) and salinity (sal) stress metrics, with additional smoothers for year (yr) and light attenuation (la).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ', modtxt_fun(sgmodsum)$epcmod1, '.')  
+suppepccap1 <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to bottom temperature (temp) and salinity (sal) stress metrics, with additional smoothers for year (yr) and light attenuation (la).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ', modtxt_fun(sgmodsum)$epcmod1, '.')  
 suppepcmod1tab <- gam_table(sgmods$epcmod1, cap = suppepccap1)
 save(suppepcmod1tab, file = here('tabs/suppepcmod1tab.RData'))
 
-suppepccap2 <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to "both" stressors (both temperature above and salinity below thresholds), with additional smoothers for year (yr) and light attenuation (la).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ', modtxt_fun(sgmodsum)$epcmod2, '.')    
+suppepccap2 <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the EPC data in relation to "both" stressors (both bottom temperature above and salinity below thresholds), with additional smoothers for year (yr) and light attenuation (la).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ', modtxt_fun(sgmodsum)$epcmod2, '.')    
 suppepcmod2tab <- gam_table(sgmods$epcmod2, cap = suppepccap2)
 save(suppepcmod2tab, file = here('tabs/suppepcmod2tab.RData'))
 
-suppfimcap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the FIM data in relation to temperature (temp), salinity (sal), and year (yr).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ' , modtxt_fun(sgmodsum)$fimmod, '.')   
+suppfimcap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the FIM data in relation to bottom temperature (temp), bottom salinity (sal), and year (yr).  Separate smoothers were fit for each bay segment.  $s$ = invidual smoother, $ti$ = interaction term. OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay. ' , modtxt_fun(sgmodsum)$fimmod, '.')   
 suppfimmodtab <- gam_table(sgmods$fimmod, cap = suppfimcap)
 save(suppfimmodtab, file = here('tabs/suppfimmodtab.RData'))
 
-supppincocap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the PDEM data in relation to temperature (temp), salinity (sal), and year (yr).  $s$ = invidual smoother, $ti$ = interaction term. ', modtxt_fun(sgmodsum)$pincomod, '.')    
+supppincocap <- paste0('Summary of smoother terms in the Generalized Additive Model used to evaluate seagrass response for the PDEM data in relation to bottom temperature (temp), bottom salinity (sal), and year (yr).  $s$ = invidual smoother, $ti$ = interaction term. ', modtxt_fun(sgmodsum)$pincomod, '.')    
 supppincomodtab <- gam_table(sgmods$pincomod, cap = supppincocap)
 save(supppincomodtab, file = here('tabs/supppincomodtab.RData'))
