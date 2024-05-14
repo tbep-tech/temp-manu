@@ -5,3 +5,4 @@
 * Move references in between data availability and acknowledgements (does not render correctly if not at the end)
 * Make sure figure, table citations in text have correct parentheses
 * Update line numbers in author response to revised text
+* citations with the same last name but diff author have first name (Hall), remove these from the main text
