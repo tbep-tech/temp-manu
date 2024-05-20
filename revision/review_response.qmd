@@ -1,0 +1,177 @@
+---
+format: 
+  docx:
+    reference-doc: response_styles.docx
+bibliography: ../refs.bib
+csl: ../estuaries-and-coasts.csl
+
+execute: 
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| eval: false
+spelling::spell_check_files(here::here('revision/review-response.qmd'))
+```
+
+*We sincerely thank the associate editor and all reviewers for providing useful comments on our manuscript. We have made every effort to address these concerns. In particular, we have provided a more thorough assessment of seagrass response to climate-related stressors using more flexible models (GAMs) and by including additional predictors (light attenuation). Please see the specific comments below. Note that the line numbers relate to the original draft and not the revised version.*
+
+### AE comments:
+
+I enjoyed reading this paper and feel it could be an important contribution, especially given its strength in combining many different datasets and analyses to build a comprehensive story and set of conclusions. However, there are some outstanding issues that need to be addressed prior to publication, mainly related to the analyses. My impression is these can be addressed, and so I encourage the authors to consider my points below and those of the reviewers, as they will result in a stronger contribution.
+
+*Response: Thank you for the comments. We have revised the text based on your suggestions below. Please see our specific comments to each response for more details.*
+
+Major comments:
+
+1\. Datasets: I appreciate the use of multiple datasets and the effort taken to conduct multiple analyses that draw on the strengths of these datasets that build towards a comprehensive study conclusion. I did, however, have trouble following which datasets were used for which analysis, and why, and what was included and omitted. I realize all that information is included in the text, but I found it was quite buried and when I tried to refer back from figures and tables to the text it was difficult to find the information. I would suggest inserting a table with this information summarized so that the reader can easily refer to this.
+
+*Response: A new table (Table 1) was added that includes a description of each dataset, the temporal and spatial coverage, and the analyses used for each.*
+
+2\. Justification for period of decline: I struggle with the assertion that 2016 represents the beginning of the dramatic seagrass loss across Tampa Bay, as stated on Line 183. This is especially problematic when observing seagrass coverage in Figure 2a, which represents total species coverage. Here, coverage is relatively stable 1988 to 2012, then increases 2014-16, with levels dropping after this. The extent of these patterns differs per bay segment – in OTB, there is a dramatic increase with some decrease, although only the last year (2022) is below the baseline values 1988 to 2012. For other segments, there is a decline but coverage post 2016 is either similar to the baseline or higher. What are the drivers of those large increases in more recent years, and are declines relevant or is seagrass coverage simply returning to baselines levels that were evident 1988-2012? Please comment in the text. Further, the decline in cover is more evident when observing species specific data, particularly for H. wrightii in OTB and MTB, but not other segments. Should the analyses focus on the dominant species driving these patterns? Please revise text and acknowledge these aspects, perhaps reanalyse the data or interpretation if necessary, to present a more convincing justification.
+
+*Response: The above interpretation is correct in that the patterns of increase/decrease vary by bay segment and dataset (coverage or frequency occurrence). This suggests that multiple factors are influencing these changes and that they potentially vary by location. Our development of more robust models (GAMs) that attempted to better describe these patterns is an explicit acknowledgement of these differences, which were not adequately characterized with the earlier models. Please see our description below of these updated models.*
+
+*Additional text was also added to clarify these nuanced changes and the focus on total species occurrence.*
+
+*Line 191: “As such, trajectories of recovery and decline have varied by bay segment in magnitude and timing of the change, although a consistent decline baywide has been observed since 2016. Change by species has been most notable for Halodule wrightii (shoal grass) in OTB and HB, whereas some losses have been observed for Thalassia testudinum (turtle grass) in LTB, likely related to dominance of each species across the salinity gradient and proximity to hydrologic inputs (Lewis et al. 1985).”*
+
+*Line 364: “Additionally, total seagrass frequency occurrence was used as a response variable as an aggregate measure of community change to potential stressors given the likelihood that species-specific changes may be more difficult to model and that the majority of seagrass loss in recent years was dominated by H. wrightii in the upper bay segments (Figure 2b).”*
+
+3\. Exclusion of time series and use of pre/post category: Use of pre/post category in GLM analyses with stressors collapses the data across the time series and removes the interannual variability and information contained therein. I don’t understand why this was done instead of explicitly including the time series in the analyses. I would recommend conducting initial GAMs that includes the time series for these data. The GAM approach would be particularly useful to show the relationship smoothers with the stressor values and/or the basic temperature salinity time series (ie smoother relationships). As it stands, it seems that an initial key part of the analyses was omitted and it is not justified to bin into categories. This is my biggest concern with the analyses and I'd like to see this addressed.
+
+*Response: We have revised our modeling approach for describing seagrass change using a GAM approach that uses time as a continuous variable (year) and the inclusion of light attenuation as a predictor when able. For the latter, light attenuation was included only in the EPC model, whereas it was excluded from the FIM and PDEM models due to a large majority of Secchi observations (from which light attenuation was derived) being on the bottom. As such, light attenuation could not be derived for these models, nor would it likely explain much variation in seagrass response since light environments are generally not limiting at most of the locations sampled in the FIM and PDEM datasets. Also note the addition of Figure 2c that shows the improvement in light attenuation over time as shown with the EPC data.*
+
+*Sections 2.7 (links to seagrass) and 3.3 (seagrass response) were revised to describe the updated modeling approach, including the addition of equations 1 to 4 showing the structure for each GAM, Figures 7, 8 , and S7 showing partial effects for each model, and Tables S7 to S10 providing summary statistics for each model. Overall, the general conclusions that climate-related stressors are likely contributing factors to seagrass change remains as before, although the revised approach provides a more complete description of this change using more flexible models that can describe non-linear relationships and additional predictors (time, light attenuation).*
+
+4\. Exclusion of nutrient/light data: A key part of the Tampa Bay story is the success in seagrass recovery through nutrient reduction. I agree with the reviewers that exclusion of these data (or some representative) is perplexing, especially given they are available. I recommend including these in the models, and excluding them only through the model selection process.
+
+*Response: This is an excellent suggestion that we have carefully considered. Several revisions were made to address the concern. First, Figure 2 was updated to include a time series of light attenuation by bay segment over the last fifty years. Regression lines in each plot show that light environments have improved for the period of record covered by the transect monitoring data (1998 to present). This plot provides an overview of the history of bay recovery as well as the perplexing issue that seagrass has changed despite light attenuation being low and continuing to improve. It is also noted that light attenuation in recent years has been below the threshold to support seagrass growth. Second, we have improved our models of seagrass response to climate stressors as noted in the response to the previous comment.*
+
+Minor comments:
+
+Line 205: Define frequency occurrence.
+
+*Response: Text revised as “...cover-abundance, frequency occurrence (number of sample points with seagrass divided by total points on a transect, as in Sherwood et al. 2017), and condition, ...”*
+
+Line 207: My understanding is that both transects and areal maps were done once a year. Clarify here why transect data provided greater temporal resolution.
+
+*Response: As noted on line 195, the areal maps are produced every other year, whereas the transect data are collected every year. The text was revised as follows: “Although the areal maps provide the standard for assessment of restoration goals, the maps are produced every other year. The transect data are collected each year, allowing inter-annual comparison...”*
+
+Line 183: Provide reference or data to show that nutrient loading and light attenuation remained stable during 2016 to present. Better yet, include it in your analyses and exclude through model selection.
+
+*Response: Please see the response to the general comments above.*
+
+Line 368: remind reader why these datasets can’t be used to calculate stressor metrics (point samples?)
+
+*Response: Sentence was revised as follows: “These models used direct measurements of salinity and temperature as independent variables because the stressor metrics could not be calculated using the sampling designs from these monitoring programs (i.e., each sample was a distinct location).*
+
+Figure 6: grey points are the actual number of days per year per transect (station), correct? Insert text.
+
+*Response: Edited as “...grey points as actual number of days for each station...”*
+
+### Reviewer #1:
+
+This was a very thorough study, with an impressive amount of data. These types of analyses are greatly needed with all of the long-term datasets that are becoming available in different estuarine systems. The authors were extremely detailed in explaining their methods, and using different tools and models to analyze different datasets. The hang-up for me is the extremely weak, and I think really no convincing links to changes in seagrass. They acknowledge that it is weak and do not try to really oversell it though. However, I am unconvinced as to the omission of any kind of water clarity data into the seagrass models.
+
+*Response: Thank you for the thorough review of our manuscript. Please see our response to your comments below, as well as those in response to the comments from the associate editor. We have re-evaluated seagrass change over time using a more comprehensive modeling approach that includes GAMs and additional predictors (i.e., light attenuation).*
+
+The authors cite Lopez et al. in their site description of Old Tampa Bay. This paper shows that HAB durations have increased from 2011-2020. Since the largest seagrass declines occurred in Old Tampa Bay, could they be more directly related to algal blooms and less directly related to temperature and salinity changes? Based on the 2022 Tampa Bay Water Quality Assessments report that is cited, Old Tampa Bay has not met their chlorophyll criteria for over half the years since seagrass declines started being observed after 2016. In particular, the 3 years in a row from 2019-2021 seem of great interest to this study, and I'm wondering why chlorophyll wasn't included in the models.
+
+*Response: We have included light attenuation in our models when able. Additionally, the FIM and PDEM datasets that target more shallow areas of the bay had a majority of Secchi observations on the bottom, indicating that light environments are generally supportive of seagrass growth in recent years. Also note the addition of Figure 2c that shows the long-term improvement in light environments over the period of record for the EPC dataset.*
+
+Continuing with this same issue, I find the argument to leave out water clarity data fairly weak and at times based on anectodal evidence. For example, Lines 166-167 "Light penetration typically reaches bottom habitats under current conditions" and lines 183-184 "despite nutrient loading and light attenuation remaining relatively stable". What is the justification for these statements? It seems like there is anecdotal evidence used to try to defend the use of not looking at light conditions in the model, but many times citations are not used that show these statements to be true. If light is going to be excluded from the models, I think a stronger justification is needed.
+
+*Response: Please see our response to the previous comment as well as those in response to the general comments from the associate editor.*
+
+Lines 303-305 "we focus on water temperature and salinity given that other dominant forcing factors, i.e., light availability, have been relatively stable in recent years." Here a citation is given, however these mentioned conditions appear to be stable for areas except OTB, which is also the area that saw the greatest declines in seagrass. So again, why leave light availability out of the models?
+
+*Response: Please see our above responses.*
+
+Lines 225-226 "Most samples are collected from mid-morning to early afternoon". That is a major issue with using temperature data that is a snapshot and not continuous. Temperatures can vary greatly between morning to afternoon. Were any attempts made to normalize temp data to time of day? I don't know if it would be possible given the datasets, but something to consider.
+
+*Response: This is certainly an issue worth considering using the temperature data from the monthly discrete samples and was the motivation for including a statement on the need for continuous monitoring data in the original draft (lines 667 - 669). Applying a correction or normalization for time of day would be challenging and we would not be confident in the results to accurately describe maximum or minimum temperature values for a given day. Moreover, we feel the trends in the temperature summaries (e.g., increase in number of days above a threshold over time) would likely be similar. As such, we have not attempted this for the current dataset. However, ongoing work in Old Tampa Bay for a separate project is attempting to describe short-term diurnal variation in temperature with continuous data loggers. We suspect this information will provide further insight into acute temperature stressors that could affect seagrass. We have added a statement and link in the text with a short description of this work, although these loggers are in very shallow areas that likely show different temperature characteristics than the discrete samples at deeper depths.*
+
+*Line 669: “Ongoing work in OTB using continuous data loggers in shallow areas will provide insights into short-term diurnal changes as potential acute temperature stress on seagrass (see https://tbep-tech.github.io/otb-temp/tempeval).”*
+
+Lines 313-314 "Shoal grass is tolerant of a wide range of salinity..." Shoal grass accounted for the largest seagrass declines, according to Figure 2b, so why would decreases in salinity negatively impact this species? Wouldn't a decrease of 0.04-0.06 per year be well within the tolerance range for this species?
+
+*Response: Our previous statement on lines 560-564 suggests this may be a plausible explanation for the weak association of seagrass change with the stressors. The statement was further amended to specifically mention that shoal grass accounted for the largest seagrass decline: “This is especially true for H. wrightii that had the greatest changes over the period of record and is tolerant of a wide range of salinity.”*
+
+Lines 350-352: Did you experiment with different lagged responses?
+
+*Response: Yes, preliminary analyses evaluated lagged associations between the salinity and temperature stressor metrics and seagrass change. Specifically, we evaluated the number of days in 30 day periods from one month to one year when temperature was above or salinity was below a threshold in relation to seagrass change (see code here). No compelling differences were observed for any of the lags compared to the entire year, which was the justification for using the latter in the current analysis. Additional text was added to this effect:*
+
+*Line 354: “Preliminary analyses evaluated different lagged associations between the stressor metrics and seagrass change, although initial results suggested no additional insight could be gained using lagged assessments compared to the transect year summaries. As such, the stressor metrics...”*
+
+Line 384: what was the justification for removing September?
+
+*Response: The assessment of inter annual changes in precipitation during the rainy season showed a weak increase over time, whereas removing the last month (September) showed a more statistically powerful increase over time. The removal of September was meant to show that the trend was driven by an increase in the first three months of the rainy season (Jun - Aug). Text was added to line 386: “...suggesting precipitation increases were driven by the earlier months (June - August).” Also note that our previous estimates of rainfall total were based on an incorrect sum across overlapping areas. We have fixed the issue, although the results and trends remain the same.*
+
+Line 399: "for all" is repeated twice
+
+*Response: Fixed.*
+
+Line 407: Table 1 shows only HB significant for FIM from 2004 to present, not OTB.
+
+*Response: This was corrected.*
+
+### Reviewer #2:
+
+Overall, I found this manuscript to be interesting and useful. It utilizes existing data from various existing, governmental water quality monitoring programs of varying design and coverage to assess if recent declines in seagrass populations in portions of the subtropical Tampa Bay coastal system can be associated with increased water temperatures or lower salinities which might be a result of changing climatic conditions.
+
+Although the results of their conservative, linear modeling analyses determined that the bay waters were only marginally warmer and fresher during the recent period of seagrass declines beginning in 2016, the study provides a good example of how existing monitoring data might be used for similar questions in other areas, as well as what new monitoring or assessment approaches, including evaluation of shorter-term periods of stress might be needed. It reinforces the need for updated coastal water quality management approaches and seagrass restoration criteria. Most existing coastal management restoration paradigms, programs and restoration criteria were developed and first implemented 20-40 years ago or earlier when declines in seagrass populations were first quantified. Consequently, they do not address many of the interactive and potentially negative factors associated with a rapidly changing climate.
+
+The thorough discussion section addresses many of the caveats and limitations of their approach to assessing temporal trends in the Tampa Bay physical environment during the recent period of seagrass decline. Additionally, the authors discuss some of the potentially important unmeasured interactive biotic and abiotic factors which could be important in explaining recent seagrass declines.
+
+Before acceptance I recommend that several points should be addressed to improved the manuscript's clarity and usefulness.
+
+*Response: Thank you for providing useful feedback on our manuscript. Please see our detailed responses below.*
+
+First, although light availability is one of the most principal water quality factors affecting seagrass performance, stability and resilience, data is not presented here to characterize the light environment either spatially or temporally, other than to suggest it has been relatively stable and consistent across the system. However, on L. 120 it is highlighted that "... upper bay segments where marginal light environments exist".
+
+*Response: Line 120 was revised to describe that the upper bay segments are more shallow and receive a majority of hydrologic inflow. The previous was inaccurate. Also, please see the addition of Figure 2c that shows the long-term improvement in the light environment over time. Of particular note is that all bay segments are currently below the threshold supportive for seagrass growth.*
+
+Additionally, on L. 183-184 the authors state, "...dramatic seagrass loss has been observed in Tampa Bay, despite nutrient loading and light attenuation remaining relatively stable (Figure 2a)". However, Figure 2a only shows seagrass abundance changes and Figures S1, S2, S3 only show 2000 to 2020 air and water temperatures, precipitation, and salinity levels and trends. If nutrients and light are to be considered constants and excluded from the analysis (as discussed L. 574-597) the data should be similarly presented in figures so that their exclusion can be better supported. One possibility would be to add to the supplementary materials in a format such as Fig. S1 or S2.
+
+*Response: We have added light attenuation trends in Figure 2 and have included it as a predictor in the seagrass models when able. As noted above, a majority of Secchi observations in the FIM and PDEM datasets have been recorded on the bottom, indicating sufficient light environments for seagrass growth in recent years.*
+
+L. 535-537 states that, "The models did not provide a consistent, nor statistically powerful, explanation that increasing temperature and decreasing salinity were key (or the sole) drivers." Therefore, a weight-of-evidence approach from all the models is used to conclude their effects. This is OK provided that the other potentially important interactive factors can be better supported as being constant. Monitoring data for chlorophyll concentrations nitrogen loadings and other parameters as they relate to light availability to the bottom do exist and should be included in the figures for each of the four regions.
+
+*Response: Please see our above comments regarding the addition of these data in Figure 2 and our use of more robust modeling approaches to describe these potential changes (i.e., GAMs)*
+
+Another important component excluded from analyses or discussion here is identification of the individual seagrass species distributions and their potential effects on seagrass responses or resilience to climate related stresses. Thalassia, which is typically dominant in the lower, higher salinity areas in this system can have greater persistence and resilience to environmental stresses than Halodule and other common seagrass species, however its recovery after loss can also be slow. Since it can grow to greater depths Halodule, its water clarity requirements can be higher. Additionally, at greater depths the effects of temporary air temperature increases on water temperatures can be buffered compared to shoal environments. If the seagrass community consists only of Thalassia then it should be so stated.
+
+*Response: We agree there are likely important distinctions between species that could be considered when evaluating the response to climate-related stressors. As correctly noted by the reviewer, Thalassia is dominant in lower Tampa Bay with coverage decreasing towards the upper bay segments. We did not evaluate lower Tampa Bay in our analysis of seagrass response to climate stressors given that coverage has generally been stable in recent years and salinity has not been changing dramatically. For the remainder of the bay, most of the change in cover has been dominated by Halodule, especially in the upper bay segments where most of the seagrass loss has been observed. An evaluation of individual species response would likely not be more informative than the current evaluation of total frequency occurrence. Also please see our response to a similar comment from the associate editor.*
+
+The definition of "hotter and fresher" is as used here summarized as the average rates of annual increases in water temperature and decreases in salinity. Yet, more importantly, this study presents estimates of the number of days annually when defined thresholds for water temperature above 30C and salinities below 25 occur. While these thresholds which were used for comparisons, were set, in part, on their statistical strength, they do have merit as indexes of episodic stress. These metrics perhaps more important than averages when related to evaluating climate change stressors as referenced here and elsewhere. I suggest these metrics be highlighted and included in the abstract, as they are included and emphasized in the discussion.
+
+*Response: This is a good suggestion and we agree these metrics are useful to highlight in the abstract. We have added this sentence to the abstract, with similar clarification added in section 3.2 and the beginning of the discussion: “Additionally, the number of days when temperature was above 30 °C or salinity was below 25 ppt has increased on average across all bay segments by 48 and 37 days, respectively, since 1975.”*
+
+Additionally, recommendations for future management efforts highlighted in the last sentence of the Abstract (L. 31-34) do not mention recommendations for additional monitoring approaches needed to evaluate future climate stressors as highlighted in the Conclusions. I suggest adding something such as, "...and high-resolution data collection efforts", after "additional, complementary interventions..." to emphasize the need for more precise, spatial and temporal sampling in monitoring programs both here and elsewhere.
+
+*Response: The final sentence of the abstract was revised as follows: “...and warrant additional, complementary interventions and continuous monitoring data to support ecosystem health into the future.”*
+
+### Co-Editor in Chief:
+
+1\) Maybe change the title to "Hot and fresh water:..."
+
+*Response: At the risk of being slightly gimmicky, we have retained the title preface. All co-authors preferred this option. However, we have added “water” later in the title to describe “suboptimal water conditions” to make the focus of the manuscript clear.*
+
+2\) ESCO now requires a “Declarations” section as described in the submission guidelines https://link.springer.com/journal/12237/submission-guidelines. Include declarations on: funding sources; financial or non-financial competing interests, or conflicts of interest; ethics compliance for research involving humans, animals, or plants; data availability and repository DOI; author contributions; pre-print location if applicable; etc.
+
+*Response: The declaration section that was previously after the abstract was added to the end and relevant sections were added (data availability, author contributions, ethics, and funding).*
+
+3\) Lines 384-390 and other places, and Tables 1-4: ESCO has a policy discouraging the use of an arbitrary rejection rate and recommends describing trends and reporting the actual p-values, see Smith (2020) https://doi.org/10.1007/s12237-019-00679-y. This means that you should avoid the phrases “significant,” “p \< 0.05,” or “\*”and replace these phrases with effect size values that represent the trend, the actual p-value, and the sample size. For example: X was 100% higher than Y, p = 0.0001, n=20; or X was 10 units, which is greater than Y at 5 units, p = 0.0001, n=20. Use the same number of significant digits in all your reporting, meaning values \< 0.0001 should be reported as \< 0.0001. Don't forget n. More examples and suggestions are provided in the Smith citation. So, please revise your results section, and any other parts of the manuscript, to address this issue.
+
+*Response: We have removed or revised all instances in the text, tables, and figures to focus on trends, effect sizes, and magnitudes. Any use of “significant” regarding statistical tests was also removed. Sample sizes were reported where missing.*
+
+4\) Figure 2: I think the font on X-axis is too small to read. Consult submission guidelines on figures.
+
+*Response: Font size was increased.*
+
+5\) Fig. 6, 7: There is a charge to print color figures.
+
+*Response: We intend on publishing as open access.*
