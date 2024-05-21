@@ -98,7 +98,7 @@ load(file = here('tabs/supppincomodtab.RData'))
 
 {{< pagebreak >}}
 
-![Trends from 1998 to 2022 for bottom temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for seasonal Kendall tests by station and monitoring location (top or bottom of the water column) are shown in (a) with color, size, and shape corresponding to the estimated annual slope as change per year (yr$^{-1}$). Summarized seasonal trends by month are shown as (b) the average magnitude of change (slope) per month for all stations in each bay segment for temperature and salinity. Average slope across stations as change per year is indicated by color and text scaled by absolute magnitude. Bay segment outlines are shown in (a); OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppkendall.png){#fig-suppkendall}
+![Trends from 1998 to 2022 for bottom temperature and salinity measurements at long-term monitoring stations in Tampa Bay. Results for seasonal Kendall tests by station and monitoring location (top or bottom of the water column) are shown in (a) with color, size, and shape corresponding to the estimated annual slope as change per year (yr$^{-1}$). Summarized seasonal trends by month are shown as (b) the average magnitude of change (slope) for all stations in each bay segment for temperature and salinity, indicated by color and text scaled by absolute magnitude. Bay segment outlines are shown in (a); OTB: Old Tampa Bay, HB: Hillsborough Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay.](figs/suppkendall.png){#fig-suppkendall}
 
 {{< pagebreak >}}
 
