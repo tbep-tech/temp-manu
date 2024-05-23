@@ -18,13 +18,11 @@ Dear Dr. Montagna and Dr. Deegan,
 
 \vspace{0.5cm}
 
-Enclosed please find our manuscript, titled \`Hot and fresh: evidence of climate-related suboptimal conditions for seagrass in a large Gulf coast estuary', to be considered as an original article in Estuaries and Coasts.
+Enclosed please find our revised manuscript, titled \`Hot and fresh: evidence of climate-related suboptimal water conditions for seagrass in a large Gulf coast estuary', to be considered as an original article in Estuaries and Coasts.
 
-The long-term recovery of Tampa Bay is a nationally recognized success story that demonstrates how the USEPA National Estuary Program is a valuable model for collaborative management.  Through large-scale reductions in external nutrient loading, seagrasses have recovered in the bay, reaching an all-time high in 2016.  Since that time, seagrasses have declined by nearly 1/3 and questions remain regarding the role of climate-related stressors in contributing to this decline.  We leverage multiple data sources to describe changing water temperature and salinity in the bay and relate these trends to the recent seagrass loss from 2016 to present. No such comprehensive assessment has previously been conducted for Tampa Bay and our results provide context for how climate stressors can confound existing management models, particularly related to nutrient management. 
+We sincerely appreciate the constructive comments provided by the editors and reviewers and have made every attempt to address these comments in our revision. The largest change to the manuscript was a reanalysis of the potential seagrass response to climate stressors, which included more flexible Generalized Additive Models and inclusion of additional predictors (i.e., time as a continuous variable, light attenuation).  Overall, our conclusions remain the same that climate stressors are potentially driving recent seagrass changes, although our more robust modeling approach provides greater weight of evidence for this conclusion.  Note that we have also made substantial revisions in response to comments from the co-editor in chief regarding statistical descriptions of results to focus more on effect sizes and magnitudes of change. 
 
-This work has not been published elsewhere, nor is it under consideration for publication anywhere else. Each author has contributed substantially to this work. All authors have contributed to the writing and review of the original draft. Analysis was conducted by the first author, with interpretation of results supported by all other co-authors. All authors have approved the final draft and the submitted product was prepared according to instructions for authors provided on the journal's website.
-
-We greatly appreciate the opportunity to publish this work in Estuaries and Coasts and are confident readers will consider it a valuable contribution. Please feel free to contact us directly should additional information be needed.
+Again, we greatly appreciate the opportunity to publish this work in Estuaries and Coasts and are confident readers will consider it a valuable contribution. Please feel free to contact us directly should additional information be needed.
  
 \vspace{0.5cm}
 

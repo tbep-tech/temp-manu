@@ -24,7 +24,7 @@ epcdat <- epcdata %>%
 totab <- tibble(
   Dataset = c('SWFWMD aerial maps', 'Transect data', 'EPC', 'FIM', 'PDEM', 'Tampa International Airport', 'SWFWMD precipitation'),
   Description = c('Seagrass coverage in acres', 'Seagrass frequency occurrence by species', 'Water quality monitoring samples', 'Nearshore temperature and salinity, seagrass species and cover', 'Water quality and seagrass presence/absence', 'Air temperature', 'Area-weighted precipitation for the wet season (June-September) for the Tampa Bay watershed'),
-  Temporal = c('1988 - 2022, biennial', '1999 - 2022, annual', '1975 - 2022, monthly', '1996 - 2022, monthly', '2003 - 2022, monthly', '1975 - 2022, annual', '1975 - 2022, annual'),
+  Temporal = c('1988 - 2022, ~biennial', '1999 - 2022, annual', '1975 - 2022, monthly', '1996 - 2022, monthly', '2003 - 2022, monthly', '1975 - 2022, annual', '1975 - 2022, annual'),
   Spatial = c('Whole bay', 'Whole bay, 62 transects', 'Whole bay, fixed sites', 'Whole bay shallow, stratified random sites', 'Old Tampa Bay, stratified random sites', '27.979$^\\circ$N, 82.535$^\\circ$W', 'Whole watershed'),
   Analysis = c('Biennial trends by bay segment, visual only', 'Annual trends by bay segment and species, comparison with temperature, salinity, and light attenuation as stressor metrics or observed data at annual scale', 'Trends in annual change and seasonal Kendall tests, estimate of stressor metrics as number of days above/below threshold', 'Trends in annual observed temperature, salinity, comparison to annual seagrass % cover', 'Trends in annual observed temperature, salinity, comparison to annual seagrass frequency occurrence', 'Annual trend', 'Annual trend')
 )
