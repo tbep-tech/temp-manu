@@ -1,0 +1,65 @@
+---
+format: 
+  docx:
+    reference-doc: response_styles.docx
+bibliography: ../refs.bib
+csl: ../estuaries-and-coasts.csl
+
+execute: 
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| eval: false
+spelling::spell_check_files(here::here('revision/review_response.qmd'))
+```
+
+### AE comments:
+
+Thank you for your revisions on this manuscript, I especially appreciate your well thought out responses to reviewer comments and also the changes made to the analyses (particularly the new GAM models and inclusion of the light attenuation data).  It will be a very nice contribution.  I have only a few minor comments that should be addressed:
+
+*Response: Thank you once again for providing useful comments on our manuscript.  We have addressed the comments below and provide additional interpretation regarding the interaction terms in the GAMs.* 
+
+Use of p-values:  I do appreciate what ESCO is trying to address with the move away from our reliance on statistical significance and p-values.  However, I think in this case, it is useful to include both.  For your GAM models, you indicate some smoother relationships are weak or strong, and this is based on the p-value.  Here the p-values indicate the difference of the smoother from a constant straight line and it is an important way to evaluate their significance.  I suggest inserting the smoother p-values into the text in addition to the text that is already present (I found them in the tables but it would be easier in the text).  Further, I feel p-values are important for regression results, because you can have a significant regression (say p=0.01) but a low R2 value, indicating a relationship between the response and predictor is identified but there is lots of spread in the data.  So, I would also suggest inserting these. 
+
+*Response:* 
+
+For the GAM analysis, you may want to consider removing the interactions with year, to provide more power to define the GAM smoothers.  Most of these interactions are non-significant, and you’ve examined them individually, so you would be justified in removing these. You could mention you did these in preliminary models and no strong patterns were observed.  Or, if there is no difference you could just leave them.  Regardless, it is likely worthwhile to investigate.
+
+*Response:* 
+
+The GAM models provided in the methods are really just the R syntax, and this is clear from the tables. I would suggest removing
+
+*Response: Agreed, these equations were removed from the text.* 
+
+Line 491: Change “model for the EPC “ to “seagrass cover…”
+
+*Response: Changed* 
+
+Line 493: seagrass cover was associated with decreased light attenuation for both HB and MTB segments.  In HB, it was a fairly random pattern with not much biological meaning.  For MT though seagrass cover increased with increased light attenuation, but as you mention, this is still below the threshold.  Some clarification here might be useful.
+
+*Response:* 
+
+Line 494: “associations were weak” – add smoother p-values here
+
+*Response:* 
+
+Line 498: both metric did not add additional value – however, it is significant for HB.  Not sure if this is relevant or not
+
+*Response:* 
+
+Line 555: “For the EPC model none of the stressor metrics were associated with seagrass change”.  This isn’t quite correct: – salinity OTB was, and also the general trends in increasing sg with increasing temperature should be acknowledged explicitly. Although these were not significant they do suggest a relationships.  I appreciate the distinction between the temperature metrics used for the different datasets as you outline, but what would the mechanism be?  Could the increase with temperature in the EPC data indicate increased vegetative growth in anomalous temperature conditions?  Several studies have observed this (DuBois et al. 2020, Wong and Dowd 2023 etc)
+
+*Response:* 
+
+Line 611: I think this explanation is really important, can it be highlighted above too.  What is the depth difference and does this ameliorate solar heating effects experienced by the seagrass.
+
+*Response:* 
+
+### Co-Editor in Chief:
+
+Now that we are moving towards production, Tables should be moved after the References, Figure Legends should be placed on one page and moved after the Tables, and the Figures should be moved after the Figure Legends.
+
+*Response: Tables have been moved after the references, figure captions after the tables, and figures after the captions.* 

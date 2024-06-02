@@ -1,0 +1,9 @@
+* Format table with hlines and fix spacing
+* Proof references
+* Add "S" to supplement figs and tabs, fix non-kable table captions
+* Remove line numbers from supplement
+* Move references in between data availability and acknowledgements (does not render correctly if not at the end)
+* Move tables after references, figure legends after tables on one page, figures after figure legends
+* Make sure figure, table citations in text have correct parentheses
+* Update line numbers in author response to revised text
+* citations with the same last name but diff author have first name (Hall), remove these from the main text

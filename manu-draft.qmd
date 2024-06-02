@@ -167,49 +167,9 @@ Counts of the maximum continuous number of days each year that temperature was a
 
 ### Links to seagrass
 
-For comparison to seagrass, the annual metrics calculated from the EPC data were referenced to approximate periods of time between the annual seagrass transect surveys, as opposed to the calendar year for describing trends above. Bay segment stressor metrics were calculated as the average counts in each "transect year" from all stations in each segment from 1998 to 2022. Preliminary analyses evaluated different lagged associations between the stressor metrics and seagrass change, although initial results suggested no additional insight could be gained using lagged assessments compared to the transect year summaries. As such, the stressor metrics were compared to frequency occurrence (all species) each year by bay segment. GAMs were used to evaluate frequency occurrence in response to the independent variables, where the latter were the stressor metrics for temperature, salinity, or both. Additional predictors included year and light attenuation as estimated from Secchi depth [@tbep0696]. For 1998 to 2022, `r onb$epc` of the Secchi observations were recorded on the bottom. A single smooth term was used for each predictor using a thin plate regression spline, including a tensor product interaction term with a cubic regression spline that evaluated the potential interacting effects of each predictor with year. Two models were evaluated, one with the bottom temperature and salinity metrics together (@eq-epcmod1) and another with the both metric (@eq-epcmod2). All models excluded Lower Tampa Bay because of minimal seagrass change over time. Additionally, total seagrass frequency occurrence was used as a response variable as an aggregate measure of community change to potential stressors given the likelihood that species-specific changes may be more difficult to model and that the majority of seagrass loss in recent years was dominated by *H. wrightii* in the upper bay segments (Figure [-@fig-seagrasschg]b). The GAM equations in *mgcv* R package notation [@wood17] are below, where $s$ is a smoother function for a single predictor and $ti$ is the tensor product interaction between predictors. All GAMs were fit using restricted maximum likelihood evaluation [@wood11].
+For comparison to seagrass, the annual metrics calculated from the EPC data were referenced to approximate periods of time between the annual seagrass transect surveys, as opposed to the calendar year for describing trends above. Bay segment stressor metrics were calculated as the average counts in each "transect year" from all stations in each segment from 1998 to 2022. Preliminary analyses evaluated different lagged associations between the stressor metrics and seagrass change, although initial results suggested no additional insight could be gained using lagged assessments compared to the transect year summaries. As such, the stressor metrics were compared to frequency occurrence (all species) each year by bay segment. GAMs were used to evaluate frequency occurrence in response to the independent variables, where the latter were the stressor metrics for temperature, salinity, or both. Additional predictors included year and light attenuation as estimated from Secchi depth [@tbep0696]. For 1998 to 2022, `r onb$epc` of the Secchi observations were recorded on the bottom. A single smooth term was used for each predictor using a thin plate regression spline, including a tensor product interaction term with a cubic regression spline that evaluated the potential interacting effects of each predictor with year. Two models were evaluated, one with the bottom temperature and salinity metrics together and another with the both metric. All models excluded Lower Tampa Bay because of minimal seagrass change over time. Additionally, total seagrass frequency occurrence was used as a response variable as an aggregate measure of community change to potential stressors given the likelihood that species-specific changes may be more difficult to model and that the majority of seagrass loss in recent years was dominated by *H. wrightii* in the upper bay segments (Figure [-@fig-seagrasschg]b). All GAMs were fit using restricted maximum likelihood evaluation [@wood11] with the *mgcv* R package \[@wood17.
 
-$$
-\begin{aligned}
-Seagrass \sim s(year, by = bay \ segment) + s(light \ att, by = bay \ segment) + 
-\\
-s(temperature, by = bay \ segment) + s(salinity, by = bay \ segment) + 
-\\
-ti(light \ att, \ year, by = bay \ segment) + ti(temperature, year, by = bay \ segment) +
-\\ 
-ti(salinity, year, by = bay \ segment)
-\end{aligned}
-$$ {#eq-epcmod1}
-
-$$
-\begin{aligned}
-Seagrass \sim s(year, by = bay \ segment) + s(light \ att, by = bay \ segment) + 
-\\
-s(both, by = bay \ segment) +
-\\
-ti(light \ att, \ year, by, bay \ segment) + ti(both, year, by = bay \ segment)
-\end{aligned}
-$$ {#eq-epcmod2}
-
-Two other models were constructed to provide an additional weight-of-evidence for the FIM and PDEM temperature and salinity datasets relative to seagrass change. These models used direct measurements of bottom salinity and temperature as independent variables because the stressor metrics could not be calculated using the sampling designs from these monitoring programs (i.e., each sample was a distinct location). GAMs were used for the FIM data to evaluate annual average seagrass percent cover using year, temperature, and salinity as independent variables. Separate smoothed terms for each predictor and interactions with year for each predictor for each bay segment were included as above. GAMs for the PDEM data were constructed similarly, except only Old Tampa Bay was evaluated due to spatial limitations of the data. Neither the FIM nor PDEM models used light attenuation as a predictor variable given that a large percentage of Secchi observations were measured on the bottom (`r onb$fim` and `r onb$pinco`, respectively), providing further support that light environments have not been limiting for seagrasses. Model input data were further subset to include only months from July to October to describe seagrasses during the growing season and to reduce potential seasonal effects. Lastly, all data were averaged annually for the monthly subsets for comparability of sample size (i.e., power) with the EPC models. For the PDEM models, presence/absence was converted to frequency occurrence as the number of sites with seagrass in a year divided by the total number of sites and all data were subset to less than 2 meters to better characterize locations where seagrass occurs. The GAM equations for the FIM (@eq-fimmod) and PDEM (@eq-pincomod) datasets, respectively, were as follows:
-
-$$
-\begin{aligned}
-Seagrass \sim s(year, by = bay \ segment) + s(temperature, by = bay \ segment) + 
-\\
-s(salinity, by = bay \ segment) + 
-\\
-ti(temperature, year, by = bay \ segment) + ti(salinity, year, by = bay \ segment)
-\end{aligned}
-$$ {#eq-fimmod}
-
-$$
-\begin{aligned}
-Seagrass \sim s(year) + s(temperature) + s(salinity) + 
-\\
-ti(temperature, year) + ti(salinity, year)
-\end{aligned}
-$$ {#eq-pincomod}
+Two other models were constructed to provide an additional weight-of-evidence for the FIM and PDEM temperature and salinity datasets relative to seagrass change. These models used direct measurements of bottom salinity and temperature as independent variables because the stressor metrics could not be calculated using the sampling designs from these monitoring programs (i.e., each sample was a distinct location). GAMs were used for the FIM data to evaluate annual average seagrass percent cover using year, temperature, and salinity as independent variables. Separate smoothed terms for each predictor and interactions with year for each predictor for each bay segment were included as above. GAMs for the PDEM data were constructed similarly, except only Old Tampa Bay was evaluated due to spatial limitations of the data. Neither the FIM nor PDEM models used light attenuation as a predictor variable given that a large percentage of Secchi observations were measured on the bottom (`r onb$fim` and `r onb$pinco`, respectively), providing further support that light environments have not been limiting for seagrasses. Model input data were further subset to include only months from July to October to describe seagrasses during the growing season and to reduce potential seasonal effects. Lastly, all data were averaged annually for the monthly subsets for comparability of sample size (i.e., power) with the EPC models. For the PDEM models, presence/absence was converted to frequency occurrence as the number of sites with seagrass in a year divided by the total number of sites and all data were subset to less than 2 meters to better characterize locations where seagrass occurs.
 
 ## Results
 
@@ -292,7 +252,7 @@ The number of days when both temperature was above and salinity was below a thre
 sgmodtxt <- modtxt_fun(sgmodsum)
 ```
 
-GAMs to assess the potential effects of year, light attenuation, temperature and salinity on seagrass change provided some evidence that seagrass change was influenced by climate stressors, particularly for the FIM and PDEM datasets. The model for the EPC data (`r sgmodtxt$epcmod1`) had notable associations with year for the OTB and MTB bay segments and for light attenuation for the HB bay segment (@fig-sgmod1, Table S7). Associations of seagrass change with the temperature and salinity metrics were weak and somewhat contrary to expectation (i.e., an increasing partial effect on seagrass as the stressor metrics increased). The EPC model using the "both" stressor metric was similar (`r sgmodtxt$epcmod2`, Figure S7, Table S8), suggesting no added benefit of evaluating times when both temperature was above and salinity was below the threshold.
+GAMs to assess the potential effects of year, light attenuation, temperature and salinity on seagrass change provided some evidence that seagrass change was influenced by climate stressors, particularly for the FIM and PDEM datasets. The seagrass cover data (`r sgmodtxt$epcmod1`) had notable associations with year for the OTB and MTB bay segments and for light attenuation for the HB bay segment (@fig-sgmod1, Table S7). Associations of seagrass change with the temperature and salinity metrics were weak and somewhat contrary to expectation (i.e., an increasing partial effect on seagrass as the stressor metrics increased). The EPC model using the "both" stressor metric was similar (`r sgmodtxt$epcmod2`, Figure S7, Table S8), suggesting no added benefit of evaluating times when both temperature was above and salinity was below the threshold.
 
 The GAMs for the FIM and PDEM datasets had notable associations with temperature and salinity stress, where an increase in temperature and a decrease in salinity was often associated with a decline in seagrass depending on bay segment. The FIM model (`r sgmodtxt$fimmod`, Figure [-@fig-sgmod2]a, Table S9) showed a slight decrease in seagrass with increasing temperature for HB and MTB, with a similar change as salinity decreased. The PDEM model (`r sgmodtxt$pincomod`, Figure [-@fig-sgmod2]b, Table S10) that evaluated only OTB showed a distinct decrease with seagrass as temperature increased, but no association with salinity. Some of the interaction terms of the predictors with year suggested the relationships with seagrass may have changed over time, but the results were not consistent between bay segments or models (Tables S7 to S10).
 
