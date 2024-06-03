@@ -23,13 +23,14 @@ Thank you for your revisions on this manuscript, I especially appreciate your we
 *Response: Thank you once again for providing useful comments on our manuscript.  We have addressed them below and provide additional interpretation regarding the interaction terms in the GAMs.* 
 
 Use of p-values:  I do appreciate what ESCO is trying to address with the move away from our reliance on statistical significance and p-values.  However, I think in this case, it is useful to include both.  For your GAM models, you indicate some smoother relationships are weak or strong, and this is based on the p-value.  Here the p-values indicate the difference of the smoother from a constant straight line and it is an important way to evaluate their significance.  I suggest inserting the smoother p-values into the text in addition to the text that is already present (I found them in the tables but it would be easier in the text).  Further, I feel p-values are important for regression results, because you can have a significant regression (say p=0.01) but a low R2 value, indicating a relationship between the response and predictor is identified but there is lots of spread in the data.  So, I would also suggest inserting these. 
+
 *Response: We have added p-values to the text when describing the relationship of predictors to the seagrass response variables.  Please see section 3.3 for updates.* 
 
 For the GAM analysis, you may want to consider removing the interactions with year, to provide more power to define the GAM smoothers.  Most of these interactions are non-significant, and you’ve examined them individually, so you would be justified in removing these. You could mention you did these in preliminary models and no strong patterns were observed.  Or, if there is no difference you could just leave them.  Regardless, it is likely worthwhile to investigate.
 
 *Response: We have removed all interaction terms from the GAMs and updated the figures, tables, and text.  The results were very similar and we agree it was not worth including these in the models.  We have made a note in the text that initial models evaluated interaction terms, but the results were similar.* 
 
-*Lines 370-373: Initial models also included a tensor product interaction term with a cubic regression spline that evaluated the potential interacting effects of each predictor with year. However, most of the interaction terms were not significant and were excluded from the final models.*
+*Lines 370-373: "Initial models also included a tensor product interaction term with a cubic regression spline that evaluated the potential interacting effects of each predictor with year. However, most of the interaction terms were not significant and were excluded from the final models."*
 
 The GAM models provided in the methods are really just the R syntax, and this is clear from the tables. I would suggest removing
 
@@ -37,11 +38,11 @@ The GAM models provided in the methods are really just the R syntax, and this is
 
 Line 491: Change “model for the EPC “ to “seagrass cover…”
 
-*Response: Changed* 
+*Response: Changed.* 
 
 Line 493: seagrass cover was associated with decreased light attenuation for both HB and MTB segments.  In HB, it was a fairly random pattern with not much biological meaning.  For MT though seagrass cover increased with increased light attenuation, but as you mention, this is still below the threshold.  Some clarification here might be useful.
 
-*Response: The following was added on lines 489-493: "Associations with light attenuation were also observed for the HB (p < 0.001) and MTB (p = 0.004) bay segments, although the relationship in HB was flat beyond 0.75 m$^{-1}$ and opposite as expected for MTB (Figure 7, Table S7). As noted above, light attenuation in HB and MTB in recent years is well withing the range supportive of seagrass growth (Figure 2c), such that these associations may not be describing meaningful biological relationships."* 
+*Response: The following was added on lines 489-493: "Associations with light attenuation were also observed for the HB (p < 0.001) and MTB (p = 0.004) bay segments, although the relationship in HB was flat beyond 0.75 m$^{-1}$ and opposite as expected for MTB (Figure 7, Table S7). As noted above, light attenuation in HB and MTB in recent years is well within the range supportive of seagrass growth (Figure 2c), such that these associations may not be describing meaningful biological relationships."* 
 
 Line 494: “associations were weak” – add smoother p-values here
 
@@ -53,13 +54,13 @@ Line 498: both metric did not add additional value – however, it is significan
 
 Line 555: “For the EPC model none of the stressor metrics were associated with seagrass change”.  This isn’t quite correct: – salinity OTB was, and also the general trends in increasing sg with increasing temperature should be acknowledged explicitly. Although these were not significant they do suggest a relationships.  I appreciate the distinction between the temperature metrics used for the different datasets as you outline, but what would the mechanism be?  Could the increase with temperature in the EPC data indicate increased vegetative growth in anomalous temperature conditions?  Several studies have observed this (DuBois et al. 2020, Wong and Dowd 2023 etc)
 
-*Response: Yes, this was an explanation that was initially considered for the temperature metric, but not stated in original the text. It is also difficult to describe the positive association of seagrass change with the salinity metric in OTB.  Our description later in the paragraph regarding the spatial mismatch between the water quality and seagrass data is a possible explanation.*
+*Response: Yes, this was an explanation that was initially considered for the temperature metric, but not stated in the original text. It is also difficult to describe the positive association of seagrass change with the salinity metric in OTB.  Our description later in the paragraph regarding the spatial mismatch between the water quality and seagrass data is a possible explanation.*
 
 *The following text was added to the discussion (lines 557-561): "The positive association of seagrass change with the temperature (or 'both') metric could be a signal of increased vegetative growth with temperature anomalies (e.g., Wong and Dowd 2023), whereas the positive association with the salinity metric in OTB is not easily explained since extreme precipitation events have been linked to seagrass loss in Tampa Bay (Greening and Janicki 2006)."* 
 
 Line 611: I think this explanation is really important, can it be highlighted above too.  What is the depth difference and does this ameliorate solar heating effects experienced by the seagrass.
 
-*Response: The mean depth of all EPC sampling stations (excluding LTB) is 3.88 meters, whereas the mean depth of points along each transect and sample date is 0.76 meters. The following was added to lines 363-365 in section 2.7 of the methods: "...; note that the seagrass transect data were collected at different locations and depths ($\bar{Z}$ = 0.76 m) than the EPC water quality data ($\bar{Z}$ = 3.88 m, excludes LTB not evaluated)."* 
+*Response: The mean depth of all EPC sampling stations (excluding LTB) is 3.88 meters, whereas the mean depth of points along each transect is 0.76 meters. The following was added to lines 363-365 in section 2.7 of the methods: "...; note that the seagrass transect data were collected at different locations and depths ($\bar{Z}$ = 0.76 m) than the EPC water quality data ($\bar{Z}$ = 3.88 m, excludes LTB not evaluated)."* 
 
 ### Co-Editor in Chief:
 
