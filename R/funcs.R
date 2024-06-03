@@ -47,7 +47,8 @@ gam_table <- function(mod, cap = NULL){
     tidy() %>% 
     rowwise() %>% 
     mutate(
-      p.value = p_txt(p.value, addp = F)
+      p.value = p_txt(p.value, addp = F) ,
+      term = gsub('^s\\(|\\)', '', term)
     ) %>% 
     ungroup() %>% 
     mutate_if(is.numeric, round, 3) %>%
@@ -58,6 +59,24 @@ gam_table <- function(mod, cap = NULL){
       'p' = p.value
     ) %>%
     kable(digits = 3, align = 'lrrrr', caption = cap)
+  
+  return(out)
+  
+}
+
+gam_pvals <- function(mod){
+  
+  out <- mod %>% 
+    broom::tidy() %>% 
+    rowwise() %>% 
+    mutate(
+      p.value = p_txt(p.value, addp = T) ,
+      term = gsub('^s\\(|\\)', '', term)
+    ) %>% 
+    ungroup() %>%
+    select(term, p.value) %>% 
+    split(.$term) %>% 
+    purrr::map(~ .x$p.value)
   
   return(out)
   
@@ -131,8 +150,8 @@ gamplo_fun <- function(sgmods){
         
         yrng <- 0.9 * max(abs(range(data$.estimate, data$.lower_ci, data$.upper_ci)))
         
-        if(bay_segment == 'HB' & xvar == 'sal')
-          yrng <-100
+        # if(bay_segment == 'HB' & xvar == 'sal')
+        #   yrng <-100
         
         ttl <- ifelse(bay_segment == 'OTB' & xvar == 'yr', 
                       '(a) FIM', '')

@@ -18,16 +18,16 @@ Dear Dr. Montagna and Dr. Deegan,
 
 \vspace{0.5cm}
 
-Enclosed please find our revised manuscript, titled \`Hot and fresh: evidence of climate-related suboptimal water conditions for seagrass in a large Gulf coast estuary', to be considered as an original article in Estuaries and Coasts.
+Enclosed please find the second revision of our manuscript, titled \`Hot and fresh: evidence of climate-related suboptimal water conditions for seagrass in a large Gulf coast estuary', to be considered as an original article in Estuaries and Coasts.
 
-We sincerely appreciate the constructive comments provided by the editors and reviewers and have made every attempt to address these comments in our revision. The largest change to the manuscript was a reanalysis of the potential seagrass response to climate stressors, which included more flexible Generalized Additive Models and inclusion of additional predictors (i.e., time as a continuous variable, light attenuation).  Overall, our conclusions remain the same that climate stressors are potentially driving recent seagrass changes, although our more robust modeling approach provides greater weight of evidence for this conclusion.  Note that we have also made substantial revisions in response to comments from the co-editor in chief regarding statistical descriptions of results to focus more on effect sizes and magnitudes of change. 
+We have addressed the remaining comments from Dr. Wong, as noted in our attached responses. In particular, we have removed the interaction terms from the GAMs and included appropriate statistics when describing the resulting relationships. Our main conclusions remain the same. Additional minor revisions are noted in our responses.
 
 Again, we greatly appreciate the opportunity to publish this work in Estuaries and Coasts and are confident readers will consider it a valuable contribution. Please feel free to contact us directly should additional information be needed.
- 
+
 \vspace{0.5cm}
 
 Regards,
 
-Marcus W. Beck, Tampa Bay Estuary Program, St. Petersburg, Florida, USA, [mbeck@tbep.org](mailto:mbeck@tbep.org)
+Marcus W. Beck, Tampa Bay Estuary Program, St. Petersburg, Florida, USA, [mbeck\@tbep.org](mailto:mbeck@tbep.org)
 
 \vfill

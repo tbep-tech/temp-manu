@@ -1500,9 +1500,9 @@ load(file = here('data/pincotemp.RData'))
 tomod <- epccmbdat %>% 
   filter(!bay_segment %in% c('LTB'))
 
-epcmod1 <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + ti(la, yr, by = bay_segment) + ti(temp, yr, by = bay_segment) + ti(sal, yr, by = bay_segment), data = tomod, method = 'REML')
+epcmod1 <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment), data = tomod, method = 'REML')
 
-epcmod2 <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(both, by = bay_segment) + ti(la, yr, by = bay_segment) + ti(both, yr, by = bay_segment), data = tomod, method = 'REML')
+epcmod2 <- gam(total ~ s(yr, by = bay_segment) + s(la, by = bay_segment) + s(both, by = bay_segment), data = tomod, method = 'REML')
 
 tomod <- fimsgtempdat %>% 
   filter(!bay_segment %in% c('LTB')) %>%
@@ -1527,8 +1527,7 @@ tomod <- fimsgtempdat %>%
     )
   )
 
-fimmod <- gam(sgcov ~ s(yr, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment) + 
-             ti(sal, yr, by = bay_segment) + ti(temp, yr, by = bay_segment), data = tomod, method = 'REML')
+fimmod <- gam(sgcov ~ s(yr, by = bay_segment) + s(temp, by = bay_segment) + s(sal, by = bay_segment), data = tomod, method = 'REML')
 
 tomod <- pincotemp %>% 
   filter(depth_m < 2) %>% 
@@ -1550,13 +1549,12 @@ tomod <- pincotemp %>%
     la = 1.49 / secchi_m
   )
 
-pincomod <- gam(allsg ~ s(yr) + s(temp) + s(sal) + ti(yr, temp) + ti(yr, sal), 
-           data = tomod, method = 'REML')
+pincomod <- gam(allsg ~ s(yr) + s(temp) + s(sal), 
+                data = tomod, method = 'REML')
 
 sgmods <- list(epcmod1 = epcmod1, epcmod2 = epcmod2, fimmod = fimmod, pincomod = pincomod)
 
 save(sgmods, file = here('data/sgmods.RData'))
-
 
 # sg mod gam performance ----------------------------------------------------------------------
 
